@@ -1,0 +1,85 @@
+/* Archivo: src/index.css | Comentario: estilos del modulo. */
+@import url('https://fonts.googleapis.com/css2?family=Satisfy&family=Nunito:wght@400;600;700;900&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Nunito', sans-serif; margin: 0; padding: 0; }
+  * { box-sizing: border-box; }
+  a { text-decoration: none; }
+}
+
+@layer components {
+  /* Logo */
+  .logo-satisfy {
+    font-family: 'Satisfy', cursive;
+    color: #FF4B3E;
+    font-size: 1.75rem;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  /* Botón primario rojo */
+  .btn-brand {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-[#FF4B3E] text-white rounded-full font-bold transition;
+  }
+  .btn-brand:hover { background-color: #e03a2d; }
+
+  /* Botón outline */
+  .btn-outline {
+    @apply inline-flex items-center gap-2 px-6 py-3 border-2 border-[#FF4B3E] text-[#FF4B3E] rounded-full font-bold transition;
+  }
+  .btn-outline:hover { background-color: #FF4B3E; color: white; }
+
+  /* Card de restaurante */
+  .resto-card {
+    @apply bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer;
+    transition: box-shadow 0.3s, transform 0.3s;
+    flex-shrink: 0;
+    width: calc(25% - 18px);
+    min-width: 220px;
+  }
+  .resto-card:hover {
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    transform: translateY(-3px);
+  }
+  .resto-card img {
+    width: 100%;
+    height: 176px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s;
+  }
+  .resto-card:hover img { transform: scale(1.05); }
+
+  /* Card de producto */
+  .food-card {
+    @apply bg-white rounded-2xl shadow-sm overflow-hidden relative;
+    transition: box-shadow 0.3s;
+  }
+  .food-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+  .food-card .food-img {
+    width: 100%;
+    height: 144px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s;
+  }
+  .food-card:hover .food-img { transform: scale(1.05); }
+
+  /* Sección genérica */
+  .section-wrap {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* Eyebrow */
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-widest mb-2;
+  }
+}

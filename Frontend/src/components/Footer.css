@@ -1,0 +1,122 @@
+/* Archivo: src/components/Footer.css | Comentario: estilos del modulo. */
+/* Footer Component Styles */
+
+.footer {
+  background: #1a1a1a;
+  color: #999;
+  padding: 60px 20px 30px;
+  margin-top: 100px;
+  border-top: 1px solid #333;
+}
+
+.footer .wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-col h4 {
+  color: #fff;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.footer-col ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-col ul li {
+  margin-bottom: 0.75rem;
+}
+
+.footer-col ul li a {
+  color: #999;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.footer-col ul li a:hover {
+  color: #ff4b3e;
+}
+
+.footer-brand-col .logo-text {
+  color: #ff4b3e;
+  font-family: 'Satisfy', cursive;
+  font-weight: 700;
+}
+
+.social-links {
+  display: flex;
+  gap: 15px;
+}
+
+.social-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #333;
+  color: #999;
+  border-radius: 50%;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.social-links a:hover {
+  background: #ff4b3e;
+  color: #fff;
+}
+
+.app-links {
+  display: flex;
+  gap: 10px;
+  margin-top: 1rem;
+}
+
+.app-links a {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.app-links img {
+  height: 40px;
+  transition: opacity 0.2s;
+}
+
+.app-links a:hover img {
+  opacity: 0.8;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 30px;
+  border-top: 1px solid #333;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.mt-2 {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .footer {
+    padding: 40px 20px 20px;
+  }
+}

@@ -1,0 +1,116 @@
+<?php
+
+namespace App\Http\Controllers\API\Restaurant;
+
+use App\Http\Controllers\Controller;
+use App\Models\Category;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+
+class CategoryController extends Controller
+{
+    public function index(Request $request): JsonResponse
+    {
+        if (!$request->filled('paginate')) {
+            $request->merge(['paginate' => false]);
+        }
+
+        if (!$request->filled('sort')) {
+            $request->merge(['sort' => 'order']);
+        }
+
+        $categories = Category::where('restaurant_id', $request->user()->restaurant->id)
+            ->withCount('products')
+            ->included()
+            ->filter()
+            ->sort()
+            ->getOrPaginate();
+
+        return $this->respondCollection($categories);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'name'  => ['required', 'string', 'max:100'],
+            'order' => ['nullable', 'integer', 'min:0'],
+        ]);
+
+        $category = Category::create([
+            'restaurant_id' => $request->user()->restaurant->id,
+            'name'          => $request->name,
+            'order'         => $request->order ?? 0,
+            'is_active'     => true,
+        ]);
+
+        return response()->json([
+            'message' => 'Categoría creada.',
+            'data'    => $category,
+        ], 201);
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'name'      => ['sometimes', 'string', 'max:100'],
+            'order'     => ['nullable', 'integer', 'min:0'],
+            'is_active' => ['sometimes', 'boolean'],
+        ]);
+
+        $category = Category::where('id', $id)
+            ->where('restaurant_id', $request->user()->restaurant->id)
+            ->firstOrFail();
+
+        $category->update($request->only('name', 'order', 'is_active'));
+
+        return response()->json([
+            'message' => 'Categoría actualizada.',
+            'data'    => $category,
+        ]);
+    }
+
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $category = Category::where('id', $id)
+            ->where('restaurant_id', $request->user()->restaurant->id)
+            ->firstOrFail();
+
+        if ($category->products()->exists()) {
+            return response()->json([
+                'message' => 'No puedes eliminar una categoría con productos. Mueve o elimina los productos primero.',
+            ], 422);
+        }
+
+        $category->delete();
+        return response()->json(['message' => 'Categoría eliminada.']);
+    }
+
+    public function reorder(Request $request): JsonResponse
+    {
+        $request->validate([
+            'categories'       => ['required', 'array'],
+            'categories.*.id'  => ['required', 'exists:categories,id'],
+            'categories.*.order' => ['required', 'integer'],
+        ]);
+
+        $restaurantId = $request->user()->restaurant->id;
+
+        foreach ($request->categories as $item) {
+            Category::where('id', $item['id'])
+                ->where('restaurant_id', $restaurantId)
+                ->update(['order' => $item['order']]);
+        }
+
+        return response()->json(['message' => 'Orden actualizado.']);
+    }
+
+    private function respondCollection($result): JsonResponse
+    {
+        if ($result instanceof Paginator) {
+            return response()->json($result);
+        }
+
+        return response()->json(['data' => $result]);
+    }
+}
