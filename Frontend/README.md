@@ -78,8 +78,26 @@ const response = await login(email, password);
 | Inicio | `/` | Landing page |
 | Login | `/login` | Iniciar sesión |
 | Registro | `/register` | Crear cuenta |
+| Registro Restaurante | `/register-restaurant` | Crear cuenta con rol restaurante |
+| Dashboard Restaurante | `/restaurant/dashboard` | Home privado para rol restaurante |
+| Dashboard Admin | `/admin/dashboard` | Home privado para rol admin |
 | Restaurantes | `/restaurants` | Listado de restaurantes |
 | Detalle | `/restaurants/:id` | Detalles y productos de restaurante |
+
+## ✅ Cambios Recientes
+
+### Registro y navegación por rol
+
+1. Se agregó una vista independiente de registro para restaurantes.
+2. El enlace “Registra tu restaurante” ahora navega a `/register-restaurant`.
+3. El registro de restaurante envía `role: "restaurant"` al backend.
+4. Después del registro de restaurante, la redirección va a `/restaurant/dashboard`.
+5. Se creó la vista `RestaurantDashboard.jsx` como home del rol restaurante.
+6. Se ajustaron las rutas de auth para redirigir por rol cuando el usuario ya está autenticado:
+	- Admin -> `/admin/dashboard`
+	- Restaurante -> `/restaurant/dashboard`
+	- Usuario -> `/`
+7. En la vista 404, el botón “Volver al inicio” también redirige por rol.
 
 ## 🛠️ Stack Tecnológico
 

@@ -1,6 +1,6 @@
 // Archivo: src/App.jsx | Comentario: logica principal del modulo.
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
 import { fetchJson } from './api/fetchJson'
 import Header        from './components/Header'
@@ -8,10 +8,12 @@ import CartSidebar   from './components/CartSidebar'
 import Home          from './pages/Home'
 import Login         from './pages/Login'
 import Register      from './pages/Register'
+import RegisterRestaurant from './pages/RegisterRestaurant'
 import Profile       from './pages/Profile'
 import Subscription  from './pages/Subscription'
 import Restaurants   from './pages/Restaurants'
 import AdminDashboard from './pages/AdminDashboard'
+import RestaurantDashboard from './pages/RestaurantDashboard'
 
 // Layout con header
 function PublicLayout({ children, isAuth, user, onLogout, isLoading }) {
@@ -35,6 +37,15 @@ function normalizeUserRole(rawUser) {
   if (!rawUser || typeof rawUser !== 'object') return rawUser
   const role = String(rawUser.role ?? rawUser.rol ?? 'customer').toLowerCase()
   return { ...rawUser, role }
+}
+
+function getHomePathByRole(rawUser) {
+  const role = String(rawUser?.role ?? rawUser?.rol ?? 'user').toLowerCase()
+
+  if (role === 'admin') return '/admin/dashboard'
+  if (role === 'restaurant') return '/restaurant/dashboard'
+
+  return '/'
 }
 
 export default function App() {
@@ -205,10 +216,13 @@ export default function App() {
 
           {/* Auth — redirigir si ya está logueado */}
           <Route path="/login" element={
-            isAuth ? <Navigate to="/" replace /> : <Login onLogin={handleLogin} />
+            isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <Login onLogin={handleLogin} />
           } />
           <Route path="/register" element={
-            isAuth ? <Navigate to="/" replace /> : <Register onLogin={handleLogin} />
+            isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <Register onLogin={handleLogin} />
+          } />
+          <Route path="/register-restaurant" element={
+            isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <RegisterRestaurant onLogin={handleLogin} />
           } />
 
           <Route path="/admin" element={
@@ -225,6 +239,21 @@ export default function App() {
           } />
 
           <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
+
+          <Route path="/restaurant/dashboard" element={
+            <RoleRoute user={user} allow={['restaurant']}>
+              <PublicLayout
+                isAuth={isAuth}
+                user={user}
+                onLogout={handleLogout}
+                isLoading={loading}
+              >
+                <RestaurantDashboard user={user} />
+              </PublicLayout>
+            </RoleRoute>
+          } />
+
+          <Route path="/restaurant" element={<Navigate to="/restaurant/dashboard" replace />} />
 
           {/* Rutas protegidas de usuario */}
           <Route path="/user/profile" element={
@@ -259,9 +288,9 @@ export default function App() {
               <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
                 <span className="text-8xl">🍔</span>
                 <h1 className="text-3xl font-black text-gray-800">Página no encontrada</h1>
-                <a href="/" className="px-6 py-3 bg-[#FF4B3E] text-white rounded-full font-bold hover:bg-[#e03a2d] transition">
+                <Link to={getHomePathByRole(user)} className="px-6 py-3 bg-[#FF4B3E] text-white rounded-full font-bold hover:bg-[#e03a2d] transition">
                   Volver al inicio
-                </a>
+                </Link>
               </div>
             </PublicLayout>
           } />

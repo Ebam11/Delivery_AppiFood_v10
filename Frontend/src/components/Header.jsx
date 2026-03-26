@@ -103,7 +103,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     { href:'#how',   icon:'fa-question-circle', label:'¿Cómo funciona?' },
     { href:'#',      icon:'fa-headset',         label:'Chat de soporte' },
     { href:'#',      icon:'fa-mobile-alt',      label:'Descarga la app' },
-    { to:'/register',icon:'fa-utensils',        label:'Registra tu restaurante', promo:true },
+    { to:'/register-restaurant',icon:'fa-utensils',        label:'Registra tu restaurante', promo:true },
   ]
 
   const linkStyle = (promo) => ({
