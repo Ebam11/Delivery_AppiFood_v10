@@ -1,4 +1,4 @@
-// Archivo: src/App.jsx | Comentario: logica principal del modulo.
+//logica principal del modulo.
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
@@ -9,13 +9,13 @@ import Home          from './pages/Home'
 import Login         from './pages/Login'
 import Register      from './pages/Register'
 import RegisterRestaurant from './pages/RegisterRestaurant'
+import RestaurantLogin from './pages/RestaurantLogin'
 import Profile       from './pages/Profile'
 import Subscription  from './pages/Subscription'
 import Restaurants   from './pages/Restaurants'
 import AdminDashboard from './pages/AdminDashboard'
 import RestaurantDashboard from './pages/RestaurantDashboard'
 
-// Layout con header
 function PublicLayout({ children, isAuth, user, onLogout, isLoading }) {
   return (
     <>
@@ -41,15 +41,12 @@ function normalizeUserRole(rawUser) {
 
 function getHomePathByRole(rawUser) {
   const role = String(rawUser?.role ?? rawUser?.rol ?? 'user').toLowerCase()
-
   if (role === 'admin') return '/admin/dashboard'
   if (role === 'restaurant') return '/restaurant/dashboard'
-
   return '/'
 }
 
 export default function App() {
-  // Restaurar usuario desde localStorage al iniciar
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem('token')
     const savedUser = localStorage.getItem('user')
@@ -71,7 +68,6 @@ export default function App() {
   
   const [loading, setLoading] = useState(true)
 
-  // Verificar sesión al montar
   useEffect(() => {
     const token = localStorage.getItem('token')
     console.log('📌 App mounted, token:', token ? 'EXISTS' : 'NO TOKEN')
@@ -158,16 +154,9 @@ export default function App() {
     <CartProvider>
       <BrowserRouter>
         <Routes>
-          {/* Ruta principal - SIEMPRE visible, incluso durante carga */}
           <Route path="/" element={
-            <PublicLayout 
-              isAuth={isAuth} 
-              user={user} 
-              onLogout={handleLogout}
-              isLoading={loading} // ← Comentario corregido, ahora es una línea normal
-            >
+            <PublicLayout isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
               {loading ? (
-                // Mostrar contenido de carga en la página principal
                 <div className="min-h-screen flex items-center justify-center">
                   <div className="text-center">
                     <span className="font-['Satisfy'] text-4xl text-[#FF4B3E]">AppiFood</span>
@@ -181,12 +170,7 @@ export default function App() {
           } />
 
           <Route path="/restaurants" element={
-            <PublicLayout 
-              isAuth={isAuth} 
-              user={user} 
-              onLogout={handleLogout}
-              isLoading={loading}
-            >
+            <PublicLayout isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
               {loading ? (
                 <div className="min-h-screen flex items-center justify-center">
                   <div className="w-8 h-8 border-4 border-[#FF4B3E] border-t-transparent rounded-full animate-spin"></div>
@@ -198,12 +182,7 @@ export default function App() {
           } />
 
           <Route path="/subscription" element={
-            <PublicLayout 
-              isAuth={isAuth} 
-              user={user} 
-              onLogout={handleLogout}
-              isLoading={loading}
-            >
+            <PublicLayout isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
               {loading ? (
                 <div className="min-h-screen flex items-center justify-center">
                   <div className="w-8 h-8 border-4 border-[#FF4B3E] border-t-transparent rounded-full animate-spin"></div>
@@ -214,7 +193,7 @@ export default function App() {
             </PublicLayout>
           } />
 
-          {/* Auth — redirigir si ya está logueado */}
+          {/* Auth */}
           <Route path="/login" element={
             isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <Login onLogin={handleLogin} />
           } />
@@ -224,46 +203,32 @@ export default function App() {
           <Route path="/register-restaurant" element={
             isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <RegisterRestaurant onLogin={handleLogin} />
           } />
+          <Route path="/restaurant/login" element={
+            isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <RestaurantLogin onLogin={handleLogin} />
+          } />
 
+          {/* Admin */}
           <Route path="/admin" element={
             <RoleRoute user={user} allow={['admin']}>
-              <PublicLayout
-                isAuth={isAuth}
-                user={user}
-                onLogout={handleLogout}
-                isLoading={loading}
-              >
+              <PublicLayout isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
                 <AdminDashboard user={user} />
               </PublicLayout>
             </RoleRoute>
           } />
-
           <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
 
+          {/* ↓ CAMBIO: sin PublicLayout — el dashboard tiene su propio layout ↓ */}
           <Route path="/restaurant/dashboard" element={
             <RoleRoute user={user} allow={['restaurant']}>
-              <PublicLayout
-                isAuth={isAuth}
-                user={user}
-                onLogout={handleLogout}
-                isLoading={loading}
-              >
-                <RestaurantDashboard user={user} />
-              </PublicLayout>
+              <RestaurantDashboard user={user} onLogout={handleLogout} />
             </RoleRoute>
           } />
 
           <Route path="/restaurant" element={<Navigate to="/restaurant/dashboard" replace />} />
 
-          {/* Rutas protegidas de usuario */}
           <Route path="/user/profile" element={
             !isAuth ? <Navigate to="/login" replace /> :
-            <PublicLayout 
-              isAuth={isAuth} 
-              user={user} 
-              onLogout={handleLogout}
-              isLoading={loading}
-            >
+            <PublicLayout isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
               {loading ? (
                 <div className="min-h-screen flex items-center justify-center">
                   <div className="w-8 h-8 border-4 border-[#FF4B3E] border-t-transparent rounded-full animate-spin"></div>
@@ -279,12 +244,7 @@ export default function App() {
 
           {/* 404 */}
           <Route path="*" element={
-            <PublicLayout 
-              isAuth={isAuth} 
-              user={user} 
-              onLogout={handleLogout}
-              isLoading={loading}
-            >
+            <PublicLayout isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
               <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
                 <span className="text-8xl">🍔</span>
                 <h1 className="text-3xl font-black text-gray-800">Página no encontrada</h1>

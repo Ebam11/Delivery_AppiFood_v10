@@ -191,15 +191,21 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
           {/* DERECHA: Usuario + Carrito */}
           <div className="flex items-center gap-3 flex-shrink-0">
-            {!isAuth ? (
-              <>
-                <Link to="/login" className="hidden sm:inline-block px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition">
-                  Iniciar Sesión
+{!isAuth ? (
+            <>
+              <Link to="/login" className="hidden sm:inline-block px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition">
+                Iniciar Sesión
+              </Link>
+              {location.pathname === '/register-restaurant' ? (
+                <Link to="/restaurant/login" className="px-4 py-2 rounded-full bg-[#FF4B3E] text-white font-bold text-xs hover:bg-[#e03a2d] transition">
+                  Iniciar sesión restaurante
                 </Link>
+              ) : (
                 <Link to="/register" className="px-4 py-2 rounded-full bg-[#FF4B3E] text-white font-bold text-xs hover:bg-[#e03a2d] transition">
                   Registrarse
                 </Link>
-              </>
+              )}
+            </>  //final de linea perteneciente a la creacion de botones de inicio de sesion y registro en el header de solo restaurantes
             ) : (
               <div className="relative" ref={userRef}>
                 <button onClick={() => setUserMenuOpen(o => !o)}
