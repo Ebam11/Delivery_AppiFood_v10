@@ -210,9 +210,7 @@ export default function App() {
           {/* Admin */}
           <Route path="/admin" element={
             <RoleRoute user={user} allow={['admin']}>
-              <PublicLayout isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
-                <AdminDashboard user={user} />
-              </PublicLayout>
+              <AdminDashboard user={user} onLogout={handleLogout} />
             </RoleRoute>
           } />
           <Route path="/admin/dashboard" element={<Navigate to="/admin" replace />} />
