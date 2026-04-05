@@ -81,11 +81,14 @@ export default function RegisterRestaurant({ onLogin }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
+      console.log('respuesta completa del backend', JSON.stringify(data)) //linea provisional, problema de registro de restaurante con login de usuario
 
       localStorage.setItem('token', data.token)
+      console.log('data.user:', data.user)
+      localStorage.setItem('user', JSON.stringify(data.user))
       onLogin?.(data.user)
-
       navigate('/restaurant/dashboard')
+
     } catch (error) {
       if (error instanceof ApiError) {
         const errs = {}

@@ -347,6 +347,7 @@ const NAV = [
   { id:'promotions', icon:'🎯', label:'Promotions' },
   { id:'analytics',  icon:'📈', label:'Analytics' },
   { id:'reviews',    icon:'★', label:'Reviews' },
+  { id:'restaurant-info', icon:'🏪', label:'Mi Restaurante' },
 ]
 
 function Sidebar({ active, onNav, open, onClose, user, onLogout }) {
@@ -361,7 +362,7 @@ function Sidebar({ active, onNav, open, onClose, user, onLogout }) {
         {/* Brand */}
         <div className="flex items-center gap-2 px-5 py-5 border-b border-gray-100">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: P }}>A</div>
-          <span className="font-bold text-gray-800 text-base">AppiFood</span>
+          <span className="font-bold text-gray-800 text-base capitalize">YAWAZU</span>
         </div>
 
         {/* Nav */}
@@ -432,7 +433,7 @@ function TopBar({ title, breadcrumb, onMenuOpen, user }) {
         <div className="flex items-center gap-2">
           <div className="text-right hidden sm:block">
             <p className="text-xs font-semibold text-gray-800">{user?.name || 'Restaurante'}</p>
-            <p className="text-xs text-gray-400">Admin</p>
+            <p className="text-xs text-gray-400">Restaurante</p>
           </div>
           <div className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ background: P }}>
             {user?.name?.charAt(0)?.toUpperCase() || 'R'}
@@ -879,7 +880,7 @@ function MenuSection({ menu, onAdd, onDelete }) {
   const [search,    setSearch]    = useState('')
   const [form, setForm] = useState({ name:'', description:'', price:'', category:'Plato Fuerte' })
 
-  const CATEGORIES = ['Todos','Plato Fuerte','Entrada','Postre','Bebida']
+  const CATEGORIES = ['Todos','Plato Fuerte','Entrada','Postre','Bebida', 'Desayuno', 'Comida']
 
   const visible = menu
     .filter(m => catFilter === 'Todos' || m.category === catFilter)
@@ -973,6 +974,8 @@ function MenuSection({ menu, onAdd, onDelete }) {
                     <option>Entrada</option>
                     <option>Postre</option>
                     <option>Bebida</option>
+                    <option>Desayuno</option>
+                    <option>Comida</option>
                   </select>
                 </div>
               </div>
@@ -1975,6 +1978,141 @@ function AnalyticsSection() {
   )
 }
 
+// ── Sección: Mi Restaurante ──────────────────────────────────────
+function RestaurantInfoSection({ user, showToast }) {
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState({
+    name:        user?.name        || '',
+    email:       user?.email       || '',
+    phone:       user?.phone       || '',
+    address:     user?.address     || '',
+    city:        user?.city        || 'Popayán',
+    description: user?.description || '',
+    openTime:    '11:00',
+    closeTime:   '22:00',
+  })
+
+  const save = () => {
+    setEditing(false)
+    showToast('Información actualizada correctamente')
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+        <div className="flex items-center gap-5">
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-3xl font-bold flex-shrink-0" style={{ background: P }}>
+            {form.name?.charAt(0)?.toUpperCase() || 'R'}
+          </div>
+          <div className="flex-1">
+            <h2 className="text-xl font-bold text-gray-800">{form.name || 'Mi Restaurante'}</h2>
+            <p className="text-sm text-gray-400 mt-0.5">{form.email}</p>
+            <p className="text-sm text-gray-400">{form.city}</p>
+          </div>
+          <button
+            onClick={() => editing ? save() : setEditing(true)}
+            className="px-4 py-2 rounded-xl text-sm font-bold text-white hover:opacity-90 transition"
+            style={{ background: P }}
+          >
+            {editing ? 'Guardar' : 'Editar'}
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Información general */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">Información General</h3>
+          <div className="space-y-3">
+            {[
+              { label:'Nombre del Restaurante', key:'name',    type:'text'  },
+              { label:'Correo Electrónico',     key:'email',   type:'email' },
+              { label:'Teléfono',               key:'phone',   type:'text'  },
+              { label:'Dirección',              key:'address', type:'text'  },
+              { label:'Ciudad',                 key:'city',    type:'text'  },
+            ].map(f => (
+              <div key={f.key}>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">{f.label}</label>
+                <input
+                  type={f.type}
+                  value={form[f.key]}
+                  onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                  readOnly={!editing}
+                  className={`w-full border rounded-xl px-3 py-2 text-sm outline-none transition
+                    ${editing ? 'border-gray-200 focus:border-[#e71d1d] bg-white' : 'border-transparent bg-gray-50 text-gray-700'}`}
+                />
+              </div>
+            ))}
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Descripción</label>
+              <textarea
+                value={form.description}
+                onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                readOnly={!editing}
+                rows={3}
+                placeholder="Describe tu restaurante..."
+                className={`w-full border rounded-xl px-3 py-2 text-sm outline-none resize-none transition
+                  ${editing ? 'border-gray-200 focus:border-[#e71d1d] bg-white' : 'border-transparent bg-gray-50 text-gray-700'}`}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Horario */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
+          <h3 className="font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">Horario de Atención</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Abierto desde</label>
+              <input
+                type="time"
+                value={form.openTime}
+                onChange={e => setForm(p => ({ ...p, openTime: e.target.value }))}
+                disabled={!editing}
+                className={`w-full border rounded-xl px-3 py-2 text-sm outline-none transition
+                  ${editing ? 'border-gray-200 focus:border-[#e71d1d] bg-white' : 'border-transparent bg-gray-50 text-gray-700'}`}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-gray-500 mb-1">Cierra a</label>
+              <input
+                type="time"
+                value={form.closeTime}
+                onChange={e => setForm(p => ({ ...p, closeTime: e.target.value }))}
+                disabled={!editing}
+                className={`w-full border rounded-xl px-3 py-2 text-sm outline-none transition
+                  ${editing ? 'border-gray-200 focus:border-[#e71d1d] bg-white' : 'border-transparent bg-gray-50 text-gray-700'}`}
+              />
+            </div>
+          </div>
+
+          {/* Estado del restaurante */}
+          <h3 className="font-semibold text-gray-800 mt-6 mb-4 pb-3 border-b border-gray-100">Estado</h3>
+          <div className="space-y-3">
+            {[
+              { label:'Restaurante activo',   key:'active'   },
+              { label:'Acepta pedidos online', key:'online'   },
+              { label:'Delivery disponible',  key:'delivery' },
+            ].map((s, i) => (
+              <div key={i} className="flex items-center justify-between">
+                <span className="text-sm text-gray-700">{s.label}</span>
+                <button
+                  disabled={!editing}
+                  className="w-11 h-6 rounded-full transition-colors relative"
+                  style={{ background: P, opacity: editing ? 1 : 0.7 }}
+                >
+                  <span className="absolute top-0.5 translate-x-5 w-5 h-5 bg-white rounded-full shadow" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─────────────────────────────────────────
 // COMPONENTE PRINCIPAL
 // ─────────────────────────────────────────
@@ -1996,6 +2134,7 @@ const PAGE_META = {
   promotions: { title:'Promotions',  breadcrumb: ['Promotions'] },
   analytics:  { title:'Analytics',   breadcrumb: ['Analytics'] },
   reviews:    { title:'Reviews',     breadcrumb: ['Reviews'] },
+  'restaurant-info': { title:'Mi Restaurante', breadcrumb: ['Información General'] },
 }
 
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 3000) }
@@ -2040,6 +2179,7 @@ const PAGE_META = {
 {page === 'promotions' && <PromotionsSection />}
 {page === 'analytics'  && <AnalyticsSection />}
 {page === 'reviews'    && <ReviewsSection />}
+{page === 'restaurant-info' && <RestaurantInfoSection user={user} showToast={showToast} />}
         </main>
       </div>
 
