@@ -878,7 +878,8 @@ function MenuSection({ menu, onAdd, onDelete }) {
   const [showModal, setShowModal] = useState(false)
   const [catFilter, setCatFilter] = useState('Todos')
   const [search,    setSearch]    = useState('')
-  const [form, setForm] = useState({ name:'', description:'', price:'', category:'Plato Fuerte' })
+  const [form, setForm] = useState({ name:'', description:'', price:'', category:'Plato Fuerte', img:'' })
+  const [preview, setPreview] = useState(null)
 
   const CATEGORIES = ['Todos','Plato Fuerte','Entrada','Postre','Bebida', 'Desayuno', 'Comida']
 
@@ -886,10 +887,18 @@ function MenuSection({ menu, onAdd, onDelete }) {
     .filter(m => catFilter === 'Todos' || m.category === catFilter)
     .filter(m => m.name.toLowerCase().includes(search.toLowerCase()))
 
+  const handleImage = e => {
+    const file = e.target.files[0]
+    if (!file) return
+    const url = URL.createObjectURL(file)
+    setPreview(url)
+    setForm(f => ({ ...f, img: url }))
+  }
+
   const submit = () => {
     if (!form.name || !form.price) return
     onAdd({ id:Date.now(), ...form, price:parseFloat(form.price), rating:0, orders:0, active:true, img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop' })
-    setForm({ name:'', description:'', price:'', category:'Plato Fuerte' })
+    setForm({ name:'', description:'', price:'', category:'Plato Fuerte', img:'' })
     setShowModal(false)
   }
 
@@ -954,6 +963,27 @@ function MenuSection({ menu, onAdd, onDelete }) {
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
             </div>
             <div className="space-y-3">
+              {/* Foto del plato */}
+<div>
+  <label className="block text-xs font-semibold text-gray-600 mb-1">Foto del plato</label>
+  <div className="relative">
+    {preview ? (
+      <div className="relative">
+        <img src={preview} alt="preview" className="w-full h-32 object-cover rounded-xl" />
+        <button
+          onClick={() => { setPreview(null); setForm(f => ({ ...f, img:'' })) }}
+          className="absolute top-2 right-2 w-6 h-6 bg-black/50 text-white rounded-full text-xs flex items-center justify-center hover:bg-black/70 transition"
+        >×</button>
+      </div>
+    ) : (
+      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-200 rounded-xl cursor-pointer hover:border-[#e71d1d] hover:bg-red-50 transition">
+        <span className="text-2xl mb-1">📷</span>
+        <span className="text-xs text-gray-400">Haz clic para subir una foto</span>
+        <input type="file" accept="image/*" onChange={handleImage} className="hidden" />
+      </label>
+    )}
+  </div>
+</div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1">Nombre</label>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name:e.target.value }))} placeholder="Ej: Tacos al Pastor" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#e71d1d]" />
@@ -995,7 +1025,14 @@ function MenuSection({ menu, onAdd, onDelete }) {
 // REVIEWS SECTION
 // ─────────────────────────────────────────
 function ReviewsSection() {
-  const MONTHS  = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+  const [reviews, setReviews] = useState(
+    REVIEWS_DATA.map(r => ({ ...r, featured: false, response: '' }))
+  )
+  const [selected,   setSelected]   = useState(null)
+  const [response,   setResponse]   = useState('')
+  const [filterFeat, setFilterFeat] = useState('all')
+
+  const MONTHS   = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
   const POS_DATA = [80,120,100,140,160,130,170,174,150,160,140,155]
   const NEG_DATA = [30, 40, 25, 50, 45, 35, 55, 50, 40, 45, 35, 40]
   const maxBar   = Math.max(...POS_DATA)
@@ -1007,6 +1044,12 @@ function ReviewsSection() {
     { label:'Precio/Valor',      value:4.5 },
     { label:'Limpieza',          value:4.9 },
   ]
+
+  const visible = reviews.filter(r =>
+    filterFeat === 'all' ||
+    (filterFeat === 'featured' && r.featured) ||
+    (filterFeat === 'pending' && !r.response)
+  )
 
   return (
     <div className="space-y-6">
@@ -1065,6 +1108,57 @@ function ReviewsSection() {
         </div>
       </div>
 
+      {/* Filtros */}
+      <div className="flex gap-2">
+        {[['all','Todas'],['featured','Destacadas'],['pending','Sin responder']].map(([key,label]) => (
+          <button key={key} onClick={() => setFilterFeat(key)}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold border transition"
+            style={filterFeat === key ? { background: P, color:'white', borderColor: P } : { background:'white', color:'#6b7280', borderColor:'#e5e7eb' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* Modal respuesta */}
+      {selected && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setSelected(null)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold text-gray-800">Responder Reseña</h2>
+              <button onClick={() => setSelected(null)} className="text-gray-400 text-2xl leading-none">×</button>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-4 mb-4">
+              <p className="font-semibold text-gray-800 text-sm">{selected.author}</p>
+              <p className="text-xs text-gray-500 mt-1">{selected.text}</p>
+              <div className="flex gap-0.5 mt-2">
+                {[1,2,3,4,5].map(s => <span key={s} className="text-sm" style={{ color: s <= Math.floor(selected.rating) ? '#f59e0b' : '#e5e7eb' }}>★</span>)}
+              </div>
+            </div>
+            <textarea
+              value={response}
+              onChange={e => setResponse(e.target.value)}
+              rows={4}
+              placeholder="Escribe tu respuesta aquí..."
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#e71d1d] resize-none mb-4"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setSelected(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Cancelar</button>
+              <button
+                onClick={() => {
+                  setReviews(prev => prev.map(r => r.id === selected.id ? { ...r, response } : r))
+                  setSelected(null)
+                  setResponse('')
+                }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90 transition"
+                style={{ background: P }}
+              >
+                Enviar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Lista reseñas */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
@@ -1078,8 +1172,8 @@ function ReviewsSection() {
           <span className="text-xs text-gray-400">Este año</span>
         </div>
         <div className="divide-y divide-gray-50">
-          {REVIEWS_DATA.map(r => (
-            <div key={r.id} className="flex gap-4 px-5 py-4 hover:bg-gray-50 transition">
+          {visible.map(r => (
+            <div key={r.id} className={`flex gap-4 px-5 py-4 hover:bg-gray-50 transition ${r.featured ? 'border-l-4' : ''}`} style={r.featured ? { borderColor: P } : {}}>
               <img
                 src={INITIAL_MENU.find(m => m.name === r.dish)?.img || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop'}
                 alt={r.dish}
@@ -1089,7 +1183,10 @@ function ReviewsSection() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <p className="font-semibold text-gray-800 text-sm">{r.dish}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-semibold text-gray-800 text-sm">{r.dish}</p>
+                      {r.featured && <span className="px-1.5 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: P }}>⭐ Destacada</span>}
+                    </div>
                     <p className="text-xs text-gray-400">{r.category}</p>
                     <p className="text-xs text-gray-400 mt-0.5">☰ {r.totalReviews} Reviews · ⭐ {r.avgRating} Overall Rate</p>
                   </div>
@@ -1105,12 +1202,33 @@ function ReviewsSection() {
                 </div>
                 <p className="text-sm text-gray-600 mt-2 leading-relaxed">{r.text}</p>
                 <p className="text-xs font-semibold mt-1" style={{ color: P }}>{r.author}</p>
+                {r.response && (
+                  <div className="mt-2 p-2 rounded-lg bg-gray-50 border-l-2" style={{ borderColor: P }}>
+                    <p className="text-xs font-semibold text-gray-600">Tu respuesta:</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{r.response}</p>
+                  </div>
+                )}
+                <div className="flex gap-2 mt-2">
+                  <button
+                    onClick={() => { setSelected(r); setResponse(r.response || '') }}
+                    className="px-3 py-1 rounded-lg text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
+                  >
+                    {r.response ? '✏️ Editar respuesta' : '💬 Responder'}
+                  </button>
+                  <button
+                    onClick={() => setReviews(prev => prev.map(rv => rv.id === r.id ? { ...rv, featured: !rv.featured } : rv))}
+                    className="px-3 py-1 rounded-lg text-xs font-semibold border transition"
+                    style={r.featured ? { borderColor: P, color: P, background: PL } : { borderColor: '#e5e7eb', color: '#6b7280' }}
+                  >
+                    {r.featured ? '★ Quitar destacado' : '☆ Destacar'}
+                  </button>
+                </div>
               </div>
             </div>
           ))}
         </div>
         <div className="px-5 py-3 border-t border-gray-100 text-xs text-gray-400">
-          Mostrando 4 de 1,458 reseñas
+          Mostrando {visible.length} de {reviews.length} reseñas
         </div>
       </div>
     </div>
