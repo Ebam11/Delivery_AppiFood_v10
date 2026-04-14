@@ -188,8 +188,14 @@ export default function NavDrawer() {
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm">
             <i className="fas fa-mobile-alt w-5"></i> Descarga la app
+
+          <button
+            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[#FF4B3E] hover:bg-red-50 transition font-medium text-sm"
+            onClick={() => handleNavClick('/restaurant/register')}
+          >
+          <i className="fas fa-utensils w-5"></i> Registra tu restaurante
           </button>
-        </div>
+          </div>
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-gray-100 space-y-2 flex-shrink-0">
@@ -210,7 +216,7 @@ export default function NavDrawer() {
               </button>
               <button
                 className="w-full px-4 py-3 bg-[#FF4B3E] text-white rounded-lg font-bold hover:bg-[#e03a2d] transition text-sm"
-                onClick={() => handleNavClick('/register')}
+                onClick={() => handleNavClick('/Restaurant/Register')}
               >
                 Registrarse gratis
               </button>

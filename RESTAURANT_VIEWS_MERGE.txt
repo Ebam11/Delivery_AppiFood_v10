@@ -1,0 +1,30 @@
+ESTRUCTURA VISTAS RESTAURANTE - COMPAGINAR COMPANERO/NOSOTROS
+
+ACTUAL Frontend/src/pages/Restaurant/ (7 archivos coexistiendo):
+├── COMPANERO (Simple - Registro/Login)
+│   ├── Index.jsx
+│   ├── Login.jsx
+│   └── Register.jsx
+├── NOSOTROS (Completo - Panel Admin)
+│   ├── RestaurantLayout.jsx (sidebar reutiliza Header)
+│   ├── RestaurantDashboard.jsx (stats API)
+│   ├── RestaurantOrders.jsx (active + status)
+│   └── RestaurantProducts.jsx (CRUD tabla)
+
+RECOMENDACION: MANTENER TODO
+- Login/Register → /restaurant/login/register (públicas)
+- Layout/Dashboard → /restaurant/* (protegidas role:restaurant)
+
+App.jsx routes actuales (funciona):
+<Route path="/restaurant" RoleRoute=['restaurant']>
+  <Route path="dashboard" RestaurantDashboard />
+</Route>
+
+NO REVERTIR - Complementarios perfectos.
+
+Cambios para compatibilidad:
+1. App.jsx RoleRoute si no existe
+2. RestaurantRegister/Login usar fetchJson('/api/auth/register?role=restaurant')
+
+Estado: ✅ Listo - Coexiste sin conflicto.
+

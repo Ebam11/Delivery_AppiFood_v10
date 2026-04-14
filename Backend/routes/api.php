@@ -46,7 +46,7 @@ Route::post('/support/chat', SupportAssistantController::class)->middleware('thr
 // Endpoints protegidos.
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', LogoutController::class);
-    Route::get('/me', [ProfileController::class, 'show']);
+    Route::get('/profile', [ProfileController::class, 'show']);
 
     // Funciones compartidas para usuarios autenticados.
     Route::prefix('notifications')->group(function () {

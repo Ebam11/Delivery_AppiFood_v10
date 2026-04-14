@@ -81,11 +81,14 @@ export default function RegisterRestaurant({ onLogin }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
+      console.log('respuesta completa del backend', JSON.stringify(data)) //linea provisional, problema de registro de restaurante con login de usuario
 
       localStorage.setItem('token', data.token)
+      console.log('data.user:', data.user)
+      localStorage.setItem('user', JSON.stringify(data.user))
       onLogin?.(data.user)
-
       navigate('/restaurant/dashboard')
+
     } catch (error) {
       if (error instanceof ApiError) {
         const errs = {}
@@ -114,12 +117,18 @@ export default function RegisterRestaurant({ onLogin }) {
             background: 'linear-gradient(135deg,rgba(0,0,0,0.6),rgba(20,20,20,0.55)), url(https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&h=900&fit=crop) center/cover no-repeat',
           }}
         />
-
-        <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center z-50">
+        //apartado para boton de inicio de sesion y logo
+        <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center px-8 z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
+          <Link
+            to="/restaurant/login"
+            className="absolute right-8 px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition"
+          >
+            Iniciar sesión
+          </Link>
         </div>
 
-        <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] pt-16 pb-12 flex items-center justify-between gap-10 flex-wrap">
+        <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] py-24 flex items-center justify-between gap-10 flex-wrap min-h-screen">
           <div className="text-white max-w-md hidden md:block">
             <h1 className="text-5xl font-black leading-tight mb-4">Registra tu restaurante</h1>
             <p className="text-xl font-semibold opacity-90 leading-relaxed">

@@ -1,0 +1,35 @@
+REVERT COMPLETO - Instrucciones Manuales
+
+ESTADO ACTUAL (antes revert):
+Frontend/src/pages/Restaurant/ (7 archivos):
+├── Index.jsx (compañero)
+├── Login.jsx (compañero) 
+├── Register.jsx (compañero)
+├── RestaurantLayout.jsx (nosotros)
+├── RestaurantDashboard.jsx (nosotros)
+├── RestaurantOrders.jsx (nosotros)
+├── RestaurantProducts.jsx (nosotros)
+
+Frontend/src/App.jsx: Routes /restaurant/* + imports
+
+Para REVERTIR MANUAL:
+
+1. **BORRAR carpeta** Frontend/src/pages/Restaurant/ COMPLETA
+   rm -rf Frontend/src/pages/Restaurant/
+
+2. **App.jsx** - Borrar lines:
+   - imports Restaurant*
+   - Route path="/restaurant/..." bloques
+
+3. **npm run dev Frontend** + php artisan serve Backend
+
+4. **Git commit** 'Revert restaurant panel implementation'
+
+Mantener solo compañero Index/Login/Register si existen en otra ubicación.
+
+PROYECTO VUELVE ESTADO INICIAL ✅
+
+Comandos GitBash:
+rmdir /s Frontend\src\pages\Restaurant
+npm run dev
+
