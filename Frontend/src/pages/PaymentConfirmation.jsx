@@ -10,16 +10,19 @@ export const PaymentConfirmation = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { confirmPaymentStatus, loading } = usePaymentStore();
-  const { fetchOrder, currentOrder } = useOrderStore();
+  const { fetchOrder } = useOrderStore();
 
   const [status, setStatus] = useState('checking');
   const [message, setMessage] = useState('Verificando estado del pago...');
+  const [orderData, setOrderData] = useState(null);
 
   // Los parámetros vienen del retorno de PayU
   const transactionId = searchParams.get('transaction_id');
   const referenceCode = searchParams.get('reference_code');
 
   useEffect(() => {
+    let isMounted = true;
+
     const checkPayment = async () => {
       try {
         if (transactionId && referenceCode) {
@@ -27,33 +30,39 @@ export const PaymentConfirmation = () => {
         }
         
         // Obtener orden actualizada
-        await fetchOrder(orderId);
+        const updatedOrder = await fetchOrder(orderId);
+        setOrderData(updatedOrder);
         
         // Determinar estado basado en la orden
-        setTimeout(() => {
-          // El backend ya habrá actualizado el estado
-          if (currentOrder?.status === 'confirmed') {
+        if (!isMounted) return;
+
+        if (updatedOrder?.status === 'confirmed') {
             setStatus('success');
             setMessage('¡Pago realizado exitosamente! Tu orden ha sido confirmada.');
-          } else if (currentOrder?.status === 'pending') {
+        } else if (updatedOrder?.status === 'pending') {
             setStatus('pending');
             setMessage('Tu pago está pendiente de confirmación. Te notificaremos pronto.');
           } else {
             setStatus('failed');
             setMessage('El pago fue rechazado. Por favor, intenta nuevamente.');
           }
-        }, 1000);
       } catch (error) {
-        setStatus('error');
-        setMessage('Error al verificar el pago. Por favor, contacta soporte.');
-        console.error(error);
+        if (isMounted) {
+          setStatus('error');
+          setMessage('Error al verificar el pago. Por favor, contacta soporte.');
+          console.error(error);
+        }
       }
     };
 
     if (transactionId && referenceCode && orderId) {
       checkPayment();
     }
-  }, [transactionId, referenceCode, orderId, confirmPaymentStatus, fetchOrder, currentOrder]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [transactionId, referenceCode, orderId, confirmPaymentStatus, fetchOrder]);
 
   if (loading) {
     return (
@@ -89,7 +98,7 @@ export const PaymentConfirmation = () => {
               <p className="text-xl font-bold text-blue-600">#{orderId}</p>
             </div>
             <button
-              onClick={() => navigate(`/orders/${orderId}`)}
+              onClick={() => navigate(`/user/orders/${orderId}`, { state: { order: orderData } })}
               className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition"
             >
               Ver Detalles de Orden
@@ -115,7 +124,7 @@ export const PaymentConfirmation = () => {
             <h1 className="text-2xl font-bold text-gray-800 mb-2">Pago Pendiente</h1>
             <p className="text-gray-600 mb-6">{message}</p>
             <button
-              onClick={() => navigate(`/orders/${orderId}`)}
+              onClick={() => navigate(`/user/orders/${orderId}`, { state: { order: orderData } })}
               className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-lg transition"
             >
               Ver Estado de la Orden

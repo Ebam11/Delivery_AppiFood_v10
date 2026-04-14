@@ -6,6 +6,8 @@ import { useCartStore } from '../store/cartStore';
 export default function PayUCheckout({ orderId }) {
   const { createPayment, loading, error } = usePaymentStore();
   const { cart } = useCartStore();
+  const cartSubtotal = Number(cart?.subtotal || 0);
+  const cartTotalWithDelivery = cartSubtotal + 5000;
   const [selectedMethod, setSelectedMethod] = useState('PSE');
 
   const paymentMethods = [
@@ -39,10 +41,13 @@ export default function PayUCheckout({ orderId }) {
     try {
       const response = await createPayment(orderId, selectedMethod);
       
-      if (response?.data?.payment_url) {
+      if (response?.payment_url) {
         // Para PSE y otros métodos, redirige a PayU
-        window.location.href = response.data.payment_url;
+        window.location.href = response.payment_url;
+        return;
       }
+
+      throw new Error('No se recibió URL de pago desde el servidor.');
     } catch (err) {
       console.error('Error al procesar pago:', err);
     }
@@ -85,12 +90,12 @@ export default function PayUCheckout({ orderId }) {
                     <h4 className="font-bold text-gray-800">{method.name}</h4>
                     {method.recommend && (
                       <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
-                        ⭐ Recomendado
+                        Recomendado
                       </span>
                     )}
                   </div>
                   <p className="text-sm text-gray-600">{method.description}</p>
-                  <p className="text-xs text-gray-500 mt-1 font-semibold">ℹ️ {method.info}</p>
+                  <p className="text-xs text-gray-500 mt-1 font-semibold">{method.info}</p>
                 </div>
               </div>
             </label>
@@ -102,7 +107,7 @@ export default function PayUCheckout({ orderId }) {
       {selectedMethod === 'PSE' && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-sm text-blue-900">
-            <strong>💡 Tip:</strong> PSE es el método más popular en Colombia. Una vez autorices el pago, 
+            <strong>Tip:</strong> PSE es el metodo mas popular en Colombia. Una vez autorices el pago, 
             serás redirigido a PayU para completar la transacción.
           </p>
         </div>
@@ -112,7 +117,7 @@ export default function PayUCheckout({ orderId }) {
         <p className="text-sm text-gray-700 font-semibold">Resumen</p>
         <div className="flex justify-between mt-2">
           <span className="text-gray-600">Total a pagar:</span>
-          <span className="font-bold text-lg text-blue-600">COP ${(cart?.total + 5000 || 5000).toLocaleString()}</span>
+          <span className="font-bold text-lg text-blue-600">COP ${cartTotalWithDelivery.toLocaleString('es-CO')}</span>
         </div>
       </div>
 

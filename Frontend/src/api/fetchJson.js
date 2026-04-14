@@ -1,4 +1,6 @@
 // Archivo: src/api/fetchJson.js | Comentario: logica principal del modulo.
+import { API_URL } from './config'
+
 export class ApiError extends Error {
   constructor(message, status, data = null) {
     super(message)
@@ -23,7 +25,19 @@ const parseResponseBody = async (response) => {
 }
 
 export async function fetchJson(url, options = {}) {
-  const response = await fetch(url, options)
+  const normalizedBase = String(API_URL || '/api').replace(/\/+$/, '')
+  const normalizedPath = String(url || '').replace(/^\/+/, '')
+
+  let resolvedUrl = ''
+  if (/^https?:\/\//i.test(url)) {
+    resolvedUrl = url
+  } else if (String(url).startsWith('/api/')) {
+    resolvedUrl = `${normalizedBase}/${String(url).replace(/^\/api\//, '')}`
+  } else {
+    resolvedUrl = `${normalizedBase}/${normalizedPath}`
+  }
+
+  const response = await fetch(resolvedUrl, options)
   const data = await parseResponseBody(response)
 
   if (!response.ok) {

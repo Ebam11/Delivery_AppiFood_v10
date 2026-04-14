@@ -20,9 +20,7 @@ export default function Addresses() {
   const fetchAddresses = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/addresses', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/addresses');
       setAddresses(response.data.data || []);
       setError(null);
     } catch (err) {
@@ -37,9 +35,7 @@ export default function Addresses() {
     if (!window.confirm('¿Estás seguro de que deseas eliminar esta dirección?')) return;
 
     try {
-      await api.delete(`/api/addresses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/addresses/${id}`);
       setAddresses(addresses.filter(a => a.id !== id));
     } catch (err) {
       setError('Error al eliminar la dirección');
@@ -54,7 +50,7 @@ export default function Addresses() {
         <div className="page-header">
           <h1>Mis Direcciones</h1>
           <button
-            onClick={() => navigate('/addresses/create')}
+            onClick={() => navigate('/user/addresses/create')}
             className="btn btn-primary"
           >
             <i className="fas fa-plus"></i> Agregar Dirección
@@ -68,16 +64,15 @@ export default function Addresses() {
             {addresses.map(address => (
               <div key={address.id} className="address-card">
                 <div className="address-card-header">
-                  <h3>{address.label || 'Casa'}</h3>
+                  <h3>{address.name || 'Casa'}</h3>
                   {address.is_default && (
                     <span className="badge badge-primary">Por defecto</span>
                   )}
                 </div>
                 <p className="address-text">{address.address}</p>
-                {address.notes && <p className="address-notes">{address.notes}</p>}
                 <div className="address-actions">
                   <button
-                    onClick={() => navigate(`/addresses/${address.id}/edit`)}
+                    onClick={() => navigate(`/user/addresses/${address.id}/edit`)}
                     className="btn btn-sm btn-secondary"
                   >
                     <i className="fas fa-edit"></i> Editar
@@ -97,7 +92,7 @@ export default function Addresses() {
             <i className="fas fa-map-marker-alt"></i>
             <p>No tienes direcciones guardadas</p>
             <button
-              onClick={() => navigate('/addresses/create')}
+              onClick={() => navigate('/user/addresses/create')}
               className="btn btn-primary"
             >
               Agregar primera dirección

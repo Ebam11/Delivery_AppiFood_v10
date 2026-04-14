@@ -16,3 +16,5 @@ export const ErrorMessage = ({ message, onDismiss }) => {
     </div>
   );
 };
+
+export default ErrorMessage;

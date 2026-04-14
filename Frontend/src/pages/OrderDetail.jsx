@@ -1,14 +1,16 @@
 // Archivo: src/pages/OrderDetail.jsx | Comentario: logica principal del modulo.
 import React, { useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useOrderStore } from '../store/orderStore';
-import { Loading } from '../components/ErrorMessage';
+import { Loading } from '../components/Loading';
 import { ErrorMessage as ErrorMsg } from '../components/ErrorMessage';
 
 export const OrderDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { selectedOrder, isLoading, error, fetchOrderById, cancelOrderById, clearError } = useOrderStore();
+  const fallbackOrder = location.state?.order || null;
 
   useEffect(() => {
     fetchOrderById(id);
@@ -49,9 +51,11 @@ export const OrderDetail = () => {
     }
   };
 
-  if (isLoading) return <Loading />;
+  const order = selectedOrder?.data || selectedOrder || fallbackOrder;
 
-  if (!selectedOrder) {
+  if (!order && isLoading) return <Loading />;
+
+  if (!order) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
         <div className="max-w-2xl mx-auto text-center">
@@ -66,8 +70,6 @@ export const OrderDetail = () => {
       </div>
     );
   }
-
-  const order = selectedOrder.data || selectedOrder;
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -89,7 +91,7 @@ export const OrderDetail = () => {
               <div>
                 <h1 className="text-3xl font-bold">Pedido #{order.id}</h1>
                 <p className="text-blue-100 mt-2">
-                  {order.restaurant_name}
+                  {order.restaurant_name || order.restaurant?.name || 'Restaurante'}
                 </p>
               </div>
               <div className={`px-4 py-2 rounded-full font-semibold ${getStatusColor(order.status)}`}>
@@ -107,14 +109,14 @@ export const OrderDetail = () => {
                   <div key={item.id} className="flex justify-between items-center pb-3 border-b">
                     <div>
                       <p className="font-semibold text-gray-800">
-                        {item.product_name}
+                        {item.name || item.product_name}
                       </p>
                       <p className="text-sm text-gray-600">
                         x{item.quantity}
                       </p>
                     </div>
                     <p className="font-bold text-gray-800">
-                      ${(item.quantity * item.unit_price).toFixed(2)}
+                      ${(Number(item.quantity || 0) * Number(item.unit_price || 0)).toFixed(2)}
                     </p>
                   </div>
                 ))}
@@ -140,27 +142,27 @@ export const OrderDetail = () => {
               <div className="flex justify-between">
                 <span className="text-gray-700">Subtotal:</span>
                 <span className="font-semibold">
-                  ${order.subtotal?.toFixed(2)}
+                  ${Number(order.subtotal || 0).toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-700">Envío:</span>
                 <span className="font-semibold">
-                  ${order.delivery_cost?.toFixed(2)}
+                  ${Number(order.delivery_cost || 0).toFixed(2)}
                 </span>
               </div>
               {order.discount > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>Descuento:</span>
                   <span className="font-semibold">
-                    -${order.discount?.toFixed(2)}
+                    -${Number(order.discount || 0).toFixed(2)}
                   </span>
                 </div>
               )}
               <div className="flex justify-between text-lg font-bold border-t pt-3">
                 <span>Total:</span>
                 <span className="text-blue-600">
-                  ${order.total?.toFixed(2)}
+                  ${Number(order.total || 0).toFixed(2)}
                 </span>
               </div>
             </div>

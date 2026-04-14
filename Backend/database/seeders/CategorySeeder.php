@@ -3,55 +3,41 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Restaurant;
 use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        // Burger House (restaurant_id: 1)
-        $burgerCategories = ['Hamburguesas', 'Papas y Acompañamientos', 'Bebidas', 'Postres'];
-        foreach ($burgerCategories as $index => $name) {
-            Category::updateOrCreate(
-                [
-                    'restaurant_id' => 1,
-                    'name'          => $name,
-                ],
-                [
-                    'order'     => $index + 1,
-                    'is_active' => true,
-                ]
-            );
-        }
+        $restaurants = [
+            'Burger House' => ['Hamburguesas', 'Papas y Acompañamientos', 'Bebidas', 'Postres'],
+            'Pizza Nostra' => ['Pizzas', 'Pastas', 'Entradas', 'Bebidas'],
+            'Sushi Zen' => ['Rolls', 'Nigiri', 'Entradas', 'Bebidas'],
+            'Parrilla del Valle' => ['Cortes', 'Acompañamientos', 'Bebidas', 'Postres'],
+            'Tacos del Valle' => ['Tacos', 'Entradas', 'Bebidas', 'Postres'],
+            'Verde Fresco' => ['Bowls', 'Wraps', 'Jugos', 'Postres'],
+        ];
 
-        // Pizza Nostra (restaurant_id: 2)
-        $pizzaCategories = ['Pizzas', 'Pastas', 'Entradas', 'Bebidas'];
-        foreach ($pizzaCategories as $index => $name) {
-            Category::updateOrCreate(
-                [
-                    'restaurant_id' => 2,
-                    'name'          => $name,
-                ],
-                [
-                    'order'     => $index + 1,
-                    'is_active' => true,
-                ]
-            );
-        }
+        foreach ($restaurants as $restaurantName => $categoryNames) {
+            $restaurantId = Restaurant::where('name', $restaurantName)->value('id');
 
-        // Sushi Zen (restaurant_id: 3)
-        $sushiCategories = ['Rolls', 'Nigiri', 'Entradas', 'Bebidas'];
-        foreach ($sushiCategories as $index => $name) {
-            Category::updateOrCreate(
-                [
-                    'restaurant_id' => 3,
-                    'name'          => $name,
-                ],
-                [
-                    'order'     => $index + 1,
-                    'is_active' => true,
-                ]
-            );
+            if (!$restaurantId) {
+                continue;
+            }
+
+            foreach ($categoryNames as $index => $name) {
+                Category::updateOrCreate(
+                    [
+                        'restaurant_id' => $restaurantId,
+                        'name'          => $name,
+                    ],
+                    [
+                        'order'     => $index + 1,
+                        'is_active' => true,
+                    ]
+                );
+            }
         }
     }
 }

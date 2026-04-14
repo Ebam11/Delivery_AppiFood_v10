@@ -6,10 +6,12 @@ import { useCart } from '../context/useCart'
 export default function ProductModal({ product, onClose }) {
   const [qty, setQty]   = useState(1)
   const { addItem, fmt } = useCart()
+  const isMockProduct = Boolean(product?.isMock)
 
   if (!product) return null
 
   const confirm = () => {
+    if (isMockProduct) return
     addItem(product, qty)
     onClose()
   }
@@ -47,10 +49,16 @@ export default function ProductModal({ product, onClose }) {
           </div>
 
           <button onClick={confirm}
-            className="w-full py-3.5 bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] text-white rounded-xl font-bold hover:shadow-lg hover:shadow-[#FF4B3E]/30 transition text-lg">
+            disabled={isMockProduct}
+            className="w-full py-3.5 bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] text-white rounded-xl font-bold hover:shadow-lg hover:shadow-[#FF4B3E]/30 transition text-lg disabled:opacity-50">
             <i className="fas fa-shopping-bag mr-2"></i>
-            Agregar — ${fmt(product.price * qty)}
+            {isMockProduct ? 'Producto de demostración' : `Agregar — $${fmt(product.price * qty)}`}
           </button>
+          {isMockProduct && (
+            <p className="mt-3 text-center text-xs text-gray-500">
+              Este producto es de demostración y no se puede agregar al carrito.
+            </p>
+          )}
         </div>
       </div>
     </div>

@@ -5,15 +5,15 @@ export default function CategoryNav({ onCategoryChange }) {
   const [activeCategory, setActiveCategory] = useState('all');
 
   const categories = [
-    { id: 'all', label: '🍽️ Todos' },
-    { id: 'hamburguesas', label: '🍔 Hamburguesas' },
-    { id: 'pizza', label: '🍕 Pizza' },
-    { id: 'sushi', label: '🍣 Sushi' },
-    { id: 'pollo', label: '🍗 Pollo' },
-    { id: 'pastas', label: '🍝 Pastas' },
-    { id: 'saludable', label: '🥗 Saludable' },
-    { id: 'postres', label: '🍰 Postres' },
-    { id: 'bebidas', label: '🧃 Bebidas' },
+    { id: 'all', label: 'Todos' },
+    { id: 'hamburguesas', label: 'Hamburguesas' },
+    { id: 'pizza', label: 'Pizza' },
+    { id: 'sushi', label: 'Sushi' },
+    { id: 'pollo', label: 'Pollo' },
+    { id: 'pastas', label: 'Pastas' },
+    { id: 'saludable', label: 'Saludable' },
+    { id: 'postres', label: 'Postres' },
+    { id: 'bebidas', label: 'Bebidas' },
   ];
 
   const handleClick = (categoryId) => {

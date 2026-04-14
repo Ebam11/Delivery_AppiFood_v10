@@ -1,7 +1,6 @@
 // Archivo: src/api/client.js | Comentario: logica principal del modulo.
 import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL;
+import { API_URL } from './config';
 
 // Crear instancia de axios
 const client = axios.create({
@@ -10,7 +9,9 @@ const client = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  withCredentials: true, // Para Sanctum
+  // The app uses Bearer tokens, so cookies are not required.
+  // Keeping this false avoids CORS credential mismatches.
+  withCredentials: false,
 });
 
 // Interceptor para agregar token de autenticación
@@ -35,4 +36,5 @@ client.interceptors.response.use(
   }
 );
 
+export const api = client;
 export default client;

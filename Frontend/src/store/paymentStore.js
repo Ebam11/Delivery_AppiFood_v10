@@ -18,7 +18,7 @@ export const usePaymentStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await apiCreatePayment(orderId, paymentMethod);
-      set({ payment: response.data, loading: false });
+      set({ payment: response.data ?? response, loading: false });
       return response;
     } catch (error) {
       const message = error.response?.data?.message || 'Error al crear pago';
@@ -32,8 +32,8 @@ export const usePaymentStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await confirmPayment(transactionId, referenceCode);
-      set({ payment: response.data, loading: false });
-      return response.data;
+      set({ payment: response.data ?? response, loading: false });
+      return response.data ?? response;
     } catch (error) {
       const message = error.response?.data?.message || 'Error al confirmar pago';
       set({ error: message, loading: false });

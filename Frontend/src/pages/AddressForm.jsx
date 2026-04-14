@@ -13,9 +13,10 @@ export default function AddressForm() {
   const [loading, setLoading] = useState(!!id);
   const [error, setError] = useState(null);
   const [form, setForm] = useState({
-    label: '',
+    name: '',
     address: '',
-    reference: '',
+    lat: '',
+    lng: '',
     is_default: false,
   });
 
@@ -28,10 +29,15 @@ export default function AddressForm() {
   const fetchAddress = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/api/addresses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await api.get(`/addresses/${id}`);
+      const data = response.data?.data || {};
+      setForm({
+        name: data.name || '',
+        address: data.address || '',
+        lat: data.lat ?? '',
+        lng: data.lng ?? '',
+        is_default: Boolean(data.is_default),
       });
-      setForm(response.data.data);
       setError(null);
     } catch (err) {
       setError('Error al cargar la dirección');
@@ -55,16 +61,27 @@ export default function AddressForm() {
     setError(null);
 
     try {
+      const payload = {
+        name: form.name,
+        address: form.address,
+        lat: form.lat === '' ? null : Number(form.lat),
+        lng: form.lng === '' ? null : Number(form.lng),
+      };
+
+      let savedAddressId = id;
+
       if (id) {
-        await api.put(`/api/addresses/${id}`, form, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        await api.put(`/addresses/${id}`, payload);
       } else {
-        await api.post('/api/addresses', form, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const response = await api.post('/addresses', payload);
+        savedAddressId = response.data?.data?.id;
       }
-      navigate('/addresses');
+
+      if (form.is_default && savedAddressId) {
+        await api.patch(`/addresses/${savedAddressId}/default`);
+      }
+
+      navigate('/user/addresses');
     } catch (err) {
       setError(err.response?.data?.message || 'Error al guardar la dirección');
     } finally {
@@ -83,12 +100,12 @@ export default function AddressForm() {
 
         <form onSubmit={handleSubmit} className="form">
           <div className="form-group">
-            <label htmlFor="label">Etiqueta (Casa, Trabajo, etc.)</label>
+            <label htmlFor="name">Etiqueta (Casa, Trabajo, etc.)</label>
             <input
               type="text"
-              id="label"
-              name="label"
-              value={form.label}
+              id="name"
+              name="name"
+              value={form.name}
               onChange={handleChange}
               placeholder="Casa"
               required
@@ -111,14 +128,29 @@ export default function AddressForm() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="reference">Referencia (piso, apartamento, etc.)</label>
+            <label htmlFor="lat">Latitud (opcional)</label>
             <input
-              type="text"
-              id="reference"
-              name="reference"
-              value={form.reference}
+              type="number"
+              step="any"
+              id="lat"
+              name="lat"
+              value={form.lat}
               onChange={handleChange}
-              placeholder="Apartamento 302"
+              placeholder="2.4448"
+              className="form-input"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="lng">Longitud (opcional)</label>
+            <input
+              type="number"
+              step="any"
+              id="lng"
+              name="lng"
+              value={form.lng}
+              onChange={handleChange}
+              placeholder="-76.6147"
               className="form-input"
             />
           </div>
@@ -141,7 +173,7 @@ export default function AddressForm() {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/addresses')}
+              onClick={() => navigate('/user/addresses')}
               className="btn btn-secondary"
             >
               Cancelar

@@ -5,7 +5,7 @@ import { useCart } from '../context/useCart'
 
 export default function CartSidebar({ isAuth }) {
   const { cart, count, subtotal, discount, total, DELIVERY, appliedCoupon,
-          isOpen, setIsOpen, removeItem, updateQty, clearCart, applyCoupon, fmt } = useCart()
+          recentlyAddedItemId, isOpen, setIsOpen, removeItem, updateQty, clearCart, applyCoupon, fmt } = useCart()
   const [couponInput, setCouponInput] = useState('')
   const [couponMsg, setCouponMsg]     = useState(null)
 
@@ -33,7 +33,7 @@ export default function CartSidebar({ isAuth }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="font-bold text-lg text-gray-800">
-            🛒 Mi Carrito {count > 0 && <span className="text-sm font-normal text-gray-500">({count} items)</span>}
+            Mi Carrito {count > 0 && <span className="text-sm font-normal text-gray-500">({count} items)</span>}
           </h2>
           <button onClick={() => setIsOpen(false)}
             className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-red-50 hover:text-[#FF4B3E] transition">
@@ -52,7 +52,14 @@ export default function CartSidebar({ isAuth }) {
           ) : (
             <div className="space-y-4">
               {cart.map(item => (
-                <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
+                <div
+                  key={item.id}
+                  className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${
+                    recentlyAddedItemId === item.id
+                      ? 'bg-[#fff4f2] border-[#FF4B3E] shadow-md animate-pulse'
+                      : 'bg-gray-50 border-transparent'
+                  }`}
+                >
                   <img src={item.img} alt={item.name}
                     className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
                     onError={e => { e.target.src = 'https://via.placeholder.com/60/f3f3f3/ccc?text=🍔' }} />

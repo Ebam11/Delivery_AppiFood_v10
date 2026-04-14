@@ -78,6 +78,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
+    public function paymentProfiles(): HasMany
+    {
+        return $this->hasMany(UserPaymentMethod::class);
+    }
+
     // ─── Scopes ────────────────────────────────────────────────
     public function scopeActive($query)
     {

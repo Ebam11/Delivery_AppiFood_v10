@@ -1,12 +1,13 @@
 // Archivo: src/components/NavDrawer.jsx | Comentario: logica principal del modulo.
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 
 export default function NavDrawer() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleEscape = (e) => {
@@ -37,6 +38,12 @@ export default function NavDrawer() {
   const toggleDrawer = () => setIsOpen(!isOpen);
 
   const handleNavClick = (path) => {
+    if (path === '/' && location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      setIsOpen(false);
+      return;
+    }
+
     navigate(path);
     setIsOpen(false);
   };
@@ -132,18 +139,6 @@ export default function NavDrawer() {
           >
             <i className="fas fa-store w-5"></i> Restaurantes
           </button>
-          <button
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm"
-            onClick={(e) => handleScrollLink(e, '#fastfoods')}
-          >
-            <i className="fas fa-fire w-5"></i> Fast Foods populares
-          </button>
-          <button
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm"
-            onClick={(e) => handleScrollLink(e, '#popular')}
-          >
-            <i className="fas fa-star w-5"></i> Más valorados
-          </button>
         </div>
 
         {/* Mi Cuenta */}
@@ -152,25 +147,19 @@ export default function NavDrawer() {
             <p className="text-xs font-bold text-gray-400 uppercase mb-3">Mi cuenta</p>
             <button
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm"
-              onClick={() => handleNavClick('/orders')}
+              onClick={() => handleNavClick('/user/orders')}
             >
               <i className="fas fa-box w-5"></i> Mis pedidos
             </button>
             <button
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm"
-              onClick={() => handleNavClick('/favorites')}
+              onClick={() => handleNavClick('/user/favorites')}
             >
               <i className="fas fa-heart w-5"></i> Mis favoritos
             </button>
             <button
               className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm"
-              onClick={() => handleNavClick('/addresses')}
-            >
-              <i className="fas fa-map-marker-alt w-5"></i> Mis direcciones
-            </button>
-            <button
-              className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm"
-              onClick={() => handleNavClick('/profile')}
+              onClick={() => handleNavClick('/user/profile')}
             >
               <i className="fas fa-user-cog w-5"></i> Configuración
             </button>
@@ -182,25 +171,19 @@ export default function NavDrawer() {
           <p className="text-xs font-bold text-gray-400 uppercase mb-3">Ofertas</p>
           <button
             className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 transition font-medium text-sm"
-            onClick={() => setIsOpen(false)}
+            onClick={() => handleNavClick('/coupons')}
           >
             <i className="fas fa-tag w-5"></i> Cupones disponibles
-          </button>
-          <button
-            className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm"
-            onClick={() => setIsOpen(false)}
-          >
-            <i className="fas fa-percent w-5"></i> Promociones del día
           </button>
         </div>
 
         {/* Info */}
         <div className="px-5 py-4 border-b border-gray-100 flex-1 overflow-y-auto">
           <p className="text-xs font-bold text-gray-400 uppercase mb-3">Info</p>
-          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm">
-            <i className="fas fa-question-circle w-5"></i> ¿Cómo funciona?
+          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm" onClick={() => handleNavClick('/help-center')}>
+            <i className="fas fa-question-circle w-5"></i> Centro de ayuda
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm">
+          <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm" onClick={() => handleNavClick('/support')}>
             <i className="fas fa-headset w-5"></i> Soporte
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E] transition font-medium text-sm">

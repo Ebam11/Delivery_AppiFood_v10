@@ -6,10 +6,93 @@ import RestaurantCard from '../components/RestaurantCard'
 import FoodCategoryCarousel from '../components/FoodCategoryCarousel'
 import Footer from '../components/Footer'
 import { MOCK_RESTAURANTS } from '../data/mockRestaurants'
+import { useFavoritesStore } from '../store/favoritesStore'
+import { useAuthStore } from '../store/authStore'
+
+const formatDeliveryTime = (restaurant) => {
+  if (restaurant.delivery_time_min && restaurant.delivery_time_max) {
+    return `${restaurant.delivery_time_min}-${restaurant.delivery_time_max} min`
+  }
+
+  if (restaurant.delivery_time_min) {
+    return `${restaurant.delivery_time_min} min`
+  }
+
+  if (restaurant.time) {
+    return restaurant.time
+  }
+
+  return '-- min'
+}
+
+const normalizeRestaurant = (restaurant, index = 0) => {
+  const fallback = MOCK_RESTAURANTS[index % MOCK_RESTAURANTS.length] || {}
+  const categories = Array.isArray(restaurant.categories) ? restaurant.categories : []
+  const menuCategories = Array.isArray(restaurant.menu_categories) ? restaurant.menu_categories : []
+  const products = Array.isArray(restaurant.products) ? restaurant.products : []
+  const isMock = Boolean(restaurant.isMock)
+  const normalizeProduct = (product) => ({ ...product, isMock })
+  const derivedCategory =
+    restaurant.category ||
+    categories[0]?.name?.toLowerCase() ||
+    menuCategories[0]?.name?.toLowerCase() ||
+    fallback.category ||
+    'general'
+
+  return {
+    ...restaurant,
+    img: restaurant.banner || restaurant.logo || restaurant.image || restaurant.img || fallback.image || fallback.img || '',
+    image: restaurant.banner || restaurant.logo || restaurant.image || restaurant.img || fallback.image || fallback.img || '',
+    rating: Number((Number(restaurant.average_rating ?? restaurant.rating ?? fallback.rating ?? 0)).toFixed(1)),
+    time: formatDeliveryTime(restaurant),
+    delivery: Number(restaurant.delivery_cost ?? restaurant.delivery ?? fallback.delivery ?? 0),
+    isOpen: typeof restaurant.isOpen === 'boolean'
+      ? restaurant.isOpen
+      : Boolean(restaurant.today_schedule?.is_open_now ?? fallback.isOpen ?? false),
+    category: derivedCategory,
+    isMock,
+    products: products.map(normalizeProduct),
+    menu_categories: menuCategories.map((category) => ({
+      ...category,
+      products: Array.isArray(category.products) ? category.products.map(normalizeProduct) : [],
+    })),
+  }
+}
+
+const FAST_FOOD_TERMS = [
+  'fastfood',
+  'fast food',
+  'comida rapida',
+  'burger',
+  'hamburguesa',
+  'pizza',
+  'hot dog',
+  'perro caliente',
+  'sandwich',
+  'tacos',
+  'pollo frito',
+  'fried chicken',
+]
+
+const matchesFastFood = (restaurant) => {
+  const values = [
+    restaurant.category,
+    restaurant.name,
+    restaurant.description,
+    ...(Array.isArray(restaurant.categories) ? restaurant.categories.map((c) => c?.name) : []),
+    ...(Array.isArray(restaurant.menu_categories) ? restaurant.menu_categories.map((c) => c?.name) : []),
+  ]
+    .filter(Boolean)
+    .map((v) => String(v).toLowerCase())
+
+  return FAST_FOOD_TERMS.some((term) => values.some((value) => value.includes(term)))
+}
 
 export default function RestaurantsPage() {
   const navigate = useNavigate()
-  const [restaurants, setRestaurants] = useState(MOCK_RESTAURANTS)
+  const { token } = useAuthStore()
+  const { fetchFavorites, toggleFavorite, toggleFavoriteLocal, isFavorite } = useFavoritesStore()
+  const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState('all') // 'all', 'open', 'closed'
@@ -17,6 +100,13 @@ export default function RestaurantsPage() {
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [carouselIndex, setCarouselIndex] = useState(0)
   const trackRef = useRef(null)
+
+  // Cargar favoritos al montar
+  useEffect(() => {
+    if (token) {
+      fetchFavorites(token)
+    }
+  }, [token, fetchFavorites])
 
   useEffect(() => {
     loadRestaurants()
@@ -35,23 +125,23 @@ export default function RestaurantsPage() {
         throw new Error('No restaurants data')
       }
       
-      const categories = ['burger', 'pizza', 'sushi', 'tacos', 'asian', 'dessert', 'vegan', 'seafood', 'chicken', 'coffee']
-      
+      const categories = ['fastfood', 'burger', 'pizza', 'sushi', 'tacos', 'asian', 'dessert', 'vegan', 'seafood', 'chicken', 'coffee']
+
       // Agregar estado de apertura y categoría si no existe
-      const enriched = restaurantsArray.map((r, idx) => ({
-        ...r,
-        isOpen: typeof r.isOpen === 'boolean' ? r.isOpen : false,
-        category: r.category || categories[idx % categories.length], // Asigna categoría aleatoria
-      }))
-      
-      setRestaurants(enriched)
+      const enrichedApi = restaurantsArray.map((restaurant, idx) =>
+        normalizeRestaurant({
+          ...restaurant,
+          category: restaurant.category || categories[idx % categories.length],
+        }, idx)
+      )
+
+      setRestaurants(enrichedApi)
       setError(null)
     } catch (err) {
       console.error('❌ Error cargando restaurantes:', err.message)
-      console.log('📦 Usando datos de prueba...')
-      // Usar datos mock si hay error
-      setRestaurants(MOCK_RESTAURANTS)
-      setError(null) // No mostramos error si usamos datos de prueba
+      const fallbackRestaurants = MOCK_RESTAURANTS.map((restaurant, idx) => normalizeRestaurant(restaurant, idx))
+      setRestaurants(fallbackRestaurants)
+      setError('No se pudo cargar el catálogo desde el backend. Verifica que el API esté activa y accesible.')
     } finally {
       setLoading(false)
     }
@@ -64,7 +154,8 @@ export default function RestaurantsPage() {
     if (filter === 'closed' && r.isOpen) return false
     
     // Filtro por categoría
-    if (selectedCategory && (!r.category || r.category !== selectedCategory)) return false
+    if (selectedCategory === 'fastfood' && !matchesFastFood(r)) return false
+    if (selectedCategory && selectedCategory !== 'fastfood' && (!r.category || r.category !== selectedCategory)) return false
     
     // Filtro por búsqueda
     if (searchQuery.trim()) {
@@ -88,6 +179,40 @@ export default function RestaurantsPage() {
     const next = Math.max(0, Math.min(carouselIndex + dir, max))
     setCarouselIndex(next)
     trackRef.current.style.transform = `translateX(-${next * (cards[0].offsetWidth + 24)}px)`
+  }
+
+  const handleFavoriteClick = async (event, restaurantId) => {
+    event.stopPropagation()
+
+    if (token) {
+      await toggleFavorite(restaurantId, token)
+      return
+    }
+
+    toggleFavoriteLocal(restaurantId)
+  }
+
+  const getRestaurantTags = (restaurant) => {
+    const tags = []
+
+    if (Array.isArray(restaurant.menu_categories) && restaurant.menu_categories.length > 0) {
+      tags.push(...restaurant.menu_categories.map((category) => category?.name).filter(Boolean))
+    }
+
+    if (Array.isArray(restaurant.categories) && restaurant.categories.length > 0) {
+      tags.push(...restaurant.categories.map((category) => category?.name).filter(Boolean))
+    }
+
+    if (restaurant.category) {
+      tags.push(String(restaurant.category))
+    }
+
+    const normalized = tags
+      .map((tag) => String(tag).trim())
+      .filter((tag) => tag.length > 0)
+      .map((tag) => tag.charAt(0).toUpperCase() + tag.slice(1))
+
+    return [...new Set(normalized)].slice(0, 2)
   }
 
   return (
@@ -150,6 +275,16 @@ export default function RestaurantsPage() {
               Todos
             </button>
             <button
+              onClick={() => setSelectedCategory('fastfood')}
+              className={`flex-shrink-0 px-6 py-2 rounded-full font-bold transition flex items-center gap-2 ${
+                selectedCategory === 'fastfood'
+                  ? 'bg-[#FF4B3E] text-white'
+                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-[#FF4B3E]'
+              }`}
+            >
+              Comidas rapidas
+            </button>
+            <button
               onClick={() => setSelectedCategory('burger')}
               className={`flex-shrink-0 px-6 py-2 rounded-full font-bold transition flex items-center gap-2 ${
                 selectedCategory === 'burger'
@@ -157,7 +292,7 @@ export default function RestaurantsPage() {
                   : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-[#FFB84D]'
               }`}
             >
-              🍔 Hamburguesas
+              Mexicana
             </button>
             <button
               onClick={() => setSelectedCategory('pizza')}
@@ -167,7 +302,7 @@ export default function RestaurantsPage() {
                   : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-[#FF6B6B]'
               }`}
             >
-              🍕 Pizzas
+              Italiana
             </button>
             <button
               onClick={() => setSelectedCategory('sushi')}
@@ -177,7 +312,7 @@ export default function RestaurantsPage() {
                   : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-[#4ECDC4]'
               }`}
             >
-              🍣 Sushi
+              Japonesa
             </button>
             <button
               onClick={() => setSelectedCategory('tacos')}
@@ -187,7 +322,7 @@ export default function RestaurantsPage() {
                   : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-[#FFD93D]'
               }`}
             >
-              🌮 Tacos
+              Sopas
             </button>
             <button
               onClick={() => setSelectedCategory('asian')}
@@ -197,7 +332,7 @@ export default function RestaurantsPage() {
                   : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-[#6C5CE7]'
               }`}
             >
-              🍜 Asiática
+              Asiatica
             </button>
             <button
               onClick={() => setSelectedCategory('dessert')}
@@ -207,7 +342,7 @@ export default function RestaurantsPage() {
                   : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-[#FD79A8]'
               }`}
             >
-              🍰 Postres
+              Postres
             </button>
           </div>
 
@@ -230,7 +365,7 @@ export default function RestaurantsPage() {
           {/* Header Sección */}
           <div className="mb-4">
             <p className="text-[#FF4B3E] font-bold text-xs tracking-widest uppercase mb-2">
-              ⭐ LOS MÁS POPULARES
+              LOS MAS POPULARES
             </p>
             <div className="flex items-center justify-between">
               <h2 className="text-xl md:text-2xl font-bold text-gray-900">
@@ -274,9 +409,12 @@ export default function RestaurantsPage() {
                     <div className="relative rounded-lg overflow-hidden h-40 bg-gray-200 group shadow-md hover:shadow-lg transition">
                       {/* Imagen */}
                       <img
-                        src={restaurant.image}
+                        src={restaurant.image || 'https://via.placeholder.com/640x360?text=Restaurante'}
                         alt={restaurant.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        onError={(event) => {
+                          event.currentTarget.src = 'https://via.placeholder.com/640x360?text=Restaurante'
+                        }}
                       />
                       
                       {/* Overlay oscuro */}
@@ -284,8 +422,8 @@ export default function RestaurantsPage() {
                       
                       {/* Contenido Info */}
                       <div className="absolute inset-0 flex flex-col justify-between p-3">
-                        {/* Estado Badge */}
-                        <div>
+                        {/* Estado Badge + Favorito */}
+                        <div className="flex items-start justify-between gap-2">
                           {restaurant.isOpen ? (
                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-green-500 text-white">
                               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
@@ -296,6 +434,17 @@ export default function RestaurantsPage() {
                               Cerrado
                             </span>
                           )}
+
+                          <button
+                            type="button"
+                            onClick={(event) => handleFavoriteClick(event, restaurant.id)}
+                            className={`h-8 w-8 rounded-full bg-white/95 shadow-lg backdrop-blur-sm transition ${
+                              isFavorite(restaurant.id) ? 'text-[#FF4B3E]' : 'text-gray-400 hover:text-[#FF4B3E]'
+                            }`}
+                            aria-label={isFavorite(restaurant.id) ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+                          >
+                            <i className="fas fa-heart text-sm" />
+                          </button>
                         </div>
                         
                         {/* Nombre y detalles al fondo */}
@@ -314,6 +463,15 @@ export default function RestaurantsPage() {
                               {restaurant.time}
                             </span>
                           </div>
+                          {getRestaurantTags(restaurant).length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {getRestaurantTags(restaurant).map((tag) => (
+                                <span key={`${restaurant.id}-${tag}`} className="rounded-full bg-black/35 px-2 py-0.5 text-[10px] font-semibold text-white line-clamp-1">
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -324,7 +482,7 @@ export default function RestaurantsPage() {
                         {restaurant.description}
                       </p>
                       <p className="text-sm font-bold text-gray-900 mt-1">
-                        💵 ${restaurant.delivery.toLocaleString()}
+                        ${Number(restaurant.delivery || 0).toLocaleString('es-CO')}
                       </p>
                     </div>
                   </div>
@@ -342,7 +500,7 @@ export default function RestaurantsPage() {
           {/* Header Sección */}
           <div className="mb-4">
             <p className="text-[#FF4B3E] font-bold text-xs tracking-widest uppercase mb-2">
-              🍽️ TODOS LOS RESTAURANTES
+              TODOS LOS RESTAURANTES
             </p>
             <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
               Explora todos nuestros locales
@@ -371,13 +529,16 @@ export default function RestaurantsPage() {
                   {/* Imagen */}
                   <div className="relative h-48 overflow-hidden bg-gray-200">
                     <img
-                      src={restaurant.image}
+                      src={restaurant.image || 'https://via.placeholder.com/640x360?text=Restaurante'}
                       alt={restaurant.name}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      onError={(event) => {
+                        event.currentTarget.src = 'https://via.placeholder.com/640x360?text=Restaurante'
+                      }}
                     />
                     
                     {/* Badge estado */}
-                    <div className="absolute top-3 right-3 z-10">
+                    <div className="absolute top-3 left-3 z-10">
                       {restaurant.isOpen ? (
                         <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-500 text-white text-xs font-bold rounded-full shadow-lg">
                           <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
@@ -390,6 +551,18 @@ export default function RestaurantsPage() {
                         </span>
                       )}
                     </div>
+
+                    {/* Favorito */}
+                    <button
+                      type="button"
+                      onClick={(event) => handleFavoriteClick(event, restaurant.id)}
+                      className={`absolute top-3 right-3 z-10 h-9 w-9 rounded-full bg-white shadow-lg transition ${
+                        isFavorite(restaurant.id) ? 'text-[#FF4B3E]' : 'text-gray-400 hover:text-[#FF4B3E]'
+                      }`}
+                      aria-label={isFavorite(restaurant.id) ? 'Quitar de favoritos' : 'Guardar en favoritos'}
+                    >
+                      <i className="fas fa-heart" />
+                    </button>
                   </div>
 
                   {/* Contenido */}
@@ -400,6 +573,16 @@ export default function RestaurantsPage() {
                     <p className="text-sm text-gray-600 mb-3 line-clamp-2">
                       {restaurant.description}
                     </p>
+
+                    {getRestaurantTags(restaurant).length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {getRestaurantTags(restaurant).map((tag) => (
+                          <span key={`${restaurant.id}-${tag}`} className="rounded-full bg-[#fff0ed] px-2.5 py-1 text-[11px] font-semibold text-[#FF4B3E]">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     
                     {/* Stats */}
                     <div className="flex items-center justify-between text-sm">
@@ -415,7 +598,7 @@ export default function RestaurantsPage() {
                         </span>
                       </div>
                       <span className="text-gray-600 font-medium">
-                        ${restaurant.delivery.toLocaleString()}
+                        ${Number(restaurant.delivery || 0).toLocaleString('es-CO')}
                       </span>
                     </div>
                   </div>

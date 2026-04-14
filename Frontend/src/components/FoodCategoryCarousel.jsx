@@ -2,18 +2,18 @@
 import { useState, useRef } from 'react'
 
 const FOOD_CATEGORIES = [
-  { id: 'burger', name: 'Hamburguesas', icon: '🍔', color: '#FFB84D' },
-  { id: 'pizza', name: 'Pizzas', icon: '🍕', color: '#FF6B6B' },
-  { id: 'sushi', name: 'Sushi', icon: '🍣', color: '#4ECDC4' },
-  { id: 'tacos', name: 'Tacos', icon: '🌮', color: '#FFD93D' },
-  { id: 'asian', name: 'Asiática', icon: '🍜', color: '#6C5CE7' },
+  { id: 'fastfood', name: 'Comidas rapidas', icon: '🍟', color: '#FF4B3E' },
+  { id: 'burger', name: 'Mexicana', icon: '🌮', color: '#FFB84D' },
+  { id: 'pizza', name: 'Italiana', icon: '🍝', color: '#FF6B6B' },
+  { id: 'sushi', name: 'Japonesa', icon: '🍣', color: '#4ECDC4' },
+  { id: 'tacos', name: 'Sopas', icon: '🥣', color: '#FFD93D' },
+  { id: 'asian', name: 'Asiatica', icon: '🥢', color: '#6C5CE7' },
   { id: 'dessert', name: 'Postres', icon: '🍰', color: '#FD79A8' },
-  { id: 'vegan', name: 'Vegana', icon: '🥗', color: '#55EFC4' },
+  { id: 'vegan', name: 'Vegetariana', icon: '🥗', color: '#55EFC4' },
   { id: 'seafood', name: 'Mariscos', icon: '🦞', color: '#74B9FF' },
-  { id: 'chicken', name: 'Pollo', icon: '🍗', color: '#FFA502' },
-  { id: 'coffee', name: 'Café', icon: '☕', color: '#8B6F47' },
-  { id: 'drinks', name: 'Bebidas', icon: '🥤', color: '#FF69B4' },
-  { id: 'breakfast', name: 'Desayuno', icon: '🍳', color: '#FFD700' },
+  { id: 'chicken', name: 'Parrilla', icon: '🥩', color: '#FFA502' },
+  { id: 'coffee', name: 'Cafeteria', icon: '☕', color: '#8B6F47' },
+  { id: 'breakfast', name: 'Desayunos', icon: '🍳', color: '#FFD700' },
 ]
 
 export default function FoodCategoryCarousel({ onSelectCategory, selectedCategory }) {

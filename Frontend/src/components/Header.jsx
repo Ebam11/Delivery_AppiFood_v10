@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useCart } from '../context/useCart'
+import { api } from '../api/client'
 
 const RED = '#FF4B3E'
 const RED_DK = '#e03a2d'
@@ -16,6 +17,15 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   
   const [drawerOpen, setDrawerOpen]     = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [addressModalOpen, setAddressModalOpen] = useState(false)
+  const [deliveryAddress, setDeliveryAddress] = useState(() => localStorage.getItem('selected_delivery_address') || 'Calle 15 # 17 - 418')
+  const [tempAddress, setTempAddress] = useState('')
+  const [savedAddresses, setSavedAddresses] = useState([])
+  const [selectedAddressId, setSelectedAddressId] = useState(null)
+  const [editingAddressId, setEditingAddressId] = useState(null)
+  const [addressesLoading, setAddressesLoading] = useState(false)
+  const [addressesError, setAddressesError] = useState('')
+  const [addressSaving, setAddressSaving] = useState(false)
   const [search, setSearch]             = useState('')
   const { count, setIsOpen }            = useCart()
   const navigate  = useNavigate()
@@ -62,9 +72,9 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow = drawerOpen ? 'hidden' : ''
+    document.body.style.overflow = (drawerOpen || addressModalOpen) ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
-  }, [drawerOpen])
+  }, [drawerOpen, addressModalOpen])
 
   useEffect(() => {
     const fn = e => { if (userRef.current && !userRef.current.contains(e.target)) setUserMenuOpen(false) }
@@ -80,28 +90,163 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     navigate(`/restaurants?q=${encodeURIComponent(search.trim())}`)
   }
 
+  const goHomeTop = (event) => {
+    if (location.pathname === '/') {
+      event.preventDefault()
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+    setDrawerOpen(false)
+  }
+
+  const openAddressModal = () => {
+    setTempAddress(deliveryAddress)
+    setEditingAddressId(null)
+    setAddressesError('')
+    setAddressModalOpen(true)
+  }
+
+  const closeAddressModal = () => {
+    setAddressModalOpen(false)
+  }
+
+  const fetchSavedAddresses = async () => {
+    if (!isAuth) return
+
+    try {
+      setAddressesLoading(true)
+      const response = await api.get('/addresses')
+      const list = Array.isArray(response.data?.data) ? response.data.data : []
+      setSavedAddresses(list)
+
+      const selected = list.find((address) => address.is_default) || list[0] || null
+      if (selected) {
+        setSelectedAddressId(selected.id)
+        setTempAddress(selected.address)
+      }
+    } catch (error) {
+      setAddressesError('No se pudieron cargar las direcciones')
+    } finally {
+      setAddressesLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (addressModalOpen) {
+      fetchSavedAddresses()
+    }
+  }, [addressModalOpen])
+
+  const saveAddress = async () => {
+    const nextAddress = tempAddress.trim() || deliveryAddress
+    if (!nextAddress) return
+
+    try {
+      setAddressSaving(true)
+      setAddressesError('')
+
+      if (isAuth) {
+        let targetAddressId = selectedAddressId
+
+        if (editingAddressId) {
+          await api.put(`/addresses/${editingAddressId}`, {
+            name: 'Dirección',
+            address: nextAddress,
+            lat: null,
+            lng: null,
+          })
+          targetAddressId = editingAddressId
+        } else {
+          const selected = savedAddresses.find((address) => address.id === selectedAddressId)
+          const isSameSelected = selected && selected.address === nextAddress
+
+          if (!isSameSelected) {
+            const created = await api.post('/addresses', {
+              name: 'Dirección',
+              address: nextAddress,
+              lat: null,
+              lng: null,
+            })
+            targetAddressId = created.data?.data?.id || null
+          }
+        }
+
+        if (targetAddressId) {
+          await api.patch(`/addresses/${targetAddressId}/default`)
+          setSelectedAddressId(targetAddressId)
+        }
+
+        await fetchSavedAddresses()
+      }
+
+      setEditingAddressId(null)
+      setDeliveryAddress(nextAddress)
+      localStorage.setItem('selected_delivery_address', nextAddress)
+      setAddressModalOpen(false)
+    } catch (error) {
+      setAddressesError('No se pudo guardar la dirección')
+    } finally {
+      setAddressSaving(false)
+    }
+  }
+
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const nextAddress = `Ubicación actual (${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)})`
+        setTempAddress(nextAddress)
+      },
+      () => {}
+    )
+  }
+
+  const selectAddress = (address) => {
+    setSelectedAddressId(address.id)
+    setTempAddress(address.address)
+    setEditingAddressId(null)
+  }
+
+  const startEditAddress = (address) => {
+    setEditingAddressId(address.id)
+    setSelectedAddressId(address.id)
+    setTempAddress(address.address)
+  }
+
+  const removeAddress = async (addressId) => {
+    try {
+      setAddressesError('')
+      await api.delete(`/addresses/${addressId}`)
+      const nextList = savedAddresses.filter((address) => address.id !== addressId)
+      setSavedAddresses(nextList)
+
+      if (selectedAddressId === addressId) {
+        const fallback = nextList[0] || null
+        setSelectedAddressId(fallback?.id || null)
+        setTempAddress(fallback?.address || '')
+      }
+    } catch (error) {
+      setAddressesError('No se pudo eliminar la dirección')
+    }
+  }
+
   const NAV_LINKS = [
     { section:'DESCUBRIR' },
     { to:'/',            icon:'fa-home',          label:'Inicio' },
     { to:'/restaurants', icon:'fa-store',         label:'Restaurantes' },
-    { href:'#fastfoods', icon:'fa-fire',           label:'Fast Foods populares' },
-    { href:'#popular',   icon:'fa-star',           label:'Más valorados' },
     ...(isAuth ? [
       { section:'MI CUENTA' },
       ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label:'Panel Admin', promo:true }] : []),
       { to:'/user/orders',    icon:'fa-box',            label:'Mis pedidos' },
       { to:'/user/favorites', icon:'fa-heart',          label:'Mis favoritos' },
-      { to:'/user/addresses', icon:'fa-map-marker-alt', label:'Mis direcciones' },
       { to:'/user/profile',   icon:'fa-user-cog',       label:'Mi perfil' },
     ] : []),
     { section:'SUSCRIPCIONES' },
     { to:'/subscription', icon:'fa-crown',        label:'Planes de Suscripción', promo:true },
     { section:'OFERTAS' },
-    { href:'#promo', icon:'fa-tag',           label:'Cupones disponibles', promo:true },
-    { href:'#',      icon:'fa-percent',       label:'Promociones del día' },
+    { to:'/coupons', icon:'fa-tag',           label:'Cupones disponibles', promo:true },
     { section:'AYUDA' },
-    { href:'#how',   icon:'fa-question-circle', label:'¿Cómo funciona?' },
-    { href:'#',      icon:'fa-headset',         label:'Chat de soporte' },
+    { to:'/help-center', icon:'fa-question-circle', label:'Centro de ayuda', promo:true },
+    { to:'/support', icon:'fa-headset',         label:'Chat de soporte', promo:true },
     { href:'#',      icon:'fa-mobile-alt',      label:'Descarga la app' },
     { to:'/register-restaurant',icon:'fa-utensils',        label:'Registra tu restaurante', promo:true },
   ]
@@ -149,31 +294,36 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     <>
       {/* ── TOPBAR ── */}
       <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-50 border-b border-gray-100">
-        <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+        <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center gap-4">
           
           {/* IZQUIERDA: Hamburguesa + Logo */}
-          <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="flex items-center gap-4 flex-1 min-w-0 lg:max-w-[560px]">
           {/* Hamburguesa */}
             <button onClick={() => setDrawerOpen(true)}
-              className="block w-10 h-10 rounded-lg hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-700 hover:text-[#FF4B3E] transition flex-shrink-0">
+              className="block w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-700 hover:text-[#FF4B3E] transition flex-shrink-0">
               <i className="fas fa-bars text-lg font-bold" />
             </button>
 
             {/* Logo */}
-            <Link to="/" className="font-['Satisfy'] text-3xl font-bold text-[#FF4B3E] hover:text-[#e03a2d] transition whitespace-nowrap">
+            <Link to="/" onClick={goHomeTop} className="font-['Satisfy'] text-3xl font-bold text-[#FF4B3E] hover:text-[#e03a2d] transition whitespace-nowrap flex-shrink-0">
               AppiFood
             </Link>
 
             {/* Dirección */}
-            <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 whitespace-nowrap">
+            <button
+              onClick={openAddressModal}
+              className="hidden sm:flex items-center gap-2 text-xs text-gray-600 whitespace-nowrap border border-gray-200 rounded-full px-3 py-1.5 hover:border-[#FF4B3E] hover:text-[#FF4B3E] transition ml-1"
+            >
               <i className="fas fa-map-marker-alt text-[#FF4B3E] text-xs" />
-              <span>{isAuth && user?.city ? user.city : 'Popayán'}</span>
-            </div>
+              <span className="max-w-[260px] truncate">{deliveryAddress}</span>
+              <i className="fas fa-caret-down text-[10px] text-[#FF4B3E]" />
+            </button>
           </div>
 
           {/* CENTRO: Buscador */}
-          <div className="hidden sm:flex flex-1 max-w-lg">
-            <div className="w-full flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border-2 border-transparent hover:border-[#FF4B3E] transition">
+          <div className="hidden sm:flex flex-[2] justify-center min-w-0">
+            <div className="w-full max-w-3xl">
+              <div className="w-full flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border-2 border-transparent hover:border-[#FF4B3E] transition">
               <input
                 type="search"
                 placeholder="¿Deseas algo en especial?"
@@ -187,10 +337,11 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                 <i className="fas fa-search text-xs" />
               </button>
             </div>
+            </div>
           </div>
 
           {/* DERECHA: Usuario + Carrito */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center justify-end gap-3 flex-1 min-w-0 lg:max-w-[420px]">
             {!isAuth ? (
               <>
                 <Link to="/login" className="hidden sm:inline-block px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition">
@@ -221,7 +372,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                       { to:'/user/profile',   icon:'fa-user',           label:'Mi perfil' },
                       { to:'/user/orders',    icon:'fa-box',            label:'Mis pedidos' },
                       { to:'/user/favorites', icon:'fa-heart',          label:'Favoritos' },
-                      { to:'/user/addresses', icon:'fa-map-marker-alt', label:'Direcciones' },
                     ].map(({ to, icon, label }) => (
                       <Link key={label} to={to}
                         onClick={() => setUserMenuOpen(false)}
@@ -241,7 +391,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
             {/* Carrito */}
             <button onClick={() => setIsOpen(true)}
-              className="relative w-10 h-10 rounded-lg border-2 border-gray-200 hover:border-[#FF4B3E] bg-white text-gray-600 hover:text-[#FF4B3E] flex items-center justify-center transition">
+              className="relative w-10 h-10 rounded-lg bg-white text-gray-600 hover:text-[#FF4B3E] flex items-center justify-center transition">
               <i className="fas fa-shopping-cart text-lg" />
               {count > 0 && (
                 <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#FF4B3E] text-white text-xs font-bold flex items-center justify-center border-2 border-white">
@@ -270,7 +420,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         width:300, height:'100%',
         background:'white', zIndex:61,
         display:'flex', flexDirection:'column',
-        boxShadow:'4px 0 30px rgba(0,0,0,0.18)',
+        boxShadow:'none',
         overflowY:'auto',
         transform: drawerOpen ? 'translateX(0)' : 'translateX(-100%)',
         transition:'transform 0.32s cubic-bezier(0.4,0,0.2,1)',
@@ -355,6 +505,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
             const style = linkStyle(item.promo)
             if (item.to) return (
               <Link key={item.label} to={item.to} style={style}
+                onClick={item.to === '/' ? goHomeTop : () => setDrawerOpen(false)}
                 onMouseEnter={e => { e.currentTarget.style.background='#fafafa'; e.currentTarget.style.paddingLeft='24px'; if(!item.promo) e.currentTarget.style.color=RED }}
                 onMouseLeave={e => { e.currentTarget.style.background='none'; e.currentTarget.style.paddingLeft='20px'; if(!item.promo) e.currentTarget.style.color='#333' }}>
                 <i className={`fas ${item.icon}`} style={{ width:18, textAlign:'center', color:'#bbb', fontSize:14 }} />
@@ -394,6 +545,66 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           )}
         </div>
       </nav>
+
+      {addressModalOpen && (
+        <div className="fixed inset-0 z-[90] bg-black/35 flex items-start justify-center pt-10 px-4" onClick={closeAddressModal}>
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
+              <button onClick={closeAddressModal} className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-600">
+                <i className="fas fa-arrow-left" />
+              </button>
+              <input
+                value={tempAddress}
+                onChange={e => setTempAddress(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && saveAddress()}
+                placeholder="Escribe la dirección de entrega"
+                className="flex-1 border-2 border-blue-400 rounded-xl px-4 py-2.5 text-sm outline-none"
+              />
+            </div>
+
+            <div className="max-h-[420px] overflow-y-auto bg-gray-50">
+              {addressesLoading ? (
+                <div className="p-5 text-center text-sm text-gray-500">Cargando direcciones...</div>
+              ) : isAuth && savedAddresses.length > 0 ? (
+                savedAddresses.map((address) => (
+                  <div key={address.id} className="px-4 py-3 border-b border-gray-200 bg-white flex items-start gap-3">
+                    <button
+                      onClick={() => selectAddress(address)}
+                      className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedAddressId === address.id ? 'border-emerald-500 text-emerald-500' : 'border-gray-300 text-transparent'}`}
+                    >
+                      <i className="fas fa-check text-xs" />
+                    </button>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-800 truncate">{address.address}</p>
+                      <p className="text-xs text-gray-500 truncate">{address.name || 'Popayán'}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button onClick={() => startEditAddress(address)} className="w-8 h-8 rounded-lg hover:bg-gray-100 text-gray-500">
+                        <i className="fas fa-pen" />
+                      </button>
+                      <button onClick={() => removeAddress(address.id)} className="w-8 h-8 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500">
+                        <i className="fas fa-trash" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-5 text-center text-sm text-gray-500">No tienes direcciones guardadas.</div>
+              )}
+            </div>
+
+            <div className="border-t border-gray-200 p-4">
+              {addressesError && <p className="text-xs text-red-500 mb-2">{addressesError}</p>}
+              <button onClick={useCurrentLocation} className="w-full text-emerald-500 font-bold py-2.5 rounded-xl hover:bg-emerald-50 transition">
+                <i className="fas fa-location-arrow mr-2" /> Usar mi ubicación actual
+              </button>
+              <button onClick={saveAddress} disabled={addressSaving} className="mt-2 w-full bg-[#FF4B3E] hover:bg-[#e03a2d] text-white font-bold py-2.5 rounded-xl transition disabled:opacity-60">
+                {addressSaving ? 'Guardando...' : editingAddressId ? 'Actualizar dirección' : 'Guardar dirección'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Espacio para header fijo */}
       <div style={{ height:64 }} />

@@ -13,6 +13,25 @@ export const Orders = () => {
     fetchOrders();
   }, []);
 
+  const normalizeMoney = (value) => {
+    const amount = Number.parseFloat(value ?? 0);
+    return Number.isFinite(amount) ? amount.toFixed(2) : '0.00';
+  };
+
+  const formatDate = (value) => {
+    if (!value) return 'Fecha no disponible';
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return 'Fecha no disponible';
+
+    return parsed.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   const getStatusColor = (status) => {
     const colors = {
       pending: 'bg-yellow-100 text-yellow-800',
@@ -46,7 +65,7 @@ export const Orders = () => {
 
         {error && <ErrorMessage message={error} onDismiss={clearError} />}
 
-        {!orders || orders.length === 0 ? (
+        {!Array.isArray(orders) || orders.length === 0 ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
             <p className="text-gray-600 text-xl mb-4">
               No tienes pedidos aún
@@ -72,16 +91,10 @@ export const Orders = () => {
                       Pedido #{order.id}
                     </h3>
                     <p className="text-gray-600">
-                      {order.restaurant_name || 'Restaurante'}
+                      {order.restaurant_name || order.restaurant?.name || 'Restaurante'}
                     </p>
                     <p className="text-sm text-gray-500 mt-1">
-                      {new Date(order.created_at).toLocaleDateString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {formatDate(order.created_at)}
                     </p>
                   </div>
 
@@ -90,7 +103,7 @@ export const Orders = () => {
                       {getStatusLabel(order.status)}
                     </p>
                     <p className="text-2xl font-bold text-blue-600 mt-2">
-                      ${order.total?.toFixed(2) || '0.00'}
+                      ${normalizeMoney(order.total)}
                     </p>
                   </div>
                 </div>

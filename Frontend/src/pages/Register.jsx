@@ -27,7 +27,7 @@ const Field = ({ label, name, type='text', placeholder, show, toggleShow, errors
   </div>
 )
 
-export default function RegisterPage({ onLogin }) {
+export default function RegisterPage() {
   const [form, setForm]        = useState({ name:'', email:'', password:'', password_confirmation:'', id_type:'cc', id_number:'' })
   const [errors, setErrors]    = useState({})
   const [showPass, setShowPass]  = useState(false)
@@ -52,16 +52,12 @@ export default function RegisterPage({ onLogin }) {
     }
     setLoading(true)
     try {
-      const data = await fetchJson('/api/auth/register', {
+      await fetchJson('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      localStorage.setItem('token', data.token)
-      onLogin?.(data.user)
-      // El alta publica siempre entra como usuario normal.
-      // Si se requiere rol admin, lo asigna el super admin en backend.
-      navigate('/')
+      navigate('/login', { replace: true })
     } catch (error) {
       if (error instanceof ApiError) {
         const errs = {}

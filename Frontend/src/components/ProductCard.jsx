@@ -15,7 +15,7 @@ export default function ProductCard({ product, onFav, isFav, onSelect }) {
   return (
     <div 
       onClick={() => onSelect(product)}
-      className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-shadow overflow-hidden relative cursor-pointer group"
+      className="bg-white rounded-3xl shadow-sm hover:shadow-2xl transition-all overflow-hidden relative cursor-pointer group border border-gray-100"
     >
       {/* Botón Favorito */}
       <button 
@@ -33,7 +33,7 @@ export default function ProductCard({ product, onFav, isFav, onSelect }) {
       )}
 
       {/* Imagen */}
-      <div className="relative h-40 bg-gray-100 overflow-hidden">
+      <div className="relative h-44 bg-gray-100 overflow-hidden">
         {(loading || !isLoaded) && (
           <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse" />
         )}
@@ -65,9 +65,15 @@ export default function ProductCard({ product, onFav, isFav, onSelect }) {
         </div>
 
         {/* Botón */}
-        <button className="w-full py-2 bg-[#FF4B3E] hover:bg-[#e03a2d] text-white rounded-lg font-bold text-xs transition">
+        <button
+          onClick={(event) => {
+            event.stopPropagation()
+            onSelect(product)
+          }}
+          className="w-full py-2.5 bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] hover:shadow-lg hover:shadow-[#FF4B3E]/25 text-white rounded-xl font-bold text-xs transition"
+        >
           <i className="fas fa-shopping-bag mr-2" />
-          Agregar
+          Agregar y ver detalle
         </button>
       </div>
     </div>

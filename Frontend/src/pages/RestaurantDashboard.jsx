@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
 export default function RestaurantDashboard({ user }) {
-  const name = user?.name || 'Restaurante'
+  const name = user?.restaurant?.name || user?.name || 'Restaurante'
 
   return (
     <main className="min-h-[70vh] bg-[#f7f8fa]">

@@ -38,12 +38,36 @@ class RestaurantResource extends JsonResource
             'is_active'         => $this->is_active,
             'is_verified'       => $this->is_verified,
             'isOpen'            => $isOpen,
+            'schedules'         => $this->relationLoaded('schedules') ? $this->schedules->map(fn($schedule) => [
+                'day' => $schedule->day,
+                'opening_time' => $schedule->opening_time,
+                'closing_time' => $schedule->closing_time,
+                'is_closed' => $schedule->is_closed,
+                'is_open_now' => $schedule->isOpenNow(),
+            ]) : [],
             'today_schedule'    => $todaySchedule ? [
                 'day' => $todaySchedule->day,
                 'opening_time' => $todaySchedule->opening_time,
                 'closing_time' => $todaySchedule->closing_time,
                 'is_closed' => $todaySchedule->is_closed,
+                'is_open_now' => $todaySchedule->isOpenNow(),
             ] : null,
+            'products'          => $this->whenLoaded('categories', fn() =>
+                $this->categories->flatMap(fn($cat) =>
+                    $cat->relationLoaded('products')
+                        ? $cat->products->map(fn($p) => [
+                            'id'          => $p->id,
+                            'name'        => $p->name,
+                            'description' => $p->description,
+                            'price'       => $p->price,
+                            'image'       => $p->image ? asset('storage/' . $p->image) : null,
+                            'available'   => $p->is_available,
+                            'category_id' => $cat->id,
+                            'category_name' => $cat->name,
+                        ])
+                        : []
+                )->values()
+            ),
             'categories'        => $this->whenLoaded('restaurantCategories', fn() =>
                 $this->restaurantCategories->map(fn($c) => [
                     'id'   => $c->id,
