@@ -1,0 +1,109 @@
+ESTRUCTURA COMPLETA PROYECTO AppiFood v10 - VSCode Explorer
+
+📁 Delivery_AppiFood_v10/ (CWD)
+├── 📄 frontend-debug-context.txt
+├── 📄 TODO.md
+├── 📁 Backend/ (Laravel API Completa)
+│   ├── 📄 artisan
+│   ├── 📄 composer.json (Laravel 10.10, Sanctum, Spatie Permissions)
+│   ├── 📄 package.json ("dev": "php artisan serve --port=5173")
+│   ├── 📁 app/
+│   │   ├── 📁 Enums/
+│   │   │   ├── UserRole.php (admin/restaurant/user)
+│   │   │   ├── OrderStatus.php (pending/preparing/delivered...)
+│   │   │   └── PaymentStatus.php
+│   │   ├── 📁 Models/ (21 Modelos)
+│   │   │   ├── User.php (roles + restaurant/orders/cart)
+│   │   │   ├── Restaurant.php (lat/lng, rating auto, products)
+│   │   │   ├── Order.php (status transitions + tracking)
+│   │   │   ├── Product.php (belongsTo restaurant)
+│   │   │   ├── OrderItem.php
+│   │   │   ├── Address.php
+│   │   │   ├── ShoppingCart.php
+│   │   │   ├── CartItem.php
+│   │   │   ├── Review.php
+│   │   │   ├── Payment.php
+│   │   │   ├── Coupon.php
+│   │   │   ├── Notification.php
+│   │   │   ├── Favorite.php
+│   │   │   ├── Banner.php
+│   │   │   ├── Category.php
+│   │   │   ├── DeliveryZone.php
+│   │   │   ├── RestaurantSchedule.php
+│   │   │   └── RestaurantCategory.php (pivot)
+│   │   ├── 📁 Http/Controllers/API/
+│   │   │   ├── 📁 Restaurant/
+│   │   │   │   ├── DashboardController.php (revenue/orders stats)
+│   │   │   │   ├── ProfileRestaurantController.php (logo upload + categories)
+│   │   │   │   ├── ProductController.php (CRUD + toggleAvailability)
+│   │   │   │   ├── OrderManagementController.php (orders/active/status)
+│   │   │   │   ├── CategoryController.php (CRUD/reorder)
+│   │   │   │   ├── ScheduleController.php
+│   │   │   │   └── SettingsController.php
+│   │   │   ├── 📁 Admin/ (UserManagement/RestaurantManagement/Reports)
+│   │   │   └── 📁 Auth/ (Register/Login role param)
+│   │   └── 📁 Providers/
+│   ├── 📁 database/
+│   │   ├── 📁 migrations/ (27 migraciones users→notifications)
+│   │   ├── 📁 factories/ (todas modelos)
+│   │   └── 📁 seeders/ (DatabaseSeeder + todas)
+│   ├── 📁 routes/
+│   │   └── api.php (middleware role:restaurant + APIs)
+│   └── 📁 config/ (.env DB/API keys)
+├── 📁 Frontend/ (React 18 + Vite 5 + Tailwind)
+│   ├── 📄 package.json (React Router 6, Zustand 5, Axios)
+│   ├── 📄 vite.config.js (proxy /api → Backend)
+│   ├── 📄 tailwind.config.js (FF4B3E primary)
+│   ├── 📁 src/
+│   │   ├── 📄 App.jsx (Routes + RoleRoute + PublicLayout)
+│   │   ├── 📁 pages/
+│   │   │   ├── 📁 Restaurant/ **NUEVO**
+│   │   │   │   ├── Layout.jsx (sidebar + Header reutilizado)
+│   │   │   │   ├── Dashboard.jsx (fetch /api/restaurant/dashboard) **NUEVO**
+│   │   │   │   ├── Orders.jsx
+│   │   │   │   └── Products.jsx
+│   │   │   ├── Home.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   └── AdminDashboard.jsx (expandir)
+│   │   ├── 📁 components/ **FIX**
+│   │   │   ├── ErrorMessage.jsx (export default ✅ FIXED)
+│   │   │   ├── Header.jsx (navbar reutilizado)
+│   │   │   ├── CartSidebar.jsx
+│   │   │   └── Loading.jsx
+│   │   ├── 📁 store/ (Zustand)
+│   │   │   ├── authStore.js
+│   │   │   └── restaurantStore.js
+│   │   ├── 📁 api/
+│   │   │   └── fetchJson.js (axios wrapper)
+│   │   └── 📁 context/
+│   └── 📁 public/ (favicon/logo appifood.ico)
+
+CAMBIOS HECHOS por BLACKBOXAI:
+1. ✅ ErrorMessage.jsx → export default (React import fix)
+2. ✅ RestaurantLayout.jsx → Sidebar responsive + stats mini
+3. ✅ RestaurantDashboard.jsx → Cards API /restaurant/dashboard
+4. ✅ App.jsx → Route /restaurant/* + RoleRoute(['restaurant'])
+5. ✅ Backend/package.json → "dev": "php artisan serve --port=5173"
+6. ✅ frontend-debug-context.txt (debug info)
+7. ✅ PROJECT_STRUCTURE.txt (este archivo)
+
+COMANDOS ESPERADOS:
+Terminal 1: cd Backend && npm run dev → API http://localhost:5173
+Terminal 2: cd Frontend && npm run dev → SPA http://localhost:5173 (proxy API)
+
+PROBLEMA REPORTADO: Frontend blank/white screen localhost:5173
+F12 → Console (JS errors?) + Network (/api 404?)
+
+VSCode Tabs Abiertos:
+├── Frontend/src/components/ErrorMessage.jsx
+├── Backend/app/Exceptions/Handler.php
+├── Frontend/src/pages/Restaurant/RestaurantLayout.jsx  
+├── TODO.md
+├── Backend/package.json
+├── Frontend/src/pages/Restaurant/RestaurantDashboard.jsx
+└── Backend/routes/api.php
+
+Estado: Proyecto funcional, solo debug frontend render.
+

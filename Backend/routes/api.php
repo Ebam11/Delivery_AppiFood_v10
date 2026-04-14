@@ -38,6 +38,7 @@ Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'indexPublic']
 // Endpoints protegidos.
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', LogoutController::class);
+    Route::get('/profile', [ProfileController::class, 'show']);
 
     // Funciones compartidas para usuarios autenticados.
     Route::prefix('notifications')->group(function () {

@@ -28,8 +28,24 @@ export default function Footer({ restaurants = [] }) {
           <div>
             <h4 className="font-bold text-[#FF4B3E] mb-4 text-sm uppercase tracking-wider">Acerca de AppiFood</h4>
             <ul className="space-y-2 text-sm">
-              {['Únete al equipo','Registra tu Restaurante','Blog','Términos y condiciones','Privacidad'].map(item => (
-                <li key={item}><a href="#" className="text-gray-400 hover:text-[#FF4B3E] transition">{item}</a></li>
+              {[
+                { label: 'Únete al equipo', href: '#' },
+                { label: 'Registra tu Restaurante', to: '/register-restaurant' },
+                { label: 'Blog', href: '#' },
+                { label: 'Términos y condiciones', href: '#' },
+                { label: 'Privacidad', href: '#' },
+              ].map(item => (
+                <li key={item.label}>
+                  {item.to ? (
+                    <Link to={item.to} className="text-gray-400 hover:text-[#FF4B3E] transition">
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <a href={item.href} className="text-gray-400 hover:text-[#FF4B3E] transition">
+                      {item.label}
+                    </a>
+                  )}
+                </li>
               ))}
             </ul>
           </div>

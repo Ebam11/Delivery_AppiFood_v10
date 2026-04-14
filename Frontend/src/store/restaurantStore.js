@@ -3,10 +3,16 @@ import { create } from 'zustand';
 import { getRestaurants, getRestaurantById } from '../api/restaurants';
 
 export const useRestaurantStore = create((set) => ({
+  // ─── Estado público (lista de restaurantes) ───────────────
   restaurants: [],
   selectedRestaurant: null,
+
+  // ─── Estado panel restaurante ─────────────────────────────
+  restaurantStats: null,
   isLoading: false,
   error: null,
+
+  // ─── Acciones públicas ────────────────────────────────────
 
   // Obtener todos los restaurantes
   fetchRestaurants: async () => {
@@ -35,9 +41,12 @@ export const useRestaurantStore = create((set) => ({
     }
   },
 
-  // Limpiar selección
-  clearSelected: () => set({ selectedRestaurant: null }),
+  // ─── Acciones panel restaurante ───────────────────────────
 
-  // Limpiar errores
+  // Guardar estadísticas del dashboard del restaurante
+  setStats: (stats) => set({ restaurantStats: stats }),
+
+  // ─── Utilidades ───────────────────────────────────────────
+  clearSelected: () => set({ selectedRestaurant: null }),
   clearError: () => set({ error: null }),
 }));
