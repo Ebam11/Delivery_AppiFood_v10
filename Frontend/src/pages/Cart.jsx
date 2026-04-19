@@ -25,66 +25,84 @@ export const Cart = () => {
 
   if (isLoading) return <Loading />;
 
+  const subtotal = Number(cart?.subtotal || 0);
+  const delivery = 5000;
+  const total = subtotal + delivery;
+
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-800 mb-8">{t('cartPage.title')}</h1>
+    <div className="min-h-screen bg-gradient-to-b from-[#fff8f6] via-[#fffdfc] to-white p-4 sm:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <p className="text-xs tracking-widest uppercase font-black text-[#FF4B3E] mb-2">{t('cartPage.subtitle')}</p>
+          <h1 className="text-4xl sm:text-5xl font-black text-gray-900">{t('cartPage.title')}</h1>
+          <p className="text-gray-500 mt-2">{t('cartPage.description')}</p>
+        </div>
 
         {error && <ErrorMessage message={error} onDismiss={clearError} />}
 
         {!cart || !cart.items || cart.items.length === 0 ? (
-          <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <p className="text-gray-600 text-xl mb-4">
+          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 text-center">
+            <p className="text-gray-600 text-xl mb-5">
               {t('cartPage.empty')}
             </p>
             <button
               onClick={() => navigate('/restaurants')}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg"
+              className="bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] hover:shadow-lg hover:shadow-[#FF4B3E]/25 text-white font-bold py-3 px-7 rounded-xl transition"
             >
               {t('cartPage.explore')}
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Items */}
-            <div className="lg:col-span-2 bg-white rounded-lg shadow-md p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-7 items-start">
+            {/* Carrito de items */}
+            <div className="lg:col-span-2 bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-7">
               {cart.items.map((item) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between border-b pb-4 mb-4 last:border-b-0"
+                  className="flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50/70 p-4 mb-4 last:mb-0"
                 >
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800">{item.product_name}</h3>
-                    <p className="text-gray-600">${item.product_price} {t('cartPage.each')}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 truncate">
+                      {item.name}
+                    </h3>
+                    <p className="text-gray-500 text-sm mt-1">
+                      ${Number(item.unit_price || 0).toLocaleString('es-CO')} {t('cartPage.each')}
+                    </p>
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3 sm:gap-4 pl-4">
+                    {/* Cantidad */}
+                    <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-2 py-1">
                       <button
                         onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
                         disabled={isLoading}
-                        className="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded disabled:opacity-50"
+                        className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50 font-bold"
                       >
                         −
                       </button>
-                      <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                      <span className="w-8 text-center font-bold text-gray-800">
+                        {item.quantity}
+                      </span>
                       <button
                         onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
                         disabled={isLoading}
-                        className="bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded disabled:opacity-50"
+                        className="w-8 h-8 rounded-full bg-[#FF4B3E] hover:bg-[#e03a2d] text-white disabled:opacity-50 font-bold"
                       >
                         +
                       </button>
                     </div>
 
-                    <div className="w-24 text-right">
-                      <p className="font-bold text-gray-800">${item.total.toFixed(2)}</p>
+                    {/* Subtotal */}
+                    <div className="w-28 text-right">
+                      <p className="font-black text-[#FF4B3E]">
+                        ${Number(item.subtotal || 0).toLocaleString('es-CO')}
+                      </p>
                     </div>
 
                     <button
                       onClick={() => removeItemFromCart(item.id)}
                       disabled={isLoading}
-                      className="text-red-500 hover:text-red-700 font-bold disabled:opacity-50"
+                      className="w-8 h-8 rounded-full text-red-500 hover:text-red-700 hover:bg-red-50 font-bold disabled:opacity-50"
                     >
                       ✕
                     </button>
@@ -94,41 +112,41 @@ export const Cart = () => {
             </div>
 
             {/* Resumen */}
-            <div className="bg-white rounded-lg shadow-md p-6 h-fit">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">{t('cartPage.summary')}</h2>
+            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 h-fit sticky top-6">
+              <h2 className="text-2xl font-black text-gray-900 mb-4">{t('cartPage.summary')}</h2>
 
               <div className="space-y-3 mb-6 pb-6 border-b">
-                <div className="flex justify-between">
+                <div className="flex justify-between text-gray-600">
                   <span>{t('cartPage.subtotal')}</span>
-                  <span className="font-semibold">${cart.total?.toFixed(2) || '0.00'}</span>
+                  <span className="font-semibold">${subtotal.toLocaleString('es-CO')}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-gray-600">
                   <span>{t('cartPage.shipping')}</span>
-                  <span className="font-semibold">$5.00</span>
+                  <span className="font-semibold">${delivery.toLocaleString('es-CO')}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-gray-600">
                   <span>{t('cartPage.discount')}</span>
                   <span className="font-semibold text-green-600">$0.00</span>
                 </div>
               </div>
 
               <div className="flex justify-between items-center mb-6">
-                <span className="text-lg font-bold">{t('cartPage.total')}</span>
-                <span className="text-2xl font-bold text-blue-600">
-                  ${(cart.total + 5).toFixed(2)}
+                <span className="text-lg font-black text-gray-900">{t('cartPage.total')}</span>
+                <span className="text-3xl font-black text-[#FF4B3E]">
+                  ${total.toLocaleString('es-CO')}
                 </span>
               </div>
 
               <button
                 onClick={() => navigate('/checkout')}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition"
+                className="w-full bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] hover:shadow-lg hover:shadow-[#FF4B3E]/25 text-white font-bold py-3.5 rounded-xl transition"
               >
                 {t('cartPage.checkout')}
               </button>
 
               <button
                 onClick={() => navigate('/restaurants')}
-                className="w-full mt-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition"
+                className="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 rounded-xl transition"
               >
                 {t('cartPage.keepShopping')}
               </button>

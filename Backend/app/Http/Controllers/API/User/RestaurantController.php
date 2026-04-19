@@ -12,7 +12,12 @@ class RestaurantController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $restaurants = Restaurant::with(['restaurantCategories', 'schedules'])
+        $restaurants = Restaurant::with([
+                'restaurantCategories',
+                'schedules',
+                'categories' => fn($q) => $q->active()->ordered(),
+                'categories.products' => fn($q) => $q->available(),
+            ])
             ->active()
             ->verified()
             ->included()

@@ -150,7 +150,9 @@
   "discount": "Discount:",
   "total": "Total:",
   "checkout": "Proceed to Checkout",
-  "keepShopping": "Keep Shopping"
+  "keepShopping": "Keep Shopping",
+  "subtitle": "Your order",
+  "description": "Review your items before proceeding to checkout."
 },
 "checkout": {
   "title": "Confirm your order",

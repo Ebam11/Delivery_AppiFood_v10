@@ -57,6 +57,39 @@ class UserSeeder extends Seeder
             ]
         );
 
+        User::updateOrCreate(
+            ['email' => 'restaurante4@foodapp.com'],
+            [
+                'name'     => 'Dueño Restaurante Cuatro',
+                'password' => Hash::make('password'),
+                'role'     => UserRole::RESTAURANT,
+                'phone'    => '3161234567',
+                'status'   => true,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'restaurante5@foodapp.com'],
+            [
+                'name'     => 'Dueño Restaurante Cinco',
+                'password' => Hash::make('password'),
+                'role'     => UserRole::RESTAURANT,
+                'phone'    => '3171234567',
+                'status'   => true,
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'restaurante6@foodapp.com'],
+            [
+                'name'     => 'Dueño Restaurante Seis',
+                'password' => Hash::make('password'),
+                'role'     => UserRole::RESTAURANT,
+                'phone'    => '3181234567',
+                'status'   => true,
+            ]
+        );
+
         // ── Usuarios normales ──────────────────────────────────
         $usuarios = [
             ['name' => 'Carlos Pérez',    'email' => 'carlos@test.com',   'phone' => '3001111111'],

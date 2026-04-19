@@ -2,13 +2,27 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Product;
+use App\Models\Restaurant;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
 {
     public function run(): void
     {
+        $categoryId = function (string $restaurantName, string $categoryName): ?int {
+            $restaurantId = Restaurant::where('name', $restaurantName)->value('id');
+
+            if (!$restaurantId) {
+                return null;
+            }
+
+            return Category::where('restaurant_id', $restaurantId)
+                ->where('name', $categoryName)
+                ->value('id');
+        };
+
         // ── Burger House ───────────────────────────────────────
         $burgerProducts = [
             // Hamburguesas (category_id: 1)
@@ -93,6 +107,108 @@ class ProductSeeder extends Seeder
                 'restaurant_id' => 3,
                 'is_available'  => true,
             ]);
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
+
+        // ── Parrilla del Valle ────────────────────────────────
+        $parrillaProducts = [
+            ['category' => 'Cortes', 'name' => 'Churrasco 350g',        'description' => 'Corte de res a la parrilla con papas y ensalada.', 'price' => 36000, 'is_featured' => true],
+            ['category' => 'Cortes', 'name' => 'Costillas BBQ',         'description' => 'Costillas bañadas en salsa BBQ ahumada.',           'price' => 42000, 'is_featured' => true],
+            ['category' => 'Acompañamientos', 'name' => 'Papas Criollas', 'description' => 'Papas criollas doradas y crocantes.',                'price' => 9000,  'is_featured' => false],
+            ['category' => 'Acompañamientos', 'name' => 'Yuca Frita',    'description' => 'Yuca frita con ají casero.',                         'price' => 8000,  'is_featured' => false],
+            ['category' => 'Bebidas', 'name' => 'Limonada Cerezada',     'description' => 'Limonada fría con toque de cereza.',                 'price' => 7000,  'is_featured' => false],
+            ['category' => 'Postres', 'name' => 'Brownie con Helado',    'description' => 'Brownie tibio con helado de vainilla.',              'price' => 11000, 'is_featured' => true],
+        ];
+
+        $parrillaRestaurantId = Restaurant::where('name', 'Parrilla del Valle')->value('id');
+        foreach ($parrillaProducts as $product) {
+            $categoryName = $product['category'];
+            $payload = array_merge($product, [
+                'restaurant_id' => $parrillaRestaurantId,
+                'category_id'   => $categoryId('Parrilla del Valle', $categoryName),
+                'is_available'  => true,
+            ]);
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
+
+        // ── Tacos del Valle ────────────────────────────────────
+        $tacosProducts = [
+            ['category' => 'Tacos', 'name' => 'Tacos al Pastor x5',     'description' => 'Tacos con piña, cebolla y cilantro.',            'price' => 22000, 'is_featured' => true],
+            ['category' => 'Tacos', 'name' => 'Tacos de Carne Asada x5','description' => 'Tortilla de maíz con carne asada jugosa.',       'price' => 24000, 'is_featured' => true],
+            ['category' => 'Entradas', 'name' => 'Nachos con Queso',    'description' => 'Nachos crujientes con queso derretido.',          'price' => 15000, 'is_featured' => false],
+            ['category' => 'Entradas', 'name' => 'Guacamole Fresco',    'description' => 'Guacamole artesanal con totopos.',                'price' => 13000, 'is_featured' => false],
+            ['category' => 'Bebidas', 'name' => 'Jarrito de Tamarindo',  'description' => 'Bebida tradicional mexicana.',                    'price' => 6000,  'is_featured' => false],
+            ['category' => 'Postres', 'name' => 'Churros con Arequipe',  'description' => 'Churros recién hechos con arequipe.',             'price' => 10000, 'is_featured' => true],
+        ];
+
+        $tacosRestaurantId = Restaurant::where('name', 'Tacos del Valle')->value('id');
+        foreach ($tacosProducts as $product) {
+            $categoryName = $product['category'];
+            $payload = array_merge($product, [
+                'restaurant_id' => $tacosRestaurantId,
+                'category_id'   => $categoryId('Tacos del Valle', $categoryName),
+                'is_available'  => true,
+            ]);
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
+
+        // ── Verde Fresco ──────────────────────────────────────
+        $verdeProducts = [
+            ['category' => 'Bowls', 'name' => 'Bowl Proteico',       'description' => 'Arroz integral, pollo, aguacate y vegetales.',   'price' => 24000, 'is_featured' => true],
+            ['category' => 'Bowls', 'name' => 'Bowl Veggie',         'description' => 'Quinoa, garbanzos, hummus y ensalada fresca.',   'price' => 22000, 'is_featured' => true],
+            ['category' => 'Wraps', 'name' => 'Wrap de Pollo',        'description' => 'Pollo, lechuga, tomate y salsa yogur.',          'price' => 20000, 'is_featured' => false],
+            ['category' => 'Wraps', 'name' => 'Wrap Vegetal',         'description' => 'Verduras salteadas y hummus en tortilla integral.','price' => 18000, 'is_featured' => false],
+            ['category' => 'Jugos', 'name' => 'Jugo Verde',           'description' => 'Espinaca, manzana, piña y jengibre.',             'price' => 9000,  'is_featured' => false],
+            ['category' => 'Postres', 'name' => 'Parfait de Yogur',   'description' => 'Yogur griego con frutas y granola.',              'price' => 10000, 'is_featured' => true],
+        ];
+
+        $verdeRestaurantId = Restaurant::where('name', 'Verde Fresco')->value('id');
+        foreach ($verdeProducts as $product) {
+            $categoryName = $product['category'];
+            $payload = array_merge($product, [
+                'restaurant_id' => $verdeRestaurantId,
+                'category_id'   => $categoryId('Verde Fresco', $categoryName),
+                'is_available'  => true,
+            ]);
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
 
             Product::updateOrCreate(
                 [

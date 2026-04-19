@@ -1,4 +1,6 @@
 // Archivo: src/data/mockRestaurants.js | Comentario: logica principal del modulo.
+import { RESTAURANT_MENUS } from './restaurantMenus';
+
 // Datos de prueba para restaurantes
 export const MOCK_RESTAURANTS = [
   // ABIERTOS
@@ -12,6 +14,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500',
     category: 'burger',
     isOpen: true,
+    products: RESTAURANT_MENUS[1].products,
   },
   {
     id: 2,
@@ -23,6 +26,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1604874891752-8e81e58dd086?w=500',
     category: 'pizza',
     isOpen: true,
+    products: RESTAURANT_MENUS[2].products,
   },
   {
     id: 3,
@@ -34,6 +38,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500',
     category: 'sushi',
     isOpen: true,
+    products: RESTAURANT_MENUS[3].products,
   },
   {
     id: 4,
@@ -45,6 +50,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=500',
     category: 'tacos',
     isOpen: true,
+    products: RESTAURANT_MENUS[4].products,
   },
   {
     id: 5,
@@ -56,6 +62,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1609617529014-97deb8aab433?w=500',
     category: 'asian',
     isOpen: true,
+    products: RESTAURANT_MENUS[5].products,
   },
   {
     id: 6,
@@ -67,6 +74,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500',
     category: 'dessert',
     isOpen: true,
+    products: RESTAURANT_MENUS[6].products,
   },
   {
     id: 7,
@@ -78,6 +86,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500',
     category: 'vegan',
     isOpen: true,
+    products: RESTAURANT_MENUS[7].products,
   },
   {
     id: 8,
@@ -89,6 +98,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1580822261290-991b38693d1b?w=500',
     category: 'seafood',
     isOpen: true,
+    products: RESTAURANT_MENUS[8].products,
   },
   {
     id: 9,
@@ -100,6 +110,7 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1618164436241-92473d360d3d?w=500',
     category: 'chicken',
     isOpen: true,
+    products: RESTAURANT_MENUS[9].products,
   },
   {
     id: 10,
@@ -111,6 +122,104 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=500',
     category: 'coffee',
     isOpen: true,
+    products: RESTAURANT_MENUS[10].products,
+  },
+  
+  // Más restaurantes abiertos
+  {
+    id: 21,
+    name: 'Burger Junction',
+    description: 'Hamburguesas gourmet premium',
+    rating: 4.7,
+    time: '22-32 min',
+    delivery: 5500,
+    image: 'https://images.unsplash.com/photo-1550547990-a82b1d179cc6?w=500',
+    category: 'burger',
+    isOpen: true,
+    products: [
+      { id: 2101, name: 'Alitas Picantes', category: 'entradas', price: 16000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 2102, name: 'Tabla Mixta', category: 'entradas', price: 24000, image: 'https://images.unsplash.com/photo-1589985643469-ddf0e08897e8?w=400' },
+      { id: 2103, name: 'Burger Triple', category: 'burger', price: 38000, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400' },
+      { id: 2104, name: 'Burger BBQ', category: 'burger', price: 32000, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400' },
+      { id: 2105, name: 'Burger Clásica', category: 'burger', price: 26000, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400' },
+      { id: 2106, name: 'Cerveza Premium', category: 'bebidas', price: 13000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
+  },
+  {
+    id: 22,
+    name: 'La Pizzería XL',
+    description: 'Pizzas grandes para compartir',
+    rating: 4.8,
+    time: '18-28 min',
+    delivery: 5000,
+    image: 'https://images.unsplash.com/photo-1571407-615cfd73dba0?w=500',
+    category: 'pizza',
+    isOpen: true,
+    products: [
+      { id: 2201, name: 'Tabla de Entrada', category: 'entradas', price: 26000, image: 'https://images.unsplash.com/photo-1589985643469-ddf0e08897e8?w=400' },
+      { id: 2202, name: 'Tabla Italiana', category: 'entradas', price: 28000, image: 'https://images.unsplash.com/photo-1589985643469-ddf0e08897e8?w=400' },
+      { id: 2203, name: 'Pizza XL Margherita', category: 'pizza', price: 45000, image: 'https://images.unsplash.com/photo-1604874891752-8e81e58dd086?w=400' },
+      { id: 2204, name: 'Pizza XL Pepperoni', category: 'pizza', price: 48000, image: 'https://images.unsplash.com/photo-1628840042765-356cda07f4ee?w=400' },
+      { id: 2205, name: 'Pizza XL Vegetariana', category: 'pizza', price: 42000, image: 'https://images.unsplash.com/photo-1511689915989-48d1c67b591d?w=400' },
+      { id: 2206, name: 'Vino Blanco', category: 'bebidas', price: 30000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
+  },
+  {
+    id: 23,
+    name: 'Sushi Master',
+    description: 'Sushi premium con chef experto',
+    rating: 4.9,
+    time: '28-38 min',
+    delivery: 8500,
+    image: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=500',
+    category: 'sushi',
+    isOpen: true,
+    products: [
+      { id: 2301, name: 'Tabla Premium', category: 'entradas', price: 35000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+      { id: 2302, name: 'Gyoza Especial', category: 'entradas', price: 18000, image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a104?w=400' },
+      { id: 2303, name: 'Sashi Assortido', category: 'sushi', price: 48000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+      { id: 2304, name: 'Rollos Dragon', category: 'sushi', price: 44000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+      { id: 2305, name: 'Sushi Mix Coral', category: 'sushi', price: 40000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+      { id: 2306, name: 'Sake Premium', category: 'bebidas', price: 22000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
+  },
+  {
+    id: 24,
+    name: 'Taco House',
+    description: 'Tacos al pastor de Michoacán',
+    rating: 4.7,
+    time: '12-18 min',
+    delivery: 3500,
+    image: 'https://images.unsplash.com/photo-1585238341710-4913b3f3602d?w=500',
+    category: 'tacos',
+    isOpen: true,
+    products: [
+      { id: 2401, name: 'Nachos Grandes', category: 'entradas', price: 16000, image: 'https://images.unsplash.com/photo-1585080876546-fa35db86d1f9?w=400' },
+      { id: 2402, name: 'Guacamole Premium', category: 'entradas', price: 14000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 2403, name: 'Tacos Carne Asada x5', category: 'tacos', price: 25000, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400' },
+      { id: 2404, name: 'Tacos al Pastor x5', category: 'tacos', price: 22000, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400' },
+      { id: 2405, name: 'Tacos Conchinita x5', category: 'tacos', price: 20000, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400' },
+      { id: 2406, name: 'Cerveza Modelo', category: 'bebidas', price: 11000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
+  },
+  {
+    id: 25,
+    name: 'Tienda del Café',
+    description: 'Café artesanal y repostería',
+    rating: 4.8,
+    time: '10-15 min',
+    delivery: 4000,
+    image: 'https://images.unsplash.com/photo-1447933601403-0c6688755566?w=500',
+    category: 'coffee',
+    isOpen: true,
+    products: [
+      { id: 2501, name: 'Tostadas Caseras', category: 'entradas', price: 8000, image: 'https://images.unsplash.com/photo-1585080876546-fa35db86d1f9?w=400' },
+      { id: 2502, name: 'Croissant de Jamón', category: 'entradas', price: 10000, image: 'https://images.unsplash.com/photo-1585080876546-fa35db86d1f9?w=400' },
+      { id: 2503, name: 'Desayuno Ejecutivo', category: 'coffee', price: 28000, image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400' },
+      { id: 2504, name: 'Huevos Benedictinos', category: 'coffee', price: 26000, image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400' },
+      { id: 2505, name: 'Café Cortado', category: 'bebidas', price: 7000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
+      { id: 2506, name: 'Latte Macchiato', category: 'bebidas', price: 10000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
+    ],
   },
 
   // CERRADOS
@@ -124,6 +233,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1550547990-a82b1d179cc6?w=500',
     category: 'burger',
     isOpen: false,
+    products: [
+      { id: 1101, name: 'Alitas BBQ', category: 'entradas', price: 14000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 1102, name: 'Tabla Rápida', category: 'entradas', price: 20000, image: 'https://images.unsplash.com/photo-1589985643469-ddf0e08897e8?w=400' },
+      { id: 1103, name: 'Burger Doble', category: 'burger', price: 30000, image: 'https://images.unsplash.com/photo-1550547990-a82b1d179cc6?w=400' },
+      { id: 1104, name: 'Burger Simple', category: 'burger', price: 22000, image: 'https://images.unsplash.com/photo-1550547990-a82b1d179cc6?w=400' },
+      { id: 1105, name: 'Papas', category: 'additionals', price: 10000, image: 'https://images.unsplash.com/photo-1585080876546-fa35db86d1f9?w=400' },
+      { id: 1106, name: 'Gaseosa', category: 'bebidas', price: 5000, image: 'https://images.unsplash.com/photo-1554866585-e1b9ca5f2d5b?w=400' },
+    ],
   },
   {
     id: 12,
@@ -135,6 +252,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1571407-615cfd73dba0?w=500',
     category: 'pizza',
     isOpen: false,
+    products: [
+      { id: 1201, name: 'Tabla Italia', category: 'entradas', price: 28000, image: 'https://images.unsplash.com/photo-1589985643469-ddf0e08897e8?w=400' },
+      { id: 1202, name: 'Camarones Ajillo', category: 'entradas', price: 22000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 1203, name: 'Pizza Napolitana', category: 'pizza', price: 35000, image: 'https://images.unsplash.com/photo-1571407-615cfd73dba0?w=400' },
+      { id: 1204, name: 'Pizza Roma', category: 'pizza', price: 38000, image: 'https://images.unsplash.com/photo-1571407-615cfd73dba0?w=400' },
+      { id: 1205, name: 'Pizza Vegetal', category: 'pizza', price: 32000, image: 'https://images.unsplash.com/photo-1511689915989-48d1c67b591d?w=400' },
+      { id: 1206, name: 'Vino Tinto', category: 'bebidas', price: 35000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
   },
   {
     id: 13,
@@ -146,6 +271,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=500',
     category: 'sushi',
     isOpen: false,
+    products: [
+      { id: 1301, name: 'Tabla Degustación', category: 'entradas', price: 40000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+      { id: 1302, name: 'Gyoza Premium', category: 'entradas', price: 20000, image: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a104?w=400' },
+      { id: 1303, name: 'Sushi Omakase', category: 'sushi', price: 55000, image: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=400' },
+      { id: 1304, name: 'Sushi Chef Selection', category: 'sushi', price: 50000, image: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=400' },
+      { id: 1305, name: 'Sashimi Mix', category: 'sushi', price: 48000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+      { id: 1306, name: 'Sake Junmai', category: 'bebidas', price: 25000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
   },
   {
     id: 14,
@@ -157,6 +290,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1585238341710-4913b3f3602d?w=500',
     category: 'tacos',
     isOpen: false,
+    products: [
+      { id: 1401, name: 'Nachos Fiesta', category: 'entradas', price: 15000, image: 'https://images.unsplash.com/photo-1585080876546-fa35db86d1f9?w=400' },
+      { id: 1402, name: 'Guacamole Casero', category: 'entradas', price: 13000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 1403, name: 'Tacos x3', category: 'tacos', price: 18000, image: 'https://images.unsplash.com/photo-1585238341710-4913b3f3602d?w=400' },
+      { id: 1404, name: 'Burrito Grande', category: 'tacos', price: 22000, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400' },
+      { id: 1405, name: 'Quesadilla', category: 'tacos', price: 16000, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400' },
+      { id: 1406, name: 'Cerveza Modelo', category: 'bebidas', price: 10000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
   },
   {
     id: 15,
@@ -168,6 +309,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500',
     category: 'asian',
     isOpen: false,
+    products: [
+      { id: 1501, name: 'Spring Rolls x8', category: 'entradas', price: 14000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 1502, name: 'Tabla Tailandesa', category: 'entradas', price: 26000, image: 'https://images.unsplash.com/photo-1589985643469-ddf0e08897e8?w=400' },
+      { id: 1503, name: 'Pad Tailandés', category: 'asian', price: 30000, image: 'https://images.unsplash.com/photo-1609617529014-97deb8aab433?w=400' },
+      { id: 1504, name: 'Arroz con Pato', category: 'asian', price: 32000, image: 'https://images.unsplash.com/photo-1609617529014-97deb8aab433?w=400' },
+      { id: 1505, name: 'Tallarín Wok', category: 'asian', price: 28000, image: 'https://images.unsplash.com/photo-1609617529014-97deb8aab433?w=400' },
+      { id: 1506, name: 'Té Tailandés', category: 'bebidas', price: 8000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
+    ],
   },
   {
     id: 16,
@@ -179,6 +328,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=500',
     category: 'dessert',
     isOpen: false,
+    products: [
+      { id: 1601, name: 'Tabla de Frutas', category: 'entradas', price: 18000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 1602, name: 'Frutos Secos', category: 'entradas', price: 16000, image: 'https://images.unsplash.com/photo-1585075482f73a9e42f0827e85f7ce5e8e1e5d07?w=400' },
+      { id: 1603, name: 'Torta 3 Leches', category: 'dessert', price: 26000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+      { id: 1604, name: 'Tarta Frambuesa', category: 'dessert', price: 24000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+      { id: 1605, name: 'Brownies Chocolate', category: 'dessert', price: 18000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+      { id: 1606, name: 'Café', category: 'bebidas', price: 7000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
+    ],
   },
   {
     id: 17,
@@ -190,6 +347,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500',
     category: 'vegan',
     isOpen: false,
+    products: [
+      { id: 1701, name: 'Tabla Vegana', category: 'entradas', price: 20000, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400' },
+      { id: 1702, name: 'Homus Tahini', category: 'entradas', price: 14000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 1703, name: 'Buddha bowl Quinoa', category: 'vegan', price: 32000, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400' },
+      { id: 1704, name: 'Wraps Veganos', category: 'vegan', price: 28000, image: 'https://images.unsplash.com/photo-1621996346565-431f63602f41?w=400' },
+      { id: 1705, name: 'Hamburguesa Vegana', category: 'vegan', price: 26000, image: 'https://images.unsplash.com/photo-1585238341710-4913b3f3602d?w=400' },
+      { id: 1706, name: 'Jugo Verde', category: 'bebidas', price: 12000, image: 'https://images.unsplash.com/photo-1553530666-ba2a8e36cd12?w=400' },
+    ],
   },
   {
     id: 18,
@@ -201,6 +366,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1606787620891-759c1dc73183?w=500',
     category: 'seafood',
     isOpen: false,
+    products: [
+      { id: 1801, name: 'Tabla Premium Mar', category: 'entradas', price: 42000, image: 'https://images.unsplash.com/photo-1580822261290-991b38693d1b?w=400' },
+      { id: 1802, name: 'Ceviche Ejecutivo', category: 'entradas', price: 32000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+      { id: 1803, name: 'Paella Frutti Mare', category: 'seafood', price: 54000, image: 'https://images.unsplash.com/photo-1606787620891-759c1dc73183?w=400' },
+      { id: 1804, name: 'Camarones Thermidor', category: 'seafood', price: 48000, image: 'https://images.unsplash.com/photo-1580822261290-991b38693d1b?w=400' },
+      { id: 1805, name: 'Lubina al Horno', category: 'seafood', price: 50000, image: 'https://images.unsplash.com/photo-1606787620891-759c1dc73183?w=400' },
+      { id: 1806, name: 'Vino Blanco Premium', category: 'bebidas', price: 45000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
   },
   {
     id: 19,
@@ -212,6 +385,14 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1569718212c3-cc86bf39b006?w=500',
     category: 'chicken',
     isOpen: false,
+    products: [
+      { id: 1901, name: 'Alitas BBQ', category: 'entradas', price: 16000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
+      { id: 1902, name: 'Tabla Variada', category: 'entradas', price: 24000, image: 'https://images.unsplash.com/photo-1589985643469-ddf0e08897e8?w=400' },
+      { id: 1903, name: 'Pollo Entero', category: 'chicken', price: 48000, image: 'https://images.unsplash.com/photo-1569718212c3-cc86bf39b006?w=400' },
+      { id: 1904, name: 'Pollo Medio', category: 'chicken', price: 34000, image: 'https://images.unsplash.com/photo-1569718212c3-cc86bf39b006?w=400' },
+      { id: 1905, name: 'Costillas BBQ', category: 'chicken', price: 36000, image: 'https://images.unsplash.com/photo-1618164436241-92473d360d3d?w=400' },
+      { id: 1906, name: 'Cerveza Fría', category: 'bebidas', price: 12000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+    ],
   },
   {
     id: 20,
@@ -223,5 +404,13 @@ export const MOCK_RESTAURANTS = [
     image: 'https://images.unsplash.com/photo-1447933601403-0c6688755566?w=500',
     category: 'coffee',
     isOpen: false,
+    products: [
+      { id: 2001, name: 'Pan Tostado', category: 'entradas', price: 7000, image: 'https://images.unsplash.com/photo-1585080876546-fa35db86d1f9?w=400' },
+      { id: 2002, name: 'Croissant', category: 'entradas', price: 9000, image: 'https://images.unsplash.com/photo-1585080876546-fa35db86d1f9?w=400' },
+      { id: 2003, name: 'Desayuno de Lujo', category: 'coffee', price: 28000, image: 'https://images.unsplash.com/photo-1447933601403-0c6688755566?w=400' },
+      { id: 2004, name: 'Omelette Champagne', category: 'coffee', price: 26000, image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400' },
+      { id: 2005, name: 'Café Americano', category: 'bebidas', price: 6000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
+      { id: 2006, name: 'Cappuccino Artesano', category: 'bebidas', price: 10000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
+    ],
   },
 ]

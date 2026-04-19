@@ -2,6 +2,35 @@
 import { create } from 'zustand';
 import { getCart, addItem, updateItem, removeItem, clearCart } from '../api/cart';
 
+const getErrorMessage = (error, fallback) => {
+  const data = error?.response?.data;
+
+  if (!error?.response) {
+    return 'No se pudo conectar con el servidor. Verifica que el backend este activo.';
+  }
+
+  if (data?.message) {
+    return data.message;
+  }
+
+  if (data?.errors && typeof data.errors === 'object') {
+    const firstFieldErrors = Object.values(data.errors).find((value) => Array.isArray(value) && value.length > 0);
+    if (firstFieldErrors) {
+      return firstFieldErrors[0];
+    }
+  }
+
+  if (typeof data === 'string' && data.trim()) {
+    return data;
+  }
+
+  if (error?.message) {
+    return error.message;
+  }
+
+  return fallback;
+};
+
 export const useCartStore = create((set) => ({
   cart: null,
   isLoading: false,
@@ -14,7 +43,7 @@ export const useCartStore = create((set) => ({
       const response = await getCart();
       set({ cart: response.data, isLoading: false });
     } catch (error) {
-      const message = error.response?.data?.message || 'Error al obtener carrito';
+      const message = getErrorMessage(error, 'Error al obtener carrito');
       set({ error: message, isLoading: false });
       throw error;
     }
@@ -34,7 +63,7 @@ export const useCartStore = create((set) => ({
       set({ cart: cartResponse.data, isLoading: false });
       return response.data;
     } catch (error) {
-      const message = error.response?.data?.message || 'Error al agregar item';
+      const message = getErrorMessage(error, 'Error al agregar item');
       set({ error: message, isLoading: false });
       throw error;
     }
@@ -48,7 +77,7 @@ export const useCartStore = create((set) => ({
       const response = await getCart();
       set({ cart: response.data, isLoading: false });
     } catch (error) {
-      const message = error.response?.data?.message || 'Error al actualizar item';
+      const message = getErrorMessage(error, 'Error al actualizar item');
       set({ error: message, isLoading: false });
       throw error;
     }
@@ -62,7 +91,7 @@ export const useCartStore = create((set) => ({
       const response = await getCart();
       set({ cart: response.data, isLoading: false });
     } catch (error) {
-      const message = error.response?.data?.message || 'Error al eliminar item';
+      const message = getErrorMessage(error, 'Error al eliminar item');
       set({ error: message, isLoading: false });
       throw error;
     }
@@ -75,7 +104,7 @@ export const useCartStore = create((set) => ({
       await clearCart();
       set({ cart: null, isLoading: false });
     } catch (error) {
-      const message = error.response?.data?.message || 'Error al vaciar carrito';
+      const message = getErrorMessage(error, 'Error al vaciar carrito');
       set({ error: message, isLoading: false });
       throw error;
     }

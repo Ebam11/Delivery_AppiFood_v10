@@ -18,6 +18,15 @@ class AddressController extends Controller
         return response()->json(['data' => $addresses]);
     }
 
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $address = Address::where('id', $id)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        return response()->json(['data' => $address]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $request->validate([

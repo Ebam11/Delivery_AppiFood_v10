@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderTracking;
 use App\Models\Payment;
+use App\Models\PaymentMethod;
 use App\Models\ShoppingCart;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -42,6 +43,14 @@ class OrderController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $defaultPaymentMethodId = PaymentMethod::active()->value('id');
+
+        if (!$request->filled('payment_method_id') && $defaultPaymentMethodId) {
+            $request->merge([
+                'payment_method_id' => $defaultPaymentMethodId,
+            ]);
+        }
+
         $request->validate([
             'delivery_address'  => ['required', 'string', 'max:255'],
             'delivery_lat'      => ['nullable', 'numeric'],

@@ -22,8 +22,20 @@ export const logout = async () => {
   return response.data;
 };
 
+// Enviar enlace de recuperación de contraseña
+export const sendPasswordResetLink = async (email) => {
+  const response = await client.post('/auth/forgot-password', { email });
+  return response.data;
+};
+
+// Restablecer contraseña con token
+export const resetPassword = async (data) => {
+  const response = await client.post('/auth/reset-password', data);
+  return response.data;
+};
+
 // Obtener usuario actual
 export const getCurrentUser = async () => {
-  const response = await client.get('/user');
+  const response = await client.get('/me');
   return response.data;
 };

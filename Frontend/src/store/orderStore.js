@@ -7,6 +7,8 @@ import {
   cancelOrder,
 } from '../api/orders';
 
+const unwrapData = (response) => response?.data?.data ?? response?.data ?? response;
+
 export const useOrderStore = create((set, get) => ({
   orders: [],
   currentOrder: null,
@@ -19,7 +21,9 @@ export const useOrderStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await getOrders();
-      set({ orders: response.data || response, isLoading: false });
+      const ordersPayload = unwrapData(response);
+      const orders = Array.isArray(ordersPayload) ? ordersPayload : [];
+      set({ orders, isLoading: false });
     } catch (error) {
       const message = error.response?.data?.message || 'Error al obtener órdenes';
       set({ error: message, isLoading: false });
@@ -32,8 +36,9 @@ export const useOrderStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await getOrderById(id);
-      set({ currentOrder: response.data, selectedOrder: response.data, isLoading: false });
-      return response.data;
+      const order = unwrapData(response);
+      set({ currentOrder: order, selectedOrder: order, isLoading: false });
+      return order;
     } catch (error) {
       const message = error.response?.data?.message || 'Error al obtener orden';
       set({ error: message, isLoading: false });
@@ -46,8 +51,9 @@ export const useOrderStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const response = await getOrderById(id);
-      set({ currentOrder: response.data, selectedOrder: response.data, isLoading: false });
-      return response.data;
+      const order = unwrapData(response);
+      set({ currentOrder: order, selectedOrder: order, isLoading: false });
+      return order;
     } catch (error) {
       const message = error.response?.data?.message || 'Error al obtener orden';
       set({ error: message, isLoading: false });
@@ -63,8 +69,10 @@ export const useOrderStore = create((set, get) => ({
       await new Promise((resolve) => setTimeout(resolve, 1000)); // Esperar un poco
       // Refrescar lista de órdenes
       const ordersResponse = await getOrders();
-      set({ orders: ordersResponse.data || ordersResponse, isLoading: false });
-      return response.data;
+      const ordersPayload = unwrapData(ordersResponse);
+      const orders = Array.isArray(ordersPayload) ? ordersPayload : [];
+      set({ orders, isLoading: false });
+      return unwrapData(response);
     } catch (error) {
       const message = error.response?.data?.message || 'Error al crear orden';
       set({ error: message, isLoading: false });
@@ -78,11 +86,11 @@ export const useOrderStore = create((set, get) => ({
     try {
       const response = await cancelOrder(id);
       // Refrescar orden si está seleccionada
-      if (this.selectedOrder?.id === id) {
+      if (get().selectedOrder?.id === id) {
         const updatedOrder = await getOrderById(id);
-        set({ selectedOrder: updatedOrder.data });
+        set({ selectedOrder: unwrapData(updatedOrder) });
       }
-      return response.data;
+      return unwrapData(response);
     } catch (error) {
       const message = error.response?.data?.message || 'Error al cancelar orden';
       set({ error: message, isLoading: false });

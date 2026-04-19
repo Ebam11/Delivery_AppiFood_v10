@@ -14,8 +14,10 @@ class ProfileController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
+        $user = $request->user()->loadMissing('restaurant');
+
         return response()->json([
-            'data' => new UserResource($request->user()),
+            'data' => new UserResource($user),
         ]);
     }
 
