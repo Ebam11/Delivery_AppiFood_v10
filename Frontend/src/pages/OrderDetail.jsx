@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrderStore } from '../store/orderStore';
-import { Loading } from '../components/ErrorMessage';
+import { Loading } from '../components/Loading';
 import { ErrorMessage as ErrorMsg } from '../components/ErrorMessage';
 
 export const OrderDetail = () => {
