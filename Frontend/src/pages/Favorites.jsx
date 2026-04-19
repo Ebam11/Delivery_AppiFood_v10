@@ -1,6 +1,7 @@
 // Archivo: src/pages/Favorites.jsx | Comentario: logica principal del modulo.
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../api/client';
 import Loading from '../components/Loading';
@@ -12,6 +13,7 @@ export default function Favorites() {
   const [error, setError] = useState(null);
   const { token } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchFavorites();
@@ -26,7 +28,7 @@ export default function Favorites() {
       setFavorites(response.data.data || []);
       setError(null);
     } catch (err) {
-      setError('Error al cargar los favoritos');
+      setError(t('favorites.error_load'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -40,7 +42,7 @@ export default function Favorites() {
       });
       setFavorites(favorites.filter(f => f.restaurant_id !== restaurantId));
     } catch (err) {
-      setError('Error al remover favorito');
+      setError(t('favorites.error_remove'));
     }
   };
 
@@ -49,7 +51,7 @@ export default function Favorites() {
   return (
     <main className="page-favorites">
       <div className="container">
-        <h1>Mis Restaurantes Favoritos</h1>
+        <h1>{t('favorites.title')}</h1>
 
         {error && <ErrorMessage message={error} />}
 
@@ -80,7 +82,7 @@ export default function Favorites() {
                     onClick={() => navigate(`/restaurants/${item.restaurant?.id}`)}
                     className="btn btn-sm btn-primary"
                   >
-                    Ver
+                    {t('favorites.view')}
                   </button>
                   <button
                     onClick={() => handleRemoveFavorite(item.restaurant_id)}
@@ -95,12 +97,12 @@ export default function Favorites() {
         ) : (
           <div className="empty-state">
             <i className="fas fa-heart"></i>
-            <p>No tienes restaurantes favoritos aún</p>
+            <p>{t('favorites.empty')}</p>
             <button
               onClick={() => navigate('/restaurants')}
               className="btn btn-primary"
             >
-              Descubrir Restaurantes
+              {t('favorites.discover')}
             </button>
           </div>
         )}

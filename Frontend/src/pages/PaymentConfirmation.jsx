@@ -1,6 +1,7 @@
 // Archivo: src/pages/PaymentConfirmation.jsx | Comentario: logica principal del modulo.
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { usePaymentStore } from '../store/paymentStore';
 import { useOrderStore } from '../store/orderStore';
 import { Loading } from '../components/Loading';
@@ -9,13 +10,13 @@ export const PaymentConfirmation = () => {
   const { orderId } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { confirmPaymentStatus, loading } = usePaymentStore();
   const { fetchOrder, currentOrder } = useOrderStore();
 
   const [status, setStatus] = useState('checking');
-  const [message, setMessage] = useState('Verificando estado del pago...');
+  const [message, setMessage] = useState(t('payment_confirmation.checking'));
 
-  // Los parámetros vienen del retorno de PayU
   const transactionId = searchParams.get('transaction_id');
   const referenceCode = searchParams.get('reference_code');
 
@@ -26,26 +27,23 @@ export const PaymentConfirmation = () => {
           await confirmPaymentStatus(transactionId, referenceCode);
         }
         
-        // Obtener orden actualizada
         await fetchOrder(orderId);
         
-        // Determinar estado basado en la orden
         setTimeout(() => {
-          // El backend ya habrá actualizado el estado
           if (currentOrder?.status === 'confirmed') {
             setStatus('success');
-            setMessage('¡Pago realizado exitosamente! Tu orden ha sido confirmada.');
+            setMessage(t('payment_confirmation.success_message'));
           } else if (currentOrder?.status === 'pending') {
             setStatus('pending');
-            setMessage('Tu pago está pendiente de confirmación. Te notificaremos pronto.');
+            setMessage(t('payment_confirmation.pending_message'));
           } else {
             setStatus('failed');
-            setMessage('El pago fue rechazado. Por favor, intenta nuevamente.');
+            setMessage(t('payment_confirmation.failed_message'));
           }
         }, 1000);
       } catch (error) {
         setStatus('error');
-        setMessage('Error al verificar el pago. Por favor, contacta soporte.');
+        setMessage(t('payment_confirmation.error_verifying'));
         console.error(error);
       }
     };
@@ -53,7 +51,7 @@ export const PaymentConfirmation = () => {
     if (transactionId && referenceCode && orderId) {
       checkPayment();
     }
-  }, [transactionId, referenceCode, orderId, confirmPaymentStatus, fetchOrder, currentOrder]);
+  }, [transactionId, referenceCode, orderId, confirmPaymentStatus, fetchOrder, currentOrder, t]);
 
   if (loading) {
     return (
@@ -82,23 +80,23 @@ export const PaymentConfirmation = () => {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">¡Pago Exitoso!</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('payment_confirmation.success_title')}</h1>
             <p className="text-gray-600 mb-6">{message}</p>
             <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-6 text-left">
-              <p className="text-sm font-semibold text-blue-900">Número de Orden:</p>
+              <p className="text-sm font-semibold text-blue-900">{t('payment_confirmation.order_number')}</p>
               <p className="text-xl font-bold text-blue-600">#{orderId}</p>
             </div>
             <button
               onClick={() => navigate(`/orders/${orderId}`)}
               className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition"
             >
-              Ver Detalles de Orden
+              {t('payment_confirmation.view_order')}
             </button>
             <button
               onClick={() => navigate('/restaurants')}
               className="w-full mt-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition"
             >
-              Continuar Comprando
+              {t('payment_confirmation.continue_shopping')}
             </button>
           </div>
         )}
@@ -112,13 +110,13 @@ export const PaymentConfirmation = () => {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Pago Pendiente</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('payment_confirmation.pending_title')}</h1>
             <p className="text-gray-600 mb-6">{message}</p>
             <button
               onClick={() => navigate(`/orders/${orderId}`)}
               className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-lg transition"
             >
-              Ver Estado de la Orden
+              {t('payment_confirmation.view_order_status')}
             </button>
           </div>
         )}
@@ -132,19 +130,19 @@ export const PaymentConfirmation = () => {
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-2">Pago No Procesado</h1>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">{t('payment_confirmation.failed_title')}</h1>
             <p className="text-gray-600 mb-6">{message}</p>
             <button
               onClick={() => navigate(`/checkout?status=failure`)}
               className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg transition"
             >
-              Intentar Nuevamente
+              {t('payment_confirmation.try_again')}
             </button>
             <button
               onClick={() => navigate('/cart')}
               className="w-full mt-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition"
             >
-              Volver al Carrito
+              {t('payment_confirmation.back_to_cart')}
             </button>
           </div>
         )}

@@ -1,8 +1,11 @@
 // Archivo: src/components/Footer.jsx | Comentario: logica principal del modulo.
 // src/components/Footer.jsx
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 
 export default function Footer({ restaurants = [] }) {
+  const { t } = useTranslation()
+
   return (
     <footer className="bg-[#1a1a1a] text-gray-300 pt-16 pb-6">
       <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -12,7 +15,7 @@ export default function Footer({ restaurants = [] }) {
           <div>
             <span className="font-['Satisfy'] text-3xl text-[#FF4B3E] block mb-3">AppiFood</span>
             <p className="text-sm text-gray-400 leading-relaxed">
-              La forma más fácil de pedir tu comida favorita en Popayán. Rápido, seguro y delicioso.
+              {t('footer.tagline')}
             </p>
             <div className="flex gap-3 mt-4">
               {[['fa-facebook-f','#'], ['fa-twitter','#'], ['fa-instagram','#'], ['fa-whatsapp','#']].map(([icon, href]) => (
@@ -26,23 +29,23 @@ export default function Footer({ restaurants = [] }) {
 
           {/* Acerca de */}
           <div>
-            <h4 className="font-bold text-[#FF4B3E] mb-4 text-sm uppercase tracking-wider">Acerca de AppiFood</h4>
+            <h4 className="font-bold text-[#FF4B3E] mb-4 text-sm uppercase tracking-wider">{t('footer.aboutTitle')}</h4>
             <ul className="space-y-2 text-sm">
               {[
-                { label: 'Únete al equipo', href: '#' },
-                { label: 'Registra tu Restaurante', to: '/register-restaurant' },
-                { label: 'Blog', href: '#' },
-                { label: 'Términos y condiciones', href: '#' },
-                { label: 'Privacidad', href: '#' },
+                { labelKey: 'footer.joinTeam',      href: '#' },
+                { labelKey: 'footer.registerRestaurant', to: '/register-restaurant' },
+                { labelKey: 'footer.blog',          href: '#' },
+                { labelKey: 'footer.terms',         href: '#' },
+                { labelKey: 'footer.privacy',       href: '#' },
               ].map(item => (
-                <li key={item.label}>
+                <li key={item.labelKey}>
                   {item.to ? (
                     <Link to={item.to} className="text-gray-400 hover:text-[#FF4B3E] transition">
-                      {item.label}
+                      {t(item.labelKey)}
                     </Link>
                   ) : (
                     <a href={item.href} className="text-gray-400 hover:text-[#FF4B3E] transition">
-                      {item.label}
+                      {t(item.labelKey)}
                     </a>
                   )}
                 </li>
@@ -52,9 +55,14 @@ export default function Footer({ restaurants = [] }) {
 
           {/* Marcas */}
           <div>
-            <h4 className="font-bold text-[#FF4B3E] mb-4 text-sm uppercase tracking-wider">Principales Marcas</h4>
+            <h4 className="font-bold text-[#FF4B3E] mb-4 text-sm uppercase tracking-wider">{t('footer.brandsTitle')}</h4>
             <ul className="space-y-2 text-sm">
-              {(restaurants.length ? restaurants.slice(0, 4) : ['Burger House','Pizza Nostra','Sushi Zen','El Rincón Paisa']).map(r => (
+              {(restaurants.length ? restaurants.slice(0, 4) : [
+                t('footer.brand1'),
+                t('footer.brand2'),
+                t('footer.brand3'),
+                t('footer.brand4'),
+              ]).map(r => (
                 <li key={typeof r === 'string' ? r : r.id}>
                   <Link to={typeof r === 'string' ? '#' : `/restaurants/${r.id}`}
                     className="text-gray-400 hover:text-[#FF4B3E] transition">
@@ -67,13 +75,13 @@ export default function Footer({ restaurants = [] }) {
 
           {/* Contacto + app */}
           <div>
-            <h4 className="font-bold text-[#FF4B3E] mb-4 text-sm uppercase tracking-wider">Contáctanos</h4>
+            <h4 className="font-bold text-[#FF4B3E] mb-4 text-sm uppercase tracking-wider">{t('footer.contactTitle')}</h4>
             <address className="not-italic text-sm text-gray-400 leading-loose mb-4">
               AppiFood S.A.S<br />
               Calle 10 # 15F - 03 Popayán, Cauca<br />
               <a href="mailto:AppiFood@gmail.com" className="hover:text-[#FF4B3E] transition">AppiFood@gmail.com</a>
             </address>
-            <h4 className="font-bold text-[#FF4B3E] mb-3 text-sm uppercase tracking-wider">Descarga la App</h4>
+            <h4 className="font-bold text-[#FF4B3E] mb-3 text-sm uppercase tracking-wider">{t('footer.downloadTitle')}</h4>
             <div className="flex gap-2 flex-wrap">
               <a href="#"><img src="/images/Google_Play-Badge-Logo.wine.svg" alt="Google Play" className="h-16 w-auto" /></a>
               <a href="#"><img src="/images/App_Store_(iOS)-Badge-Logo.wine.svg" alt="App Store" className="h-16 w-auto" /></a>
@@ -82,7 +90,7 @@ export default function Footer({ restaurants = [] }) {
         </div>
 
         <div className="pt-5 text-center text-xs text-gray-500">
-          © {new Date().getFullYear()} AppiFood — Todos los derechos reservados
+          © {new Date().getFullYear()} AppiFood — {t('footer.rights')}
         </div>
       </div>
     </footer>

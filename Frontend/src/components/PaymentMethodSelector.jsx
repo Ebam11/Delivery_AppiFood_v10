@@ -2,42 +2,44 @@
 import React from 'react';
 import { usePaymentStore } from '../store/paymentStore';
 import { useCartStore } from '../store/cartStore';
+import { useTranslation } from 'react-i18next';
 
 export default function PaymentMethodSelector() {
   const { createPayment, loading, error } = usePaymentStore();
   const { cart } = useCartStore();
+  const { t } = useTranslation();
   const [selectedMethod, setSelectedMethod] = React.useState('pse');
 
   const paymentMethods = [
     {
       id: 'pse',
-      name: 'PSE (Pagos Seguros en Línea)',
-      description: 'El método más rápido y seguro en Colombia',
+      name: t('paymentSelector.pse.name'),
+      description: t('paymentSelector.pse.description'),
       icon: '🏦',
-      info: 'Confirma directamente desde tu app de banca móvil',
+      info: t('paymentSelector.pse.info'),
       recommend: true,
     },
     {
       id: 'credit_card',
-      name: 'Tarjeta de Crédito',
-      description: 'VISA, Mastercard, American Express',
+      name: t('paymentSelector.credit.name'),
+      description: t('paymentSelector.credit.description'),
       icon: '💳',
-      info: 'Pago seguro con encriptación',
+      info: t('paymentSelector.credit.info'),
       recommend: false,
     },
     {
       id: 'debit_card',
-      name: 'Tarjeta Débito',
-      description: 'Débito directo de tu cuenta bancaria',
+      name: t('paymentSelector.debit.name'),
+      description: t('paymentSelector.debit.description'),
       icon: '🏧',
-      info: 'Fondos se debitan inmediatamente',
+      info: t('paymentSelector.debit.info'),
       recommend: false,
     },
   ];
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-gray-800 mb-4">Selecciona tu Método de Pago</h3>
+      <h3 className="text-lg font-bold text-gray-800 mb-4">{t('paymentSelector.title')}</h3>
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -72,7 +74,7 @@ export default function PaymentMethodSelector() {
                     <h4 className="font-bold text-gray-800">{method.name}</h4>
                     {method.recommend && (
                       <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
-                        ⭐ Recomendado
+                        ⭐ {t('paymentSelector.recommended')}
                       </span>
                     )}
                   </div>
@@ -89,16 +91,15 @@ export default function PaymentMethodSelector() {
       {selectedMethod === 'pse' && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-sm text-blue-900">
-            <strong>💡 Tip:</strong> PSE es el método más popular en Colombia. Una vez autorices el pago, 
-            recibirás una notificación en tu app de banca móvil para confirmar.
+            <strong>💡 {t('paymentSelector.tip')}:</strong> {t('paymentSelector.pseTip')}
           </p>
         </div>
       )}
 
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <p className="text-sm text-gray-700 font-semibold">Resumen</p>
+        <p className="text-sm text-gray-700 font-semibold">{t('paymentSelector.summary')}</p>
         <div className="flex justify-between mt-2">
-          <span className="text-gray-600">Total a pagar:</span>
+          <span className="text-gray-600">{t('paymentSelector.totalLabel')}</span>
           <span className="font-bold text-lg text-blue-600">${(cart?.total + 5 || 5).toFixed(2)}</span>
         </div>
       </div>
@@ -107,11 +108,11 @@ export default function PaymentMethodSelector() {
         disabled={loading}
         className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition"
       >
-        {loading ? '⏳ Procesando...' : 'Continuar al Pago'}
+        {loading ? `⏳ ${t('paymentSelector.processing')}` : t('paymentSelector.continueBtn')}
       </button>
 
       <p className="text-xs text-gray-500 text-center">
-        🔒 Tu información está protegida por Mercado Pago
+        🔒 {t('paymentSelector.secureNote')}
       </p>
     </div>
   );

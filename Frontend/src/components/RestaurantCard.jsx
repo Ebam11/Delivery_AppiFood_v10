@@ -2,6 +2,7 @@
 import { useRestaurantImage } from '../hooks/useImages'
 import { useLazyLoad } from '../hooks/useLazyLoad'
 import { blurhash } from '../utils/blurhash'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Tarjeta de restaurante con imagen dinámica de Unsplash + lazy loading
@@ -9,11 +10,12 @@ import { blurhash } from '../utils/blurhash'
 export default function RestaurantCard({ restaurant, onSelect }) {
   const { image, loading } = useRestaurantImage(restaurant.name, restaurant.img)
   const { ref, src, isLoaded } = useLazyLoad(image, blurhash.restaurant())
-  
+  const { t } = useTranslation()
+
   const fmt = n => Number(n).toLocaleString('es-CO', { maximumFractionDigits: 0 })
 
   return (
-    <div 
+    <div
       onClick={() => onSelect && onSelect(restaurant)}
       className="relative rounded-2xl shadow-md hover:shadow-xl transition-all overflow-hidden cursor-pointer group"
     >
@@ -22,7 +24,7 @@ export default function RestaurantCard({ restaurant, onSelect }) {
         {(loading || !isLoaded) && (
           <div className="absolute inset-0 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 animate-pulse z-10" />
         )}
-        <img 
+        <img
           ref={ref}
           src={src}
           alt={restaurant.name}
@@ -36,7 +38,7 @@ export default function RestaurantCard({ restaurant, onSelect }) {
       {/* Info superpuesta */}
       <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
         <h3 className="font-bold text-lg mb-1">{restaurant.name}</h3>
-        
+
         <div className="flex gap-3 text-xs">
           <span className="flex items-center gap-1">
             <i className="fas fa-star text-yellow-400" />
@@ -48,7 +50,9 @@ export default function RestaurantCard({ restaurant, onSelect }) {
           </span>
           <span className="flex items-center gap-1">
             <i className="fas fa-motorcycle" />
-            ${fmt(restaurant.delivery)}
+            {restaurant.delivery === 0
+              ? t('restaurantCard.freeDelivery')
+              : `$${fmt(restaurant.delivery)}`}
           </span>
         </div>
       </div>
