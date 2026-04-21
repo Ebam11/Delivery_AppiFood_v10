@@ -305,7 +305,9 @@ function Sidebar({ active, onNav, open, onClose, user, onLogout }) {
       `}>
         <div className="flex items-center gap-2 px-5 py-5 border-b border-gray-100">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: P }}>A</div>
-          <span className="font-bold text-gray-800 text-base capitalize">YAWAZU</span>
+          <span className="font-bold text-gray-800 text-base capitalize">
+          {user?.restaurant?.name || user?.name || 'Mi Restaurante'}
+          </span>
         </div>
         <nav className="flex-1 px-3 py-4 space-y-0.5">
           {NAV.map(item => (
@@ -324,7 +326,9 @@ function Sidebar({ active, onNav, open, onClose, user, onLogout }) {
               {user?.name?.charAt(0)?.toUpperCase() || 'R'}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-semibold text-gray-800 truncate">{user?.name || t('rd.restaurant_info')}</p>
+              <p className="text-xs font-semibold text-gray-800 truncate">
+              {user?.restaurant?.name || user?.name || t('rd.restaurant_info')}
+              </p>
               <p className="text-xs text-gray-400 truncate">{user?.email || ''}</p>
             </div>
           </div>

@@ -71,6 +71,7 @@ export default function RegisterRestaurant({ onLogin }) {
     try {
       const payload = {
         name: form.owner_name,
+        restaurant_name: form.restaurant_name,
         email: form.email,
         phone: form.phone,
         id_number: form.id_number,
@@ -123,7 +124,7 @@ export default function RegisterRestaurant({ onLogin }) {
         <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center px-8 z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
           <Link
-            to="/restaurant/login"
+            to="/login"
             className="absolute right-8 px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition"
           >
             {t('register_restaurant.login_button')}
