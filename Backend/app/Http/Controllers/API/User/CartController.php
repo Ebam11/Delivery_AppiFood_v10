@@ -31,6 +31,12 @@ class CartController extends Controller
             'product_id' => ['required', 'exists:products,id'],
             'quantity'   => ['required', 'integer', 'min:1'],
             'notes'      => ['nullable', 'string', 'max:200'],
+        ], [
+            'product_id.required' => 'Debes seleccionar un producto válido.',
+            'product_id.exists' => 'El producto seleccionado no existe o no está disponible en este momento.',
+            'quantity.required' => 'Debes indicar una cantidad.',
+            'quantity.integer' => 'La cantidad debe ser un número entero.',
+            'quantity.min' => 'La cantidad mínima es 1.',
         ]);
 
         $product = Product::findOrFail($request->product_id);

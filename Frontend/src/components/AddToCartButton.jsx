@@ -2,11 +2,13 @@
 import React, { useState } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { ErrorMessage } from './ErrorMessage';
+import { useTranslation } from 'react-i18next';
 
 export const AddToCartButton = ({ restaurantId, product }) => {
   const { addItemToCart, isLoading, error, clearError } = useCartStore();
   const [quantity, setQuantity] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
+  const { t } = useTranslation();
 
   const handleAddToCart = async () => {
     clearError();
@@ -26,7 +28,7 @@ export const AddToCartButton = ({ restaurantId, product }) => {
 
       {showSuccess && (
         <div className="bg-green-50 border-2 border-green-200 text-green-700 px-4 py-3 rounded-lg font-semibold text-sm text-center">
-          ✅ Agregado al carrito
+          ✅ {t('addToCart.success')}
         </div>
       )}
 
@@ -56,7 +58,9 @@ export const AddToCartButton = ({ restaurantId, product }) => {
           disabled={isLoading}
           className="w-full bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] hover:shadow-lg hover:shadow-[#FF4B3E]/30 text-white font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 text-base"
         >
-          {isLoading ? '⏳ Agregando...' : '🛒 Agregar al Carrito'}
+          {isLoading
+            ? `⏳ ${t('addToCart.adding')}`
+            : `🛒 ${t('addToCart.button')}`}
         </button>
       </div>
     </div>

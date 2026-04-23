@@ -8,6 +8,7 @@ use App\Http\Controllers\API\Admin\ReportController;
 use App\Http\Controllers\API\Admin\RestaurantManagementController;
 use App\Http\Controllers\API\Admin\UserManagementController;
 use App\Http\Controllers\API\Auth\LoginController;
+use App\Http\Controllers\API\Auth\PasswordResetController;
 use App\Http\Controllers\API\Auth\LogoutController;
 use App\Http\Controllers\API\Auth\RegisterController;
 use App\Http\Controllers\API\Restaurant\CategoryController;
@@ -16,11 +17,15 @@ use App\Http\Controllers\API\Restaurant\OrderManagementController;
 use App\Http\Controllers\API\Restaurant\ProductController;
 use App\Http\Controllers\API\Restaurant\ProfileRestaurantController;
 use App\Http\Controllers\API\Shared\NotificationController;
+use App\Http\Controllers\API\User\PaymentController;
+use App\Http\Controllers\API\Shared\SupportAssistantController;
 use App\Http\Controllers\API\Shared\UploadController;
 use App\Http\Controllers\API\User\AddressController;
 use App\Http\Controllers\API\User\CartController;
 use App\Http\Controllers\API\User\OrderController;
+use App\Http\Controllers\API\User\FavoriteController;
 use App\Http\Controllers\API\User\ProfileController;
+use App\Http\Controllers\API\User\UserPaymentMethodController;
 use App\Http\Controllers\API\User\RestaurantController;
 use App\Http\Controllers\API\User\ReviewController;
 use Illuminate\Support\Facades\Route;
@@ -29,11 +34,14 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', RegisterController::class);
     Route::post('/login', LoginController::class);
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 });
 
 Route::get('/restaurants', [RestaurantController::class, 'index']);
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'indexPublic']);
+Route::post('/support/chat', SupportAssistantController::class)->middleware('throttle:20,1');
 
 // Endpoints protegidos.
 Route::middleware('auth:sanctum')->group(function () {
@@ -52,6 +60,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Endpoints para rol:user.
     Route::middleware('role:user')->group(function () {
+        Route::prefix('payments')->group(function () {
+            Route::get('/methods', [PaymentController::class, 'methods']);
+            Route::post('/', [PaymentController::class, 'store']);
+            Route::post('/confirm', [PaymentController::class, 'confirm']);
+        });
+
+        Route::prefix('payment-methods')->group(function () {
+            Route::get('/', [UserPaymentMethodController::class, 'index']);
+            Route::post('/', [UserPaymentMethodController::class, 'store']);
+            Route::put('/{id}', [UserPaymentMethodController::class, 'update']);
+            Route::delete('/{id}', [UserPaymentMethodController::class, 'destroy']);
+        });
+
         Route::prefix('profile')->group(function () {
             Route::get('/', [ProfileController::class, 'show']);
             Route::put('/', [ProfileController::class, 'update']);
@@ -61,6 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::prefix('addresses')->group(function () {
             Route::get('/', [AddressController::class, 'index']);
+            Route::get('/{id}', [AddressController::class, 'show']);
             Route::post('/', [AddressController::class, 'store']);
             Route::put('/{id}', [AddressController::class, 'update']);
             Route::delete('/{id}', [AddressController::class, 'destroy']);
@@ -73,6 +95,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/items/{id}', [CartController::class, 'updateItem']);
             Route::delete('/items/{id}', [CartController::class, 'removeItem']);
             Route::delete('/', [CartController::class, 'clear']);
+        });
+
+        Route::prefix('favorites')->group(function () {
+            Route::get('/', [FavoriteController::class, 'index']);
+            Route::post('/toggle', [FavoriteController::class, 'toggle']);
         });
 
         Route::prefix('orders')->group(function () {

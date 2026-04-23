@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useCart } from '../context/useCart'
+import LanguageSwitcher from './LanguageSwitcher'
+import { useTranslation } from 'react-i18next'
 
 const RED = '#FF4B3E'
 const RED_DK = '#e03a2d'
@@ -14,6 +16,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     user: user ? JSON.stringify(user) : 'null' 
   })
   
+  const { t } = useTranslation()
   const [drawerOpen, setDrawerOpen]     = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [search, setSearch]             = useState('')
@@ -22,30 +25,15 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   const location  = useLocation()
   const userRef   = useRef(null)
 
-  // FUNCIONES AUXILIARES - DEFINIDAS AL PRINCIPIO
   const getUserName = () => {
-    if (!user) {
-      console.log('👤 getUserName: user is null/undefined')
-      return 'Usuario'
-    }
-    console.log('👤 getUserName: user object:', user)
-    console.log('👤 getUserName: user.name =', user.name)
-    console.log('👤 getUserName: user.nombre =', user.nombre)
-    console.log('👤 getUserName: all keys =', Object.keys(user))
-    const result = user.name || user.nombre || user.displayName || user.username || 'Usuario'
-    console.log('👤 getUserName returning:', result)
+    if (!user) return t('header.defaultUser')
+    const result = user.name || user.nombre || user.displayName || user.username || t('header.defaultUser')
     return result
   }
 
   const getUserEmail = () => {
-    if (!user) {
-      console.log('📧 getUserEmail: user is null/undefined')
-      return ''
-    }
-    console.log('📧 getUserEmail: checking user.email =', user.email)
-    const result = user.email || user.correo || user.mail || ''
-    console.log('📧 getUserEmail returning:', result)
-    return result
+    if (!user) return ''
+    return user.email || user.correo || user.mail || ''
   }
 
   const getUserInitial = () => {
@@ -72,7 +60,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     return () => document.removeEventListener('mousedown', fn)
   }, [])
 
-  // Cerrar drawer al cambiar de ruta
   useEffect(() => { setDrawerOpen(false) }, [location.pathname])
 
   const doSearch = () => {
@@ -81,29 +68,29 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   }
 
   const NAV_LINKS = [
-    { section:'DESCUBRIR' },
-    { to:'/',            icon:'fa-home',          label:'Inicio' },
-    { to:'/restaurants', icon:'fa-store',         label:'Restaurantes' },
-    { href:'#fastfoods', icon:'fa-fire',           label:'Fast Foods populares' },
-    { href:'#popular',   icon:'fa-star',           label:'Más valorados' },
+    { section: t('header.nav.sectionDiscover') },
+    { to:'/',            icon:'fa-home',          label: t('header.nav.home') },
+    { to:'/restaurants', icon:'fa-store',         label: t('header.nav.restaurants') },
+    { href:'#fastfoods', icon:'fa-fire',           label: t('header.nav.fastfoods') },
+    { href:'#popular',   icon:'fa-star',           label: t('header.nav.topRated') },
     ...(isAuth ? [
-      { section:'MI CUENTA' },
-      ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label:'Panel Admin', promo:true }] : []),
-      { to:'/user/orders',    icon:'fa-box',            label:'Mis pedidos' },
-      { to:'/user/favorites', icon:'fa-heart',          label:'Mis favoritos' },
-      { to:'/user/addresses', icon:'fa-map-marker-alt', label:'Mis direcciones' },
-      { to:'/user/profile',   icon:'fa-user-cog',       label:'Mi perfil' },
+      { section: t('header.nav.sectionAccount') },
+      ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label: t('header.nav.adminPanel'), promo:true }] : []),
+      { to:'/user/orders',    icon:'fa-box',            label: t('header.nav.myOrders') },
+      { to:'/user/favorites', icon:'fa-heart',          label: t('header.nav.myFavorites') },
+      { to:'/user/addresses', icon:'fa-map-marker-alt', label: t('header.nav.myAddresses') },
+      { to:'/user/profile',   icon:'fa-user-cog',       label: t('header.nav.myProfile') },
     ] : []),
-    { section:'SUSCRIPCIONES' },
-    { to:'/subscription', icon:'fa-crown',        label:'Planes de Suscripción', promo:true },
-    { section:'OFERTAS' },
-    { href:'#promo', icon:'fa-tag',           label:'Cupones disponibles', promo:true },
-    { href:'#',      icon:'fa-percent',       label:'Promociones del día' },
-    { section:'AYUDA' },
-    { href:'#how',   icon:'fa-question-circle', label:'¿Cómo funciona?' },
-    { href:'#',      icon:'fa-headset',         label:'Chat de soporte' },
-    { href:'#',      icon:'fa-mobile-alt',      label:'Descarga la app' },
-    { to:'/register-restaurant',icon:'fa-utensils',        label:'Registra tu restaurante', promo:true },
+    { section: t('header.nav.sectionSubscriptions') },
+    { to:'/subscription', icon:'fa-crown',        label: t('header.nav.subscriptionPlans'), promo:true },
+    { section: t('header.nav.sectionOffers') },
+    { href:'#promo', icon:'fa-tag',           label: t('header.nav.coupons'), promo:true },
+    { href:'#',      icon:'fa-percent',       label: t('header.nav.dailyPromos') },
+    { section: t('header.nav.sectionHelp') },
+    { href:'#how',   icon:'fa-question-circle', label: t('header.nav.howItWorks') },
+    { href:'#',      icon:'fa-headset',         label: t('header.nav.supportChat') },
+    { href:'#',      icon:'fa-mobile-alt',      label: t('header.nav.downloadApp') },
+    { to:'/register-restaurant', icon:'fa-utensils', label: t('header.nav.registerRestaurant'), promo:true },
   ]
 
   const linkStyle = (promo) => ({
@@ -115,24 +102,18 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     fontFamily:'inherit', transition:'padding-left 0.15s, background 0.15s',
   })
 
-  // Si está cargando, mostrar un header skeleton
   if (isLoading) {
     return (
       <>
         <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-50 border-b border-gray-100">
           <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-            {/* IZQUIERDA: Hamburguesa + Logo skeleton */}
             <div className="flex items-center gap-4 flex-shrink-0">
               <div className="w-10 h-10 rounded-lg bg-gray-200 animate-pulse" />
               <div className="w-24 h-8 bg-gray-200 animate-pulse rounded" />
             </div>
-
-            {/* CENTRO: Buscador skeleton */}
             <div className="hidden sm:flex flex-1 max-w-lg">
               <div className="w-full h-10 bg-gray-200 animate-pulse rounded-full" />
             </div>
-
-            {/* DERECHA: Usuario + Carrito skeleton */}
             <div className="flex items-center gap-3 flex-shrink-0">
               <div className="w-20 h-8 bg-gray-200 animate-pulse rounded-full" />
               <div className="w-24 h-8 bg-gray-200 animate-pulse rounded-full" />
@@ -153,18 +134,15 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           
           {/* IZQUIERDA: Hamburguesa + Logo */}
           <div className="flex items-center gap-4 flex-shrink-0">
-          {/* Hamburguesa */}
             <button onClick={() => setDrawerOpen(true)}
               className="block w-10 h-10 rounded-lg hover:bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-700 hover:text-[#FF4B3E] transition flex-shrink-0">
               <i className="fas fa-bars text-lg font-bold" />
             </button>
 
-            {/* Logo */}
             <Link to="/" className="font-['Satisfy'] text-3xl font-bold text-[#FF4B3E] hover:text-[#e03a2d] transition whitespace-nowrap">
               AppiFood
             </Link>
 
-            {/* Dirección */}
             <div className="hidden sm:flex items-center gap-2 text-xs text-gray-500 whitespace-nowrap">
               <i className="fas fa-map-marker-alt text-[#FF4B3E] text-xs" />
               <span>{isAuth && user?.city ? user.city : 'Popayán'}</span>
@@ -176,7 +154,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
             <div className="w-full flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border-2 border-transparent hover:border-[#FF4B3E] transition">
               <input
                 type="search"
-                placeholder="¿Deseas algo en especial?"
+                placeholder={t('header.searchPlaceholder')}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key==='Enter' && doSearch()}
@@ -191,21 +169,21 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
           {/* DERECHA: Usuario + Carrito */}
           <div className="flex items-center gap-3 flex-shrink-0">
-{!isAuth ? (
-            <>
-              <Link to="/login" className="hidden sm:inline-block px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition">
-                Iniciar Sesión
-              </Link>
-              {location.pathname === '/register-restaurant' ? (
-                <Link to="/restaurant/login" className="px-4 py-2 rounded-full bg-[#FF4B3E] text-white font-bold text-xs hover:bg-[#e03a2d] transition">
-                  Iniciar sesión restaurante
+            {!isAuth ? (
+              <>
+                <Link to="/login" className="hidden sm:inline-block px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition">
+                  {t('header.login')}
                 </Link>
-              ) : (
-                <Link to="/register" className="px-4 py-2 rounded-full bg-[#FF4B3E] text-white font-bold text-xs hover:bg-[#e03a2d] transition">
-                  Registrarse
-                </Link>
-              )}
-            </>  //final de linea perteneciente a la creacion de botones de inicio de sesion y registro en el header de solo restaurantes
+                {location.pathname === '/register-restaurant' ? (
+                  <Link to="/restaurant/login" className="px-4 py-2 rounded-full bg-[#FF4B3E] text-white font-bold text-xs hover:bg-[#e03a2d] transition">
+                    {t('header.restaurantLogin')}
+                  </Link>
+                ) : (
+                  <Link to="/register" className="px-4 py-2 rounded-full bg-[#FF4B3E] text-white font-bold text-xs hover:bg-[#e03a2d] transition">
+                    {t('header.register')}
+                  </Link>
+                )}
+              </>
             ) : (
               <div className="relative" ref={userRef}>
                 <button onClick={() => setUserMenuOpen(o => !o)}
@@ -223,11 +201,11 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                       <p className="text-xs text-gray-500 mt-1">{getUserEmail()}</p>
                     </div>
                     {[
-                      ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label:'Panel Admin' }] : []),
-                      { to:'/user/profile',   icon:'fa-user',           label:'Mi perfil' },
-                      { to:'/user/orders',    icon:'fa-box',            label:'Mis pedidos' },
-                      { to:'/user/favorites', icon:'fa-heart',          label:'Favoritos' },
-                      { to:'/user/addresses', icon:'fa-map-marker-alt', label:'Direcciones' },
+                      ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label: t('header.menu.adminPanel') }] : []),
+                      { to:'/user/profile',   icon:'fa-user',           label: t('header.menu.profile') },
+                      { to:'/user/orders',    icon:'fa-box',            label: t('header.menu.orders') },
+                      { to:'/user/favorites', icon:'fa-heart',          label: t('header.menu.favorites') },
+                      { to:'/user/addresses', icon:'fa-map-marker-alt', label: t('header.menu.addresses') },
                     ].map(({ to, icon, label }) => (
                       <Link key={label} to={to}
                         onClick={() => setUserMenuOpen(false)}
@@ -238,12 +216,17 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                     <div className="border-t border-gray-100 my-2" />
                     <button onClick={onLogout}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-red-50 hover:text-[#FF4B3E] transition text-left">
-                      <i className="fas fa-sign-out-alt w-4" /> Cerrar sesión
+                      <i className="fas fa-sign-out-alt w-4" /> {t('header.logout')}
                     </button>
                   </div>
                 )}
               </div>
             )}
+
+            {/* Selector de idioma */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
 
             {/* Carrito */}
             <button onClick={() => setIsOpen(true)}
@@ -291,51 +274,27 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           </button>
         </div>
 
-        {/* Perfil auth - SECCIÓN CORREGIDA */}
+        {/* Perfil auth */}
         {isAuth && user && (
           <div style={{ 
-            display:'flex', 
-            flexDirection:'column',
-            alignItems:'center', 
-            gap:8, 
-            padding:'24px 20px', 
-            background:'#fff5f4', 
-            borderBottom:'1px solid #f0f0f0'
+            display:'flex', flexDirection:'column', alignItems:'center', 
+            gap:8, padding:'24px 20px', 
+            background:'#fff5f4', borderBottom:'1px solid #f0f0f0'
           }}>
-            {console.log('🎨 DRAWER: Rendering user profile section')}
-            {console.log('🎨 DRAWER: isAuth =', isAuth, ', user =', user)}
             <div style={{ 
-              width:64, 
-              height:64, 
-              borderRadius:'50%', 
-              background:RED, 
-              color:'white', 
-              fontWeight:800, 
-              fontSize:24, 
-              display:'flex', 
-              alignItems:'center', 
-              justifyContent:'center', 
-              flexShrink:0,
-              marginBottom:8
+              width:64, height:64, borderRadius:'50%', 
+              background:RED, color:'white', fontWeight:800, fontSize:24, 
+              display:'flex', alignItems:'center', justifyContent:'center', 
+              flexShrink:0, marginBottom:8
             }}>
               {getUserInitial()}
             </div>
             <div style={{ textAlign:'center' }}>
-              <span style={{ 
-                display:'block', 
-                fontWeight:700, 
-                fontSize:16, 
-                color:'#111',
-                marginBottom:4
-              }}>
-                {getUserName()} {/* ← Esto debe mostrar "Camilo Acosta" */}
+              <span style={{ display:'block', fontWeight:700, fontSize:16, color:'#111', marginBottom:4 }}>
+                {getUserName()}
               </span>
-              <span style={{ 
-                display:'block', 
-                fontSize:13, 
-                color:'#666'
-              }}>
-                {getUserEmail()} {/* ← Esto debe mostrar "ejemplo@gmail.com" */}
+              <span style={{ display:'block', fontSize:13, color:'#666' }}>
+                {getUserEmail()}
               </span>
             </div>
           </div>
@@ -346,12 +305,8 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           {NAV_LINKS.map((item, i) => {
             if (item.section) return (
               <div key={i} style={{ 
-                padding:'16px 20px 8px', 
-                fontSize:12, 
-                fontWeight:700, 
-                textTransform:'uppercase', 
-                letterSpacing:'0.05em', 
-                color:'#999',
+                padding:'16px 20px 8px', fontSize:12, fontWeight:700, 
+                textTransform:'uppercase', letterSpacing:'0.05em', color:'#999',
                 borderTop: i > 0 ? '1px solid #f0f0f0' : 'none',
                 marginTop: i > 0 ? 8 : 0
               }}>
@@ -381,21 +336,24 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
         {/* Footer drawer */}
         <div style={{ padding:'16px 20px 24px', borderTop:'1px solid #f0f0f0', display:'flex', flexDirection:'column', gap:10 }}>
+          <div className="flex justify-center py-1">
+            <LanguageSwitcher />
+          </div>
           {!isAuth ? (
             <>
               <Link to="/register" onClick={() => setDrawerOpen(false)}
                 style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'12px', background:RED, color:'white', borderRadius:999, fontWeight:700, fontSize:14, textDecoration:'none' }}>
-                <i className="fas fa-user-plus" /> Registrarse gratis
+                <i className="fas fa-user-plus" /> {t('header.registerFree')}
               </Link>
               <Link to="/login" onClick={() => setDrawerOpen(false)}
                 style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'12px', border:`2px solid ${RED}`, color:RED, borderRadius:999, fontWeight:700, fontSize:14, textDecoration:'none' }}>
-                Iniciar sesión
+                {t('header.login')}
               </Link>
             </>
           ) : (
             <button onClick={onLogout}
               style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'12px', background:'none', border:'1.5px solid #e5e5e5', borderRadius:999, fontSize:14, fontWeight:600, color:'#888', cursor:'pointer', fontFamily:'inherit' }}>
-              <i className="fas fa-sign-out-alt" /> Cerrar sesión
+              <i className="fas fa-sign-out-alt" /> {t('header.logout')}
             </button>
           )}
         </div>

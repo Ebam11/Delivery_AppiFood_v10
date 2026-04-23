@@ -6,6 +6,7 @@ import ProductModal from '../components/ProductModal'
 import ProductCard from '../components/ProductCard'
 import RestaurantCard from '../components/RestaurantCard'
 import Footer from '../components/Footer'
+import { useTranslation } from 'react-i18next'
 
 const STATIC_RESTAURANTS = [
   { id:1, name:'Burger House',    badge:'Verificado ✓', badgeType:'default', rating:4.5, time:'25–40', delivery:3500, img:'/images/group-2-6-91.png' },
@@ -99,7 +100,7 @@ export default function HomePage({ isAuth, data = {} }) {
   } = data
 
   const navigate = useNavigate()
-  
+  const { t } = useTranslation()
   // Carrusel de hero
   const heroSlides = [
     {
@@ -247,10 +248,12 @@ export default function HomePage({ isAuth, data = {} }) {
 
             <div style={{ display:'flex', gap:12, flexWrap:'wrap', justifyContent: 'center', marginBottom:40, animation: 'fadeInUp 0.6s ease 0.3s backwards' }}>
               <a href="#fastfoods" style={S.btnRed}>
-                <i className="fas fa-utensils" /> Ordenar ahora
+                {/*<i className="fas fa-utensils" /> Ordenar ahora */}
+                <i className="fas fa-utensils" /> {t('home.order_now')}
               </a>
               <a href="#popular" style={S.btnOutline}>
-                <i className="fas fa-store" /> Ver restaurantes
+                {/*<i className="fas fa-store" /> Ver restaurantes*/}
+                <i className="fas fa-store" /> {t('home.view_restaurants')}
               </a>
             </div>
 
@@ -313,7 +316,8 @@ export default function HomePage({ isAuth, data = {} }) {
                 🌟 Destacados
               </p>
               <h2 style={{ fontSize:'clamp(1.6rem,3vw,2.2rem)', fontWeight:900, color:'#111', margin:0 }}>
-                Restaurantes Populares
+                {/*Restaurantes Populares*/}
+                {t('home.popular_restaurants')}
               </h2>
             </div>
             <div style={{ display:'flex', gap:8 }}>
