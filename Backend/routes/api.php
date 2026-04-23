@@ -195,5 +195,17 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/users', [ReportController::class, 'users']);
         });
     });
+
+    // Health check para Railway
+Route::get('/health', function () {
+    return response()->json([
+        'status' => 'healthy',
+        'app' => config('app.name'),
+        'environment' => app()->environment(),
+        'laravel_version' => app()->version(),
+        'php_version' => PHP_VERSION,
+        'timestamp' => now()->toIso8601String()
+    ]);
+});
 });
 
