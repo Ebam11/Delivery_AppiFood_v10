@@ -19,7 +19,8 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').
+        (env('APP_ENV') === 'production' ? '' : ',http://localhost:5173'),
 
     'allowed_origins_patterns' => [],
 
@@ -27,8 +28,8 @@ return [
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    'max_age' => 3600,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

@@ -1,7 +1,5 @@
-// Archivo: src/pages/RegisterRestaurant.jsx | Comentario: logica principal del modulo.
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
 
@@ -35,7 +33,6 @@ const Field = ({ label, name, type = 'text', placeholder, show, toggleShow, erro
 )
 
 export default function RegisterRestaurant({ onLogin }) {
-  const { t } = useTranslation()
   const [form, setForm] = useState({
     owner_name: '',
     restaurant_name: '',
@@ -63,7 +60,7 @@ export default function RegisterRestaurant({ onLogin }) {
     e.preventDefault()
 
     if (form.password !== form.password_confirmation) {
-      setErrors({ password_confirmation: t('register_restaurant.password_mismatch') })
+      setErrors({ password_confirmation: 'Las contraseñas no coinciden.' })
       return
     }
 
@@ -71,7 +68,6 @@ export default function RegisterRestaurant({ onLogin }) {
     try {
       const payload = {
         name: form.owner_name,
-        restaurant_name: form.restaurant_name,
         email: form.email,
         phone: form.phone,
         id_number: form.id_number,
@@ -85,14 +81,11 @@ export default function RegisterRestaurant({ onLogin }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      console.log('respuesta completa del backend', JSON.stringify(data))
 
       localStorage.setItem('token', data.token)
-      console.log('data.user:', data.user)
-      localStorage.setItem('user', JSON.stringify(data.user))
       onLogin?.(data.user)
-      navigate('/restaurant/dashboard')
 
+      navigate('/restaurant/dashboard')
     } catch (error) {
       if (error instanceof ApiError) {
         const errs = {}
@@ -105,7 +98,7 @@ export default function RegisterRestaurant({ onLogin }) {
         }
         setErrors(errs)
       } else {
-        setErrors({ email: t('register_restaurant.connection_error') })
+        setErrors({ email: 'Error de conexión. Intenta de nuevo.' })
       }
     } finally {
       setLoading(false)
@@ -121,21 +114,16 @@ export default function RegisterRestaurant({ onLogin }) {
             background: 'linear-gradient(135deg,rgba(0,0,0,0.6),rgba(20,20,20,0.55)), url(https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&h=900&fit=crop) center/cover no-repeat',
           }}
         />
-        <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center px-8 z-50">
+
+        <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
-          <Link
-            to="/login"
-            className="absolute right-8 px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition"
-          >
-            {t('register_restaurant.login_button')}
-          </Link>
         </div>
 
-        <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] py-24 flex items-center justify-between gap-10 flex-wrap min-h-screen">
+        <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] pt-16 pb-12 flex items-center justify-between gap-10 flex-wrap">
           <div className="text-white max-w-md hidden md:block">
-            <h1 className="text-5xl font-black leading-tight mb-4">{t('register_restaurant.title')}</h1>
+            <h1 className="text-5xl font-black leading-tight mb-4">Registra tu restaurante</h1>
             <p className="text-xl font-semibold opacity-90 leading-relaxed">
-              {t('register_restaurant.subtitle')}
+              Crea tu acceso como restaurante para empezar a vender en AppiFood.
             </p>
           </div>
 
@@ -143,42 +131,42 @@ export default function RegisterRestaurant({ onLogin }) {
             <div className="p-7">
               <div className="text-center mb-5">
                 <span className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</span>
-                <p className="text-[#FF4B3E] font-bold text-lg mt-1">{t('register_restaurant.register_title')}</p>
+                <p className="text-[#FF4B3E] font-bold text-lg mt-1">Registro de restaurante</p>
               </div>
 
               <form onSubmit={submit} className="space-y-4">
                 <Field
-                  label={t('register_restaurant.field_owner_name')}
+                  label="Nombre del responsable"
                   name="owner_name"
-                  placeholder={t('register_restaurant.field_owner_name_placeholder')}
+                  placeholder="Ej: Camilo Acosta"
                   errors={errors}
                   form={form}
                   onChange={change}
                 />
 
                 <Field
-                  label={t('register_restaurant.field_restaurant_name')}
+                  label="Nombre del restaurante"
                   name="restaurant_name"
-                  placeholder={t('register_restaurant.field_restaurant_name_placeholder')}
+                  placeholder="Ej: Sabor del Valle"
                   errors={errors}
                   form={form}
                   onChange={change}
                 />
 
                 <Field
-                  label={t('register_restaurant.field_email')}
+                  label="Correo electrónico"
                   name="email"
                   type="email"
-                  placeholder={t('register_restaurant.field_email_placeholder')}
+                  placeholder="restaurante@email.com"
                   errors={errors}
                   form={form}
                   onChange={change}
                 />
 
                 <Field
-                  label={t('register_restaurant.field_phone')}
+                  label="Teléfono"
                   name="phone"
-                  placeholder={t('register_restaurant.field_phone_placeholder')}
+                  placeholder="3001234567"
                   errors={errors}
                   form={form}
                   onChange={change}
@@ -186,9 +174,9 @@ export default function RegisterRestaurant({ onLogin }) {
                 />
 
                 <Field
-                  label={t('register_restaurant.field_id_number')}
+                  label="Número de documento"
                   name="id_number"
-                  placeholder={t('register_restaurant.field_id_number_placeholder')}
+                  placeholder="123456789"
                   errors={errors}
                   form={form}
                   onChange={change}
@@ -196,9 +184,9 @@ export default function RegisterRestaurant({ onLogin }) {
                 />
 
                 <Field
-                  label={t('register_restaurant.field_password')}
+                  label="Contraseña"
                   name="password"
-                  placeholder={t('register_restaurant.field_password_placeholder')}
+                  placeholder="Mínimo 8 caracteres"
                   errors={errors}
                   form={form}
                   onChange={change}
@@ -207,9 +195,9 @@ export default function RegisterRestaurant({ onLogin }) {
                 />
 
                 <Field
-                  label={t('register_restaurant.field_confirm_password')}
+                  label="Confirmar contraseña"
                   name="password_confirmation"
-                  placeholder={t('register_restaurant.field_confirm_password_placeholder')}
+                  placeholder="Repite tu contraseña"
                   errors={errors}
                   form={form}
                   onChange={change}
@@ -224,24 +212,22 @@ export default function RegisterRestaurant({ onLogin }) {
                 >
                   {loading ? (
                     <>
-                      <i className="fas fa-spinner fa-spin"></i> {t('register_restaurant.creating_account')}
+                      <i className="fas fa-spinner fa-spin"></i> Creando cuenta...
                     </>
                   ) : (
                     <>
-                      <i className="fas fa-store"></i> {t('register_restaurant.register_button')}
+                      <i className="fas fa-store"></i> Registrar mi restaurante
                     </>
                   )}
                 </button>
 
                 <p className="text-center text-xs text-gray-500">
-                  {t('register_restaurant.info_text')}
+                  Esta vista solo crea cuentas con rol restaurante.
                 </p>
 
                 <p className="text-center text-sm text-gray-500">
-                  {t('register_restaurant.normal_register_text')}{' '}
-                  <Link to="/register" className="text-[#FF4B3E] font-bold hover:underline">
-                    {t('register_restaurant.normal_register_link')}
-                  </Link>
+                  ¿Quieres registro normal?{' '}
+                  <Link to="/register" className="text-[#FF4B3E] font-bold hover:underline">Ir a registro de usuario</Link>
                 </p>
               </form>
             </div>

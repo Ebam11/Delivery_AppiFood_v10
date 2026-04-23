@@ -21,7 +21,6 @@ class LoginController extends Controller
 
         /** @var User $user */
         $user = Auth::user();
-        $user->loadMissing('restaurant');
 
         if (!$user->status) {
             Auth::logout();

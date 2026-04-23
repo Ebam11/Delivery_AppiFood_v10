@@ -2,37 +2,37 @@
 import React, { useState } from 'react';
 import { usePaymentStore } from '../store/paymentStore';
 import { useCartStore } from '../store/cartStore';
-import { useTranslation } from 'react-i18next';
 
 export default function PayUCheckout({ orderId }) {
   const { createPayment, loading, error } = usePaymentStore();
   const { cart } = useCartStore();
-  const { t } = useTranslation();
+  const cartSubtotal = Number(cart?.subtotal || 0);
+  const cartTotalWithDelivery = cartSubtotal + 5000;
   const [selectedMethod, setSelectedMethod] = useState('PSE');
 
   const paymentMethods = [
     {
       id: 'PSE',
-      name: t('payuCheckout.pse.name'),
-      description: t('payuCheckout.pse.description'),
+      name: 'PSE (Pagos Seguros en Línea)',
+      description: 'El método más rápido y seguro en Colombia',
       icon: '🏦',
-      info: t('payuCheckout.pse.info'),
+      info: 'Confirma directamente desde tu app de banca móvil',
       recommend: true,
     },
     {
       id: 'VISA',
-      name: t('payuCheckout.visa.name'),
-      description: t('payuCheckout.visa.description'),
+      name: 'Tarjeta de Crédito VISA',
+      description: 'Pago seguro con encriptación',
       icon: '💳',
-      info: t('payuCheckout.visa.info'),
+      info: 'Tu tarjeta está protegida por PayU',
       recommend: false,
     },
     {
       id: 'MASTERCARD',
-      name: t('payuCheckout.mastercard.name'),
-      description: t('payuCheckout.mastercard.description'),
+      name: 'Tarjeta de Crédito Mastercard',
+      description: 'Pago seguro con encriptación',
       icon: '💳',
-      info: t('payuCheckout.mastercard.info'),
+      info: 'Tu tarjeta está protegida por PayU',
       recommend: false,
     },
   ];
@@ -40,9 +40,14 @@ export default function PayUCheckout({ orderId }) {
   const handlePayment = async () => {
     try {
       const response = await createPayment(orderId, selectedMethod);
-      if (response?.data?.payment_url) {
-        window.location.href = response.data.payment_url;
+      
+      if (response?.payment_url) {
+        // Para PSE y otros métodos, redirige a PayU
+        window.location.href = response.payment_url;
+        return;
       }
+
+      throw new Error('No se recibió URL de pago desde el servidor.');
     } catch (err) {
       console.error('Error al procesar pago:', err);
     }
@@ -50,7 +55,7 @@ export default function PayUCheckout({ orderId }) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-lg font-bold text-gray-800 mb-4">🇨🇴 {t('payuCheckout.title')}</h3>
+      <h3 className="text-lg font-bold text-gray-800 mb-4">🇨🇴 Selecciona tu Método de Pago</h3>
 
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -85,12 +90,12 @@ export default function PayUCheckout({ orderId }) {
                     <h4 className="font-bold text-gray-800">{method.name}</h4>
                     {method.recommend && (
                       <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
-                        ⭐ {t('payuCheckout.recommended')}
+                        Recomendado
                       </span>
                     )}
                   </div>
                   <p className="text-sm text-gray-600">{method.description}</p>
-                  <p className="text-xs text-gray-500 mt-1 font-semibold">ℹ️ {method.info}</p>
+                  <p className="text-xs text-gray-500 mt-1 font-semibold">{method.info}</p>
                 </div>
               </div>
             </label>
@@ -102,18 +107,17 @@ export default function PayUCheckout({ orderId }) {
       {selectedMethod === 'PSE' && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-sm text-blue-900">
-            <strong>💡 {t('payuCheckout.tip')}:</strong> {t('payuCheckout.pseTip')}
+            <strong>Tip:</strong> PSE es el metodo mas popular en Colombia. Una vez autorices el pago, 
+            serás redirigido a PayU para completar la transacción.
           </p>
         </div>
       )}
 
       <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <p className="text-sm text-gray-700 font-semibold">{t('payuCheckout.summary')}</p>
+        <p className="text-sm text-gray-700 font-semibold">Resumen</p>
         <div className="flex justify-between mt-2">
-          <span className="text-gray-600">{t('payuCheckout.totalLabel')}</span>
-          <span className="font-bold text-lg text-blue-600">
-            COP ${(cart?.total + 5000 || 5000).toLocaleString()}
-          </span>
+          <span className="text-gray-600">Total a pagar:</span>
+          <span className="font-bold text-lg text-blue-600">COP ${cartTotalWithDelivery.toLocaleString('es-CO')}</span>
         </div>
       </div>
 
@@ -122,13 +126,11 @@ export default function PayUCheckout({ orderId }) {
         disabled={loading}
         className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-bold py-3 px-4 rounded-lg transition"
       >
-        {loading
-          ? `⏳ ${t('payuCheckout.processing')}`
-          : t('payuCheckout.payBtn', { method: selectedMethod })}
+        {loading ? '⏳ Procesando...' : `Pagar con ${selectedMethod}`}
       </button>
 
       <p className="text-xs text-gray-500 text-center">
-        🔒 {t('payuCheckout.secureNote')}
+        🔒 Tu información está protegida por PayU
       </p>
     </div>
   );

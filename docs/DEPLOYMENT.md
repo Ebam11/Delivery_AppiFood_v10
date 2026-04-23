@@ -1,4 +1,4 @@
-# 🚀 Guía de Deployment en Railway para AppiFood
+# 🚀 Deployment en Railway para AppiFood
 
 ## 1. Problemas Solucionados
 
@@ -65,6 +65,13 @@ QUEUE_CONNECTION=sync
 # API (opcional, solo si usas estos servicios)
 OPENAI_API_KEY=sk_test_api_key
 ANTHROPIC_API_KEY=tu_key_aqui
+
+# CORS (restrictivo para producción)
+CORS_ALLOWED_ORIGINS=https://appifood-frontend.vercel.app,https://www.appifood.com
+
+# Seguridad
+DEBUGBAR_ENABLED=false
+TELESCOPE_ENABLED=false
 ```
 
 ### D. Conectar BD al Backend
@@ -196,7 +203,3 @@ ${{RAILWAY_DB_PASSWORD}}
 # O en nixpacks.toml, úsalas así:
 cmd = "php artisan migrate --force && php -S 0.0.0.0:8080 -t public/ public/index.php"
 ```
-
----
-
-¿Necesitas ayuda en algún paso específico? 🚀

@@ -1,14 +1,12 @@
 // Archivo: src/pages/Cart.jsx | Comentario: logica principal del modulo.
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { Loading } from '../components/Loading';
 
 export const Cart = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
   const {
     cart,
     isLoading,
@@ -33,9 +31,9 @@ export const Cart = () => {
     <div className="min-h-screen bg-gradient-to-b from-[#fff8f6] via-[#fffdfc] to-white p-4 sm:p-6 lg:p-8">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <p className="text-xs tracking-widest uppercase font-black text-[#FF4B3E] mb-2">{t('cartPage.subtitle')}</p>
-          <h1 className="text-4xl sm:text-5xl font-black text-gray-900">{t('cartPage.title')}</h1>
-          <p className="text-gray-500 mt-2">{t('cartPage.description')}</p>
+          <p className="text-xs tracking-widest uppercase font-black text-[#FF4B3E] mb-2">Tu pedido</p>
+          <h1 className="text-4xl sm:text-5xl font-black text-gray-900">Carrito de Compras</h1>
+          <p className="text-gray-500 mt-2">Revisa tus productos antes de continuar al pago.</p>
         </div>
 
         {error && <ErrorMessage message={error} onDismiss={clearError} />}
@@ -43,13 +41,13 @@ export const Cart = () => {
         {!cart || !cart.items || cart.items.length === 0 ? (
           <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 text-center">
             <p className="text-gray-600 text-xl mb-5">
-              {t('cartPage.empty')}
+              Tu carrito está vacío
             </p>
             <button
               onClick={() => navigate('/restaurants')}
               className="bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] hover:shadow-lg hover:shadow-[#FF4B3E]/25 text-white font-bold py-3 px-7 rounded-xl transition"
             >
-              {t('cartPage.explore')}
+              Explorar Restaurantes
             </button>
           </div>
         ) : (
@@ -66,7 +64,7 @@ export const Cart = () => {
                       {item.name}
                     </h3>
                     <p className="text-gray-500 text-sm mt-1">
-                      ${Number(item.unit_price || 0).toLocaleString('es-CO')} {t('cartPage.each')}
+                      ${Number(item.unit_price || 0).toLocaleString('es-CO')} c/u
                     </p>
                   </div>
 
@@ -74,7 +72,9 @@ export const Cart = () => {
                     {/* Cantidad */}
                     <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-2 py-1">
                       <button
-                        onClick={() => updateItemQuantity(item.id, item.quantity - 1)}
+                        onClick={() =>
+                          updateItemQuantity(item.id, item.quantity - 1)
+                        }
                         disabled={isLoading}
                         className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 disabled:opacity-50 font-bold"
                       >
@@ -84,7 +84,9 @@ export const Cart = () => {
                         {item.quantity}
                       </span>
                       <button
-                        onClick={() => updateItemQuantity(item.id, item.quantity + 1)}
+                        onClick={() =>
+                          updateItemQuantity(item.id, item.quantity + 1)
+                        }
                         disabled={isLoading}
                         className="w-8 h-8 rounded-full bg-[#FF4B3E] hover:bg-[#e03a2d] text-white disabled:opacity-50 font-bold"
                       >
@@ -99,6 +101,7 @@ export const Cart = () => {
                       </p>
                     </div>
 
+                    {/* Eliminar */}
                     <button
                       onClick={() => removeItemFromCart(item.id)}
                       disabled={isLoading}
@@ -113,25 +116,27 @@ export const Cart = () => {
 
             {/* Resumen */}
             <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 h-fit sticky top-6">
-              <h2 className="text-2xl font-black text-gray-900 mb-4">{t('cartPage.summary')}</h2>
+              <h2 className="text-2xl font-black text-gray-900 mb-4">Resumen</h2>
 
               <div className="space-y-3 mb-6 pb-6 border-b">
                 <div className="flex justify-between text-gray-600">
-                  <span>{t('cartPage.subtotal')}</span>
-                  <span className="font-semibold">${subtotal.toLocaleString('es-CO')}</span>
+                  <span>Subtotal:</span>
+                  <span className="font-semibold">
+                    ${subtotal.toLocaleString('es-CO')}
+                  </span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>{t('cartPage.shipping')}</span>
+                  <span>Envío:</span>
                   <span className="font-semibold">${delivery.toLocaleString('es-CO')}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>{t('cartPage.discount')}</span>
+                  <span>Descuento:</span>
                   <span className="font-semibold text-green-600">$0.00</span>
                 </div>
               </div>
 
               <div className="flex justify-between items-center mb-6">
-                <span className="text-lg font-black text-gray-900">{t('cartPage.total')}</span>
+                <span className="text-lg font-black text-gray-900">Total:</span>
                 <span className="text-3xl font-black text-[#FF4B3E]">
                   ${total.toLocaleString('es-CO')}
                 </span>
@@ -141,14 +146,14 @@ export const Cart = () => {
                 onClick={() => navigate('/checkout')}
                 className="w-full bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] hover:shadow-lg hover:shadow-[#FF4B3E]/25 text-white font-bold py-3.5 rounded-xl transition"
               >
-                {t('cartPage.checkout')}
+                Proceder al Pago
               </button>
 
               <button
                 onClick={() => navigate('/restaurants')}
                 className="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3.5 rounded-xl transition"
               >
-                {t('cartPage.keepShopping')}
+                Seguir Comprando
               </button>
             </div>
           </div>
