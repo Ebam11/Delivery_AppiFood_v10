@@ -3,28 +3,46 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ProductModal from '../components/ProductModal'
-import ProductCard from '../components/ProductCard'
 import RestaurantCard from '../components/RestaurantCard'
 import Footer from '../components/Footer'
-import { useTranslation } from 'react-i18next'
+import { useFavoritesStore } from '../store/favoritesStore'
+import { useAuthStore } from '../store/authStore'
+import { fetchJson } from '../api/fetchJson'
+import { MOCK_RESTAURANTS } from '../data/mockRestaurants'
 
-const STATIC_RESTAURANTS = [
-  { id:1, name:'Burger House',    badge:'Verificado ✓', badgeType:'default', rating:4.5, time:'25–40', delivery:3500, img:'/images/group-2-6-91.png' },
-  { id:2, name:'Pizza Nostra',    badge:'Verificado ✓', badgeType:'default', rating:4.8, time:'35–50', delivery:4000, img:'/images/group-3-6-92.png' },
-  { id:3, name:'Sushi Zen',       badge:'Nuevo',        badgeType:'green',   rating:4.7, time:'40–55', delivery:5000, img:'/images/group-4-6-93.png' },
-  { id:4, name:'El Rincón Paisa', badge:'Oferta',       badgeType:'yellow',  rating:4.3, time:'30–45', delivery:2500, img:'/images/group-5-6-94.png' },
-]
+const STATIC_RESTAURANTS = []
 
-const STATIC_PRODUCTS = [
-  { id:1, name:'Delicious Burger',    category:'burger',  price:35000, oldPrice:55000, pct:25, img:'/images/delicious-burger-png-106.png' },
-  { id:2, name:'Grilled Chicken',     category:'chicken', price:39000, oldPrice:42000, pct:7,  img:'/images/grilled-2-png-121.png' },
-  { id:3, name:'Ruti With Chicken',   category:'chicken', price:26000, oldPrice:29000, pct:10, img:'/images/ruti-png-136.png' },
-  { id:4, name:'Fast Food Combo',     category:'burger',  price:28000, oldPrice:34000, pct:18, img:'/images/main-food-2-png-151.png' },
-  { id:5, name:'Chicago Deep Pizza',  category:'pizza',   price:22000, oldPrice:28000, pct:21, img:'/images/pizza-3-png-166.png' },
-  { id:6, name:'Chinese Pasta',       category:'pasta',   price:34000, oldPrice:40000, pct:15, img:'/images/pasta-2-png-181.png' },
-  { id:7, name:'Whopper Burger King', category:'burger',  price:26000, oldPrice:30000, pct:13, img:'/images/burger-2-1-png-196.png' },
-  { id:8, name:'Ruti With Beef',      category:'chicken', price:28520, oldPrice:30520, pct:7,  img:'/images/beef-ruti-png-211.png' },
-]
+const normalizeRestaurant = (restaurant, index = 0) => {
+  const fallback = MOCK_RESTAURANTS[index % MOCK_RESTAURANTS.length] || {}
+  const categories = Array.isArray(restaurant.categories) ? restaurant.categories : []
+  const menuCategories = Array.isArray(restaurant.menu_categories) ? restaurant.menu_categories : []
+  const products = Array.isArray(restaurant.products) ? restaurant.products : []
+  
+  const formatDeliveryTime = () => {
+    if (restaurant.delivery_time_min && restaurant.delivery_time_max) {
+      return `${restaurant.delivery_time_min}-${restaurant.delivery_time_max}`
+    }
+    if (restaurant.delivery_time_min) {
+      return `${restaurant.delivery_time_min}`
+    }
+    if (restaurant.time) {
+      return restaurant.time
+    }
+    return fallback.time || '-- min'
+  }
+
+  return {
+    ...restaurant,
+    img: restaurant.banner || restaurant.logo || restaurant.image || fallback.img || '',
+    rating: Number((Number(restaurant.average_rating ?? restaurant.rating ?? fallback.rating ?? 4.5)).toFixed(1)),
+    time: formatDeliveryTime(),
+    delivery: Number(restaurant.delivery_cost ?? restaurant.delivery ?? fallback.delivery ?? 3500),
+    products,
+    menu_categories: menuCategories,
+  }
+}
+
+const STATIC_PRODUCTS = []  // Será reemplazado con datos reales de la API
 
 const CATEGORIES = [
   { key:'all', label:'Todos' },
@@ -92,34 +110,125 @@ const S = {
   },
 }
 
-export default function HomePage({ isAuth, data = {} }) {
+export default function HomePage({ isAuth }) {
   const {
-    popularRestaurants = STATIC_RESTAURANTS,
-    featuredProducts   = STATIC_PRODUCTS,
-    stats = { restaurants:'3+', avg_delivery:'25 min', avg_rating:'4.8 ⭐' },
-  } = data
+    stats = { restaurants:'6+', avg_delivery:'25 min', avg_rating:'4.8' },
+  } = {}
 
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { token } = useAuthStore()
+  const { fetchFavorites, toggleFavorite, isFavorite } = useFavoritesStore()
+  
+  // Estado para restaurantes y productos
+  const [popularRestaurants, setPopularRestaurants] = useState([])
+  const [loadingRestaurants, setLoadingRestaurants] = useState(true)
+  const [featuredProducts, setFeaturedProducts] = useState([])
+  const [loadingProducts, setLoadingProducts] = useState(true)
+
+  // Cargar restaurantes y productos del servidor
+  useEffect(() => {
+    const loadRestaurants = async () => {
+      try {
+        setLoadingRestaurants(true)
+        const data = await fetchJson('/restaurants')
+        const restaurantsArray = Array.isArray(data) ? data : data.data || data.restaurants || []
+        
+        if (restaurantsArray.length > 0) {
+          const enriched = restaurantsArray.slice(0, 8).map((restaurant, idx) =>
+            normalizeRestaurant(restaurant, idx)
+          )
+          setPopularRestaurants(enriched)
+        } else {
+          setPopularRestaurants(MOCK_RESTAURANTS.slice(0, 4))
+        }
+      } catch (err) {
+        console.error('Error cargando restaurantes:', err)
+        setPopularRestaurants(MOCK_RESTAURANTS.slice(0, 4))
+      } finally {
+        setLoadingRestaurants(false)
+      }
+    }
+    
+    loadRestaurants()
+  }, [])
+
+  // Cargar productos destacados desde los restaurantes
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setLoadingProducts(true)
+        const data = await fetchJson('/restaurants')
+        const restaurantsArray = Array.isArray(data) ? data : data.data || data.restaurants || []
+        
+        if (restaurantsArray.length > 0) {
+          // Extraer productos de todos los restaurantes
+          const allProducts = []
+          restaurantsArray.forEach((restaurant) => {
+            if (Array.isArray(restaurant.products) && restaurant.products.length > 0) {
+              restaurant.products.slice(0, 3).forEach((product) => {
+                allProducts.push({
+                  ...product,
+                  restaurantId: restaurant.id,
+                  restaurantName: restaurant.name,
+                  // Calcular descuento ficticio para algunos
+                  oldPrice: product.price * 1.3,
+                  pct: 15,
+                })
+              })
+            }
+          })
+          
+          // Limitar a 12 productos destacados
+          setFeaturedProducts(allProducts.slice(0, 12))
+        }
+      } catch (err) {
+        console.error('Error cargando productos:', err)
+      } finally {
+        setLoadingProducts(false)
+      }
+    }
+    
+    loadProducts()
+  }, [])
+  
+  // Cargar favoritos al montar
+  useEffect(() => {
+    if (token) {
+      fetchFavorites(token)
+    }
+  }, [token, fetchFavorites])
+  
+  const handleRestaurantSelect = (restaurant) => {
+    navigate(`/restaurants/${restaurant.id}`)
+  }
+  
+  const handleFavoriteToggle = async (restaurantId) => {
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    await toggleFavorite(restaurantId, token)
+  }
+  
   // Carrusel de hero
   const heroSlides = [
     {
       title: 'HOT SPICY\nCHICKEN BURGER',
-      subtitle: '🔥 Crujiente, cada bocado sabe',
+      subtitle: 'Crujiente, cada bocado sabe',
       price: 30000,
       discount: 25,
       image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=800&h=600&fit=crop',
     },
     {
       title: 'CHICAGO DEEP\nPIZZA',
-      subtitle: '🍕 Clásica y deliciosa',
+      subtitle: 'Clasica y deliciosa',
       price: 22000,
       discount: 20,
       image: 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=800&h=600&fit=crop',
     },
     {
       title: 'SUSHI PREMIUM\nSET',
-      subtitle: '🍣 Fresco del día',
+      subtitle: 'Fresco del dia',
       price: 45000,
       discount: 15,
       image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=800&h=600&fit=crop',
@@ -136,15 +245,9 @@ export default function HomePage({ isAuth, data = {} }) {
   }, [])
 
   const [modal, setModal]       = useState(null)
-  const [activeCat, setActiveCat] = useState('all')
-  const [favs, setFavs]           = useState(new Set())
   const [carIdx, setCarIdx]       = useState(0)
   const [copied, setCopied]       = useState(false)
   const trackRef = useRef(null)
-
-  const filtered = activeCat === 'all'
-    ? featuredProducts
-    : featuredProducts.filter(p => p.category === activeCat)
 
   const slide = dir => {
     const track = trackRef.current
@@ -158,14 +261,13 @@ export default function HomePage({ isAuth, data = {} }) {
     track.style.transform = `translateX(-${next * (cards[0].offsetWidth + 24)}px)`
   }
 
-  const toggleFav = (id, e) => {
+  const toggleFav = async (restaurantId, e) => {
     e.stopPropagation()
-    if (!isAuth) { window.location.href = '/login'; return }
-    setFavs(prev => {
-      const s = new Set(prev)
-      s.has(id) ? s.delete(id) : s.add(id)
-      return s
-    })
+    if (!token) {
+      navigate('/login')
+      return
+    }
+    await toggleFavorite(restaurantId, token)
   }
 
   const badgeStyle = type => ({
@@ -248,12 +350,10 @@ export default function HomePage({ isAuth, data = {} }) {
 
             <div style={{ display:'flex', gap:12, flexWrap:'wrap', justifyContent: 'center', marginBottom:40, animation: 'fadeInUp 0.6s ease 0.3s backwards' }}>
               <a href="#fastfoods" style={S.btnRed}>
-                {/*<i className="fas fa-utensils" /> Ordenar ahora */}
-                <i className="fas fa-utensils" /> {t('home.order_now')}
+                <i className="fas fa-utensils" /> Ordenar ahora
               </a>
               <a href="#popular" style={S.btnOutline}>
-                {/*<i className="fas fa-store" /> Ver restaurantes*/}
-                <i className="fas fa-store" /> {t('home.view_restaurants')}
+                <i className="fas fa-store" /> Ver restaurantes
               </a>
             </div>
 
@@ -308,28 +408,45 @@ export default function HomePage({ isAuth, data = {} }) {
       `}</style>
 
       {/* ══════════ RESTAURANTES POPULARES ══════════ */}
-      <section id="popular" style={{ ...S.section, padding:'24px 0 32px' }}>
+      <section id="popular" style={{ ...S.section, padding:'48px 0 64px', background:'white' }}>
         <div style={S.wrap}>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:32 }}>
-            <div>
-              <p style={{ color:'#16a34a', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>
-                🌟 Destacados
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:40 }}>
+            <div style={{ animation: 'fadeInDown 0.6s ease' }}>
+              <p style={{ color:S.red, fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>
+                Destacados
               </p>
-              <h2 style={{ fontSize:'clamp(1.6rem,3vw,2.2rem)', fontWeight:900, color:'#111', margin:0 }}>
-                {/*Restaurantes Populares*/}
-                {t('home.popular_restaurants')}
+              <h2 style={{ fontSize:'clamp(1.8rem,3vw,2.4rem)', fontWeight:900, color:'#111', margin:0 }}>
+                Restaurantes Populares
               </h2>
             </div>
-            <div style={{ display:'flex', gap:8 }}>
+            <div style={{ display:'flex', gap:12 }}>
               {[[-1,'←'],[1,'→']].map(([dir, lbl]) => (
                 <button key={dir} onClick={() => slide(dir)}
                   style={{
-                    width:40, height:40, borderRadius:'50%', border:'2px solid #e5e5e5',
+                    width:44, height:44, borderRadius:'50%', border:`2px solid ${dir===1 ? S.red : '#e5e5e5'}`,
                     background: dir===1 ? S.red : 'white',
                     color: dir===1 ? 'white' : '#555',
                     fontWeight:700, fontSize:16, cursor:'pointer',
                     display:'flex', alignItems:'center', justifyContent:'center',
-                  }}>
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'scale(1.1)'
+                    if (dir === -1) {
+                      e.target.style.background = S.red
+                      e.target.style.borderColor = S.red
+                      e.target.style.color = 'white'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'scale(1)'
+                    if (dir === -1) {
+                      e.target.style.background = 'white'
+                      e.target.style.borderColor = '#e5e5e5'
+                      e.target.style.color = '#555'
+                    }
+                  }}
+                >
                   {lbl}
                 </button>
               ))}
@@ -337,74 +454,605 @@ export default function HomePage({ isAuth, data = {} }) {
           </div>
 
           <div style={{ overflow:'hidden' }}>
-            <div ref={trackRef} style={{ display:'flex', gap:24, transition:'transform 0.5s ease' }}>
-              {popularRestaurants.map(r => (
-                <div key={r.id} className="rc"
+            {loadingRestaurants ? (
+              <div style={{ display:'flex', justifyContent:'center', padding:'80px 0' }}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 16,
+                }}>
+                  <div style={{
+                    width:50, height:50,
+                    border:'4px solid ' + S.red,
+                    borderTop: '4px solid transparent',
+                    borderRadius:'50%',
+                    animation: 'spin 1s linear infinite'
+                  }}></div>
+                  <p style={{ color:'#666', fontWeight:500 }}>Cargando restaurantes...</p>
+                </div>
+              </div>
+            ) : popularRestaurants.length === 0 ? (
+              <div style={{ textAlign:'center', padding:'60px 20px', background:'#f9fafb', borderRadius:20 }}>
+                <p style={{ fontSize:48, marginBottom:16 }}>🏪</p>
+                <p style={{ color:'#666', fontSize:16 }}>No hay restaurantes disponibles en este momento</p>
+              </div>
+            ) : (
+              <div ref={trackRef} style={{ display:'flex', gap:24, transition:'transform 0.5s ease' }}>
+                {popularRestaurants.map((r, idx) => (
+                  <div key={r.id} className="rc"
+                    style={{
+                      flexShrink:0, 
+                      width:'calc(25% - 18px)', 
+                      minWidth:240,
+                      animation: `fadeInUp 0.6s ease ${0.1 * idx}s backwards`,
+                    }}>
+                    <RestaurantCard 
+                      restaurant={r}
+                      onSelect={handleRestaurantSelect}
+                      onFavoriteToggle={handleFavoriteToggle}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════ OFERTAS ══════════ */}
+      <section id="ofertas" style={{ ...S.section, background:'linear-gradient(135deg, #fafbfc 0%, #fff9f0 100%)', padding:'48px 0 64px' }}>
+        <div style={S.wrap}>
+          <p style={{ color:'#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8, animation: 'fadeInDown 0.6s ease' }}>
+            <i className="fas fa-tag"></i> Descuentos especiales
+          </p>
+          <h2 style={{ fontSize:'clamp(1.8rem,3vw,2.4rem)', fontWeight:900, color:'#111', margin:'0 0 8px', animation: 'fadeInDown 0.7s ease 0.1s backwards' }}>
+            Ofertas
+          </h2>
+          <p style={{ color:'#666', fontSize:16, marginBottom:32, animation: 'fadeInUp 0.6s ease 0.2s backwards' }}>
+            Platos con descuentos especiales
+          </p>
+
+          {loadingProducts ? (
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', padding:'80px 0' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 16,
+              }}>
+                <div style={{
+                  width:50, height:50,
+                  border:'4px solid #FF4B3E',
+                  borderTop: '4px solid transparent',
+                  borderRadius:'50%',
+                  animation: 'spin 1s linear infinite'
+                }}></div>
+                <p style={{ color:'#666', fontWeight:500 }}>Cargando ofertas...</p>
+              </div>
+            </div>
+          ) : (
+            <>
+            <div style={{
+              display:'grid',
+              gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))',
+              gap:24,
+              marginBottom:40,
+            }}>
+              {(featuredProducts && Array.isArray(featuredProducts) && featuredProducts.length > 0 ? featuredProducts : []).map((p, idx) => (
+                  <div 
+                    key={`${p.id}-${idx}`}
+                    onClick={() => setModal({ id:p.id, name:p.name, price:p.price, img:p.image || '/images/placeholder.png', isMock: false, restaurantId: p.restaurantId })}
+                    style={{
+                      position: 'relative',
+                      borderRadius: 20,
+                      overflow: 'hidden',
+                      background: 'white',
+                      cursor: 'pointer',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                      transition: 'all 0.3s ease',
+                      animation: `fadeInUp 0.6s ease ${0.05 * (idx % 4)}s backwards`,
+                      transform: 'translateY(0)',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-8px)'
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)'
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)'
+                      e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'
+                    }}
+                  >
+                    {/* Imagen */}
+                    <div style={{
+                      width: '100%',
+                      height: 180,
+                      background: 'linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%)',
+                      overflow: 'hidden',
+                      position: 'relative',
+                    }}>
+                      <img 
+                        src={p.image || '/images/placeholder.png'} 
+                        alt={p.name}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          transition: 'transform 0.3s ease',
+                        }}
+                        onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
+                        onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                      />
+                      
+                      {/* Badge descuento */}
+                      {p.pct && (
+                        <div style={{
+                          position: 'absolute',
+                          top: 12,
+                          right: 12,
+                          background: S.red,
+                          color: 'white',
+                          padding: '6px 12px',
+                          borderRadius: 12,
+                          fontWeight: 900,
+                          fontSize: 12,
+                          boxShadow: '0 4px 12px rgba(255, 75, 62, 0.3)',
+                        }}>
+                          -{p.pct}%
+                        </div>
+                      )}
+                      
+                      {/* Botón corazón */}
+                      <button
+                        onClick={(e) => {
+                          toggleFav(p.restaurantId, e)
+                        }}
+                        aria-label={isFavorite(p.restaurantId) ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                        style={{
+                          position: 'absolute',
+                          bottom: 12,
+                          right: 12,
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          background: 'white',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: 14,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          transition: 'all 0.2s ease',
+                          color: isFavorite(p.restaurantId) ? '#FF4B3E' : '#d1d5db',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.18)',
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isFavorite(p.restaurantId)) {
+                            e.currentTarget.style.color = '#FF4B3E'
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isFavorite(p.restaurantId)) {
+                            e.currentTarget.style.color = '#d1d5db'
+                          }
+                        }}
+                      >
+                        <i className={`fas fa-heart ${isFavorite(p.restaurantId) ? 'text-[#FF4B3E]' : ''}`} />
+                      </button>
+                    </div>
+                    
+                    {/* Contenido */}
+                    <div style={{ padding: '16px' }}>
+                      {/* Restaurant */}
+                      <p style={{
+                        color: '#FF4B3E',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        margin: '0 0 6px',
+                      }}>
+                        {p.restaurantName}
+                      </p>
+                      
+                      {/* Nombre */}
+                      <h3 style={{
+                        fontSize: 15,
+                        fontWeight: 900,
+                        color: '#111',
+                        margin: '0 0 8px',
+                        lineHeight: 1.3,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                      }}>
+                        {p.name}
+                      </h3>
+                      
+                      {/* Descripción */}
+                      {p.description && (
+                        <p style={{
+                          fontSize: 12,
+                          color: '#888',
+                          margin: '0 0 12px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {p.description}
+                        </p>
+                      )}
+                      
+                      {/* Precio */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        marginBottom: 12,
+                      }}>
+                        <span style={{
+                          fontSize: 18,
+                          fontWeight: 900,
+                          color: '#111',
+                        }}>
+                          ${fmt(p.price)}
+                        </span>
+                        {p.oldPrice && (
+                          <span style={{
+                            fontSize: 13,
+                            color: '#999',
+                            textDecoration: 'line-through',
+                            fontWeight: 600,
+                          }}>
+                            ${fmt(p.oldPrice)}
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Botón añadir */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setModal({ id:p.id, name:p.name, price:p.price, img:p.image || '/images/placeholder.png', isMock: false, restaurantId: p.restaurantId })
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '10px',
+                          background: S.red,
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: 12,
+                          fontWeight: 700,
+                          fontSize: 13,
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                        }}
+                        onMouseEnter={(e) => e.target.style.background = S.redDk}
+                        onMouseLeave={(e) => e.target.style.background = S.red}
+                      >
+                        <i className="fas fa-plus" /> Agregar
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* Call to action */}
+            <div style={{ textAlign:'center', marginTop:40, animation: 'fadeInUp 0.6s ease 0.5s backwards' }}>
+              <Link to="/restaurants" style={S.btnRed}>
+                <i className="fas fa-utensils" /> Ver más ofertas
+              </Link>
+            </div>
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* ══════════ RESTAURANTES CERCANOS ══════════ */}
+      <section style={{ ...S.section, background:'white', padding:'48px 0 64px' }}>
+        <div style={S.wrap}>
+          <p style={{ color:'#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8, animation: 'fadeInDown 0.6s ease' }}>
+            <i className="fas fa-map-marker-alt"></i> Para ti
+          </p>
+          <h2 style={{ fontSize:'clamp(1.8rem,3vw,2.4rem)', fontWeight:900, color:'#111', margin:'0 0 8px', animation: 'fadeInDown 0.7s ease 0.1s backwards' }}>
+            Restaurantes Cercanos
+          </h2>
+          <p style={{ color:'#666', fontSize:16, marginBottom:32, animation: 'fadeInUp 0.6s ease 0.2s backwards' }}>
+            Descubre los mejores restaurantes en tu zona
+          </p>
+          
+          {loadingRestaurants ? (
+            <div style={{ display:'flex', justifyContent:'center', alignItems:'center', padding:'80px 0' }}>
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 16,
+              }}>
+                <div style={{
+                  width:50, height:50,
+                  border:'4px solid #FF4B3E',
+                  borderTop: '4px solid transparent',
+                  borderRadius:'50%',
+                  animation: 'spin 1s linear infinite'
+                }}></div>
+                <p style={{ color:'#666', fontWeight:500 }}>Cargando restaurantes...</p>
+              </div>
+            </div>
+          ) : (
+            <div style={{
+              display:'grid',
+              gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))',
+              gap:16,
+              marginBottom:40,
+            }}>
+              {popularRestaurants.map((restaurant, idx) => (
+                <div
+                  key={restaurant.id || idx}
+                  onClick={() => handleRestaurantSelect(restaurant)}
                   style={{
-                    flexShrink:0, width:'calc(25% - 18px)', minWidth:220,
+                    position: 'relative',
+                    borderRadius: 16,
+                    overflow: 'hidden',
+                    background: 'white',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    transition: 'all 0.3s ease',
+                    animation: `fadeInUp 0.6s ease ${0.05 * (idx % 4)}s backwards`,
+                    transform: 'translateY(0)',
+                    border: '1px solid #f0f0f0',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'
+                  }}
+                >
+                  {/* Imagen */}
+                  <div style={{
+                    width: '100%',
+                    height: 110,
+                    background: 'linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%)',
+                    overflow: 'hidden',
+                    position: 'relative',
                   }}>
-                  <RestaurantCard 
-                    restaurant={r}
-                    onSelect={rest => navigate(`/restaurants/${rest.id}`)}
-                  />
+                    <img
+                      src={restaurant.img || '/images/placeholder.png'}
+                      alt={restaurant.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
+                      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                    />
+                    
+                    {/* Rating badge */}
+                    {restaurant.rating && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        background: '#facc15',
+                        color: '#111',
+                        padding: '2px 8px',
+                        borderRadius: 10,
+                        fontWeight: 700,
+                        fontSize: 11,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 3,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      }}>
+                        <i className="fas fa-star" style={{ fontSize: 9 }} /> {restaurant.rating}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ padding: 12 }}>
+                    <h3 style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: '#111',
+                      margin: '0 0 6px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {restaurant.name}
+                    </h3>
+
+                    {/* Stats */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontSize: 10,
+                      color: '#666',
+                      flexWrap: 'wrap',
+                    }}>
+                      <span>
+                        <i className="fas fa-clock" style={{ marginRight: 3 }} />
+                        {restaurant.time} min
+                      </span>
+                      <span>
+                        <i className="fas fa-motorcycle" style={{ marginRight: 3 }} />
+                        ${fmt(restaurant.delivery)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ══════════ RESTAURANTES FAVORITOS ══════════ */}
+      {isAuth && popularRestaurants.filter(r => isFavorite(r.id)).length > 0 && (
+        <section style={{ ...S.section, background:'white', padding:'48px 0 64px' }}>
+          <div style={S.wrap}>
+            <p style={{ color:'#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8, animation: 'fadeInDown 0.6s ease' }}>
+              <i className="fas fa-heart"></i> Tus favoritos
+            </p>
+            <h2 style={{ fontSize:'clamp(1.8rem,3vw,2.4rem)', fontWeight:900, color:'#111', margin:'0 0 8px', animation: 'fadeInDown 0.7s ease 0.1s backwards' }}>
+              Restaurantes Favoritos
+            </h2>
+            <p style={{ color:'#666', fontSize:16, marginBottom:32, animation: 'fadeInUp 0.6s ease 0.2s backwards' }}>
+              Tus restaurantes guardados
+            </p>
+            
+            <div style={{
+              display:'grid',
+              gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))',
+              gap:16,
+              marginBottom:40,
+            }}>
+              {popularRestaurants.filter(r => isFavorite(r.id)).map((restaurant, idx) => (
+                <div
+                  key={restaurant.id || idx}
+                  onClick={() => handleRestaurantSelect(restaurant)}
+                  style={{
+                    position: 'relative',
+                    borderRadius: 16,
+                    overflow: 'hidden',
+                    background: 'white',
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    transition: 'all 0.3s ease',
+                    animation: `fadeInUp 0.6s ease ${0.05 * (idx % 4)}s backwards`,
+                    transform: 'translateY(0)',
+                    border: '1px solid #f0f0f0',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'
+                  }}
+                >
+                  {/* Imagen */}
+                  <div style={{
+                    width: '100%',
+                    height: 110,
+                    background: 'linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%)',
+                    overflow: 'hidden',
+                    position: 'relative',
+                  }}>
+                    <img
+                      src={restaurant.img || '/images/placeholder.png'}
+                      alt={restaurant.name}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
+                      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                    />
+                    
+                    {/* Favorito badge */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      background: '#FF4B3E',
+                      color: 'white',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: 14,
+                      boxShadow: '0 2px 8px rgba(255, 75, 62, 0.3)',
+                    }}>
+                      <i className="fas fa-heart"></i>
+                    </div>
+                    
+                    {/* Rating badge */}
+                    {restaurant.rating && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: 8,
+                        left: 8,
+                        background: '#facc15',
+                        color: '#111',
+                        padding: '2px 8px',
+                        borderRadius: 10,
+                        fontWeight: 700,
+                        fontSize: 11,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 3,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                      }}>
+                        <i className="fas fa-star" style={{ fontSize: 9 }} /> {restaurant.rating}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ padding: 12 }}>
+                    <h3 style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: '#111',
+                      margin: '0 0 6px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}>
+                      {restaurant.name}
+                    </h3>
+
+                    {/* Stats */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontSize: 10,
+                      color: '#666',
+                      flexWrap: 'wrap',
+                    }}>
+                      <span>
+                        <i className="fas fa-clock" style={{ marginRight: 3 }} />
+                        {restaurant.time} min
+                      </span>
+                      <span>
+                        <i className="fas fa-motorcycle" style={{ marginRight: 3 }} />
+                        ${fmt(restaurant.delivery)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ══════════ FAST FOODS ══════════ */}
-      <section id="fastfoods" style={{ ...S.section, background:'#f9fafb', padding:'24px 0 32px' }}>
-        <div style={S.wrap}>
-          <p style={{ color:'#16a34a', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8 }}>
-            🔥 Crujiente, Cada Bocado Sabe
-          </p>
-          <h2 style={{ fontSize:'clamp(1.6rem,3vw,2.2rem)', fontWeight:900, color:'#111', margin:'0 0 24px' }}>
-            Popular Fast Foods
-          </h2>
-
-          {/* Filtros */}
-          <div style={{ display:'flex', gap:8, flexWrap:'wrap', marginBottom:32 }}>
-            {CATEGORIES.map(c => (
-              <button key={c.key} onClick={() => setActiveCat(c.key)}
-                style={activeCat===c.key ? S.pillActive : S.pillInactive}>
-                {c.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Grid */}
-          <div style={{
-            display:'grid',
-            gridTemplateColumns:'repeat(auto-fill, minmax(220px, 1fr))',
-            gap:20,
-          }}>
-            {filtered.map(p => (
-              <ProductCard 
-                key={p.id}
-                product={p}
-                onFav={toggleFav}
-                isFav={favs.has(p.id)}
-                onSelect={prod => setModal({ id:prod.id, name:prod.name, price:prod.price, img:prod.img })}
-              />
-            ))}
-          </div>
-
-          <div style={{ textAlign:'center', marginTop:40 }}>
-            <Link to="/restaurants" style={S.btnRed}>
-              <i className="fas fa-utensils" /> Ver todos los productos
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ══════════ CÓMO FUNCIONA ══════════ */}
-      <section id="how" className="py-24 bg-white">
+      <section id="how" className="py-24 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-16">
             <p className="text-[#FF4B3E] font-bold text-xs uppercase tracking-widest mb-2">
-              📱 Simple y rápido
+              Simple y rapido
             </p>
             <h2 className="text-4xl lg:text-5xl font-black text-gray-900">
               ¿Cómo funciona AppiFood?
@@ -442,7 +1090,7 @@ export default function HomePage({ isAuth, data = {} }) {
             }}>
               <div>
                 <p style={{ color:'#facc15', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:12 }}>
-                  🎟️ Oferta especial
+                  Oferta especial
                 </p>
                 <h2 style={{ color:'white', fontWeight:900, fontSize:'clamp(1.5rem,3vw,2rem)', margin:'0 0 8px' }}>
                   ¡15% de descuento<br />en tu primer pedido!

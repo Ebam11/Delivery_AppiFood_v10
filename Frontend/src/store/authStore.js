@@ -1,39 +1,21 @@
-// Archivo: src/store/authStore.js
+// Archivo: src/store/authStore.js | Comentario: logica principal del modulo.
 import { create } from 'zustand';
 import { login as apiLogin, logout as apiLogout } from '../api/auth';
 
-function normalizeUserRole(rawUser) {
-  if (!rawUser || typeof rawUser !== 'object') return rawUser;
-  const role = String(rawUser.role ?? rawUser.rol ?? 'customer').toLowerCase();
-  return { ...rawUser, role };
-}
-
-function loadUserFromStorage() {
-  try {
-    const saved = localStorage.getItem('user');
-    if (!saved) return null;
-    return normalizeUserRole(JSON.parse(saved));
-  } catch {
-    return null;
-  }
-}
-
 export const useAuthStore = create((set) => ({
   token: localStorage.getItem('token') || null,
-  user: loadUserFromStorage(),   // ← antes era null siempre
+  user: null,
   isLoading: false,
   error: null,
 
+  // Login
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
       const response = await apiLogin(email, password);
       const token = response.data?.token || response.token;
-      const rawUser = response.user || response.data?.user;
-      const user = normalizeUserRole(rawUser);
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      set({ token, user, isLoading: false });
+      set({ token, user: response.user || response.data?.user, isLoading: false });
       return response;
     } catch (error) {
       const message = error.response?.data?.message || 'Error al iniciar sesión';
@@ -42,6 +24,7 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  // Logout
   logout: async () => {
     set({ isLoading: true });
     try {
@@ -50,16 +33,13 @@ export const useAuthStore = create((set) => ({
       console.error('Error en logout:', error);
     }
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     set({ token: null, user: null, isLoading: false });
   },
 
-  setUser: (rawUser) => {
-    const user = normalizeUserRole(rawUser);
-    localStorage.setItem('user', JSON.stringify(user));
-    set({ user });
-  },
+  // Establecer usuario
+  setUser: (user) => set({ user }),
 
+  // Establecer token
   setToken: (token) => {
     if (token) {
       localStorage.setItem('token', token);
@@ -69,5 +49,6 @@ export const useAuthStore = create((set) => ({
     set({ token });
   },
 
+  // Limpiar errores
   clearError: () => set({ error: null }),
 }));

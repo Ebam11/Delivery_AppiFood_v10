@@ -1,18 +1,17 @@
 // Archivo: src/components/SubscriptionTab.jsx | Comentario: logica principal del modulo.
 import { useState, useEffect } from 'react'
 import { fetchJson } from '../api/fetchJson'
-import { useTranslation } from 'react-i18next'
+
+const SUBSCRIPTION_PLANS = {
+  free: { name: 'Gratis', color: '#gray', features: ['Acceso básico'] },
+  pro: { name: 'AppiPro', color: '#FF4B3E', features: ['Órdenes ilimitadas', '10% descuento'] },
+}
 
 export default function SubscriptionTab({ user }) {
-  const { t } = useTranslation()
   const [subscription, setSubscription] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [upgrading, setUpgrading] = useState(false)
-
-  const SUBSCRIPTION_PLANS = {
-    free: { name: t('subscriptionTab.plans.free'),   color: '#gray', features: [t('subscriptionTab.plans.freeFeature')] },
-    pro:  { name: t('subscriptionTab.plans.pro'),    color: '#FF4B3E', features: [t('subscriptionTab.plans.proFeature1'), t('subscriptionTab.plans.proFeature2')] },
-  }
 
   useEffect(() => {
     fetchUserSubscription()
@@ -24,6 +23,7 @@ export default function SubscriptionTab({ user }) {
       const data = await fetchJson('/api/user/subscription', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
+      console.log('📦 Datos de suscripción:', data)
       setSubscription(data.data || data)
     } catch (err) {
       console.log('ℹ️ Sin suscripción activa:', err.message)
@@ -47,14 +47,15 @@ export default function SubscriptionTab({ user }) {
       })
       setSubscription(data.data || data)
     } catch (err) {
-      alert(`${t('subscriptionTab.errorUpgrade')}: ${err.message}`)
+      alert(`Error al cambiar plan: ${err.message}`)
     } finally {
       setUpgrading(null)
     }
   }
 
   const handleCancel = async () => {
-    if (!confirm(t('subscriptionTab.confirmCancel'))) return
+    if (!confirm('¿Estás seguro de que deseas cancelar tu suscripción?')) return
+
     try {
       const token = localStorage.getItem('token')
       await fetchJson('/api/user/subscription/cancel', {
@@ -63,12 +64,12 @@ export default function SubscriptionTab({ user }) {
       })
       setSubscription({ plan: 'free', status: 'cancelled' })
     } catch (err) {
-      alert(`${t('subscriptionTab.errorCancel')}: ${err.message}`)
+      alert(`Error al cancelar: ${err.message}`)
     }
   }
 
   if (loading) {
-    return <div className="text-center py-6">{t('subscriptionTab.loading')}</div>
+    return <div className="text-center py-6">Cargando información de suscripción...</div>
   }
 
   const currentPlan = subscription?.plan || 'free'
@@ -80,16 +81,12 @@ export default function SubscriptionTab({ user }) {
       <div className="bg-gradient-to-r from-[#FF4B3E] to-[#e03a2d] rounded-xl p-6 text-white mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm opacity-90">{t('subscriptionTab.currentPlan')}</p>
+            <p className="text-sm opacity-90">Plan actual</p>
             <h3 className="text-3xl font-bold mt-2">{planInfo.name}</h3>
             <p className="mt-2 opacity-90">
-              {currentPlan === 'free'
-                ? t('subscriptionTab.freeCta')
-                : t('subscriptionTab.activeUntil', {
-                    date: subscription?.expires_at
-                      ? new Date(subscription.expires_at).toLocaleDateString('es-CO')
-                      : 'N/A'
-                  })}
+              {currentPlan === 'free' 
+                ? 'Disfruta de beneficios premium' 
+                : `Activo hasta ${subscription?.expires_at ? new Date(subscription.expires_at).toLocaleDateString('es-CO') : 'N/A'}`}
             </p>
           </div>
           <div className="text-right">
@@ -102,7 +99,7 @@ export default function SubscriptionTab({ user }) {
 
       {/* Cambiar Plan */}
       <div className="mb-8">
-        <h4 className="font-bold text-lg mb-4">{t('subscriptionTab.otherPlans')}</h4>
+        <h4 className="font-bold text-lg mb-4">Otros planes disponibles</h4>
         <div className="grid grid-cols-2 gap-4">
           {['pro'].map(planId => (
             <div key={planId} className="border rounded-lg p-4 hover:shadow-lg transition">
@@ -119,9 +116,7 @@ export default function SubscriptionTab({ user }) {
                     : 'bg-[#FF4B3E] text-white hover:bg-[#e03a2d]'
                 }`}
               >
-                {upgrading === planId
-                  ? t('subscriptionTab.processing')
-                  : t('subscriptionTab.switchPlan')}
+                {upgrading === planId ? 'Procesando...' : 'Cambiar a este plan'}
               </button>
             </div>
           ))}
@@ -130,14 +125,14 @@ export default function SubscriptionTab({ user }) {
 
       {/* Historial de Facturación */}
       <div className="mb-8">
-        <h4 className="font-bold text-lg mb-4">{t('subscriptionTab.billingHistory')}</h4>
+        <h4 className="font-bold text-lg mb-4">Historial de facturación</h4>
         <div className="border rounded-lg overflow-hidden">
           <table className="w-full text-sm">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left font-bold">{t('subscriptionTab.tableDate')}</th>
-                <th className="px-4 py-3 text-left font-bold">{t('subscriptionTab.tableConcept')}</th>
-                <th className="px-4 py-3 text-right font-bold">{t('subscriptionTab.tableAmount')}</th>
+                <th className="px-4 py-3 text-left font-bold">Fecha</th>
+                <th className="px-4 py-3 text-left font-bold">Concepto</th>
+                <th className="px-4 py-3 text-right font-bold">Monto</th>
               </tr>
             </thead>
             <tbody>
@@ -152,7 +147,7 @@ export default function SubscriptionTab({ user }) {
               ) : (
                 <tr>
                   <td colSpan="3" className="px-4 py-3 text-center text-gray-500">
-                    {t('subscriptionTab.noInvoices')}
+                    No hay facturas registradas
                   </td>
                 </tr>
               )}
@@ -165,13 +160,13 @@ export default function SubscriptionTab({ user }) {
       {currentPlan !== 'free' && subscription?.status === 'active' && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-700 mb-3">
-            {t('subscriptionTab.cancelWarning')}
+            ¿Deseas cancelar tu suscripción? Perderás acceso a los beneficios premium.
           </p>
           <button
             onClick={handleCancel}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition font-bold text-sm"
           >
-            {t('subscriptionTab.cancelBtn')}
+            Cancelar suscripción
           </button>
         </div>
       )}

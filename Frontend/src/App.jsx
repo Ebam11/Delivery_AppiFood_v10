@@ -118,7 +118,7 @@ export default function App() {
     let mounted = true
     
     console.log('🔄 Fetching user profile...')
-    fetchJson('/api/profile', {
+    fetchJson('/api/me', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(data => {
@@ -337,72 +337,82 @@ export default function App() {
 
           <Route path="/restaurant/dashboard" element={
             <RoleRoute user={user} allow={['restaurant']}>
-              <RestaurantDashboard user={user} onLogout={handleLogout} />
+              <PublicLayout
+                isAuth={isAuth}
+                user={user}
+                onLogout={handleLogout}
+                isLoading={loading}
+              >
+                <RestaurantDashboard user={user} />
+              </PublicLayout>
             </RoleRoute>
           } />
 
           <Route path="/restaurant/profile" element={
             <RoleRoute user={user} allow={['restaurant']}>
+              <PublicLayout
                 isAuth={isAuth}
                 user={user}
                 onLogout={handleLogout}
                 isLoading={loading}
+              >
                 <RestaurantManagementPage
                   title="Perfil del restaurante"
                   description="Completa y actualiza los datos de tu local para que la información sea visible en la app."
                   note="Aquí se centraliza la configuración del restaurante: nombre, dirección, contacto y portada."
                 />
+              </PublicLayout>
             </RoleRoute>
           } />
 
           <Route path="/restaurant/products" element={
             <RoleRoute user={user} allow={['restaurant']}>
-
+              <PublicLayout
                 isAuth={isAuth}
                 user={user}
                 onLogout={handleLogout}
                 isLoading={loading}
-
+              >
                 <RestaurantManagementPage
                   title="Productos"
                   description="Administra el menú de tu restaurante desde aquí."
                   note="Esta vista queda lista para conectar el catálogo de productos sin romper la navegación del panel."
                 />
-
+              </PublicLayout>
             </RoleRoute>
           } />
 
           <Route path="/restaurant/orders" element={
             <RoleRoute user={user} allow={['restaurant']}>
-
+              <PublicLayout
                 isAuth={isAuth}
                 user={user}
                 onLogout={handleLogout}
                 isLoading={loading}
-
+              >
                 <RestaurantManagementPage
                   title="Pedidos"
                   description="Revisa los pedidos activos y su estado de preparación."
                   note="La ruta ya no cae en 404 mientras se conecta el gestor de pedidos del restaurante."
                 />
-              
+              </PublicLayout>
             </RoleRoute>
           } />
 
           <Route path="/restaurant/categories" element={
             <RoleRoute user={user} allow={['restaurant']}>
-            
+              <PublicLayout
                 isAuth={isAuth}
                 user={user}
                 onLogout={handleLogout}
                 isLoading={loading}
-              
+              >
                 <RestaurantManagementPage
                   title="Categorías"
                   description="Organiza el menú por categorías para mantener el catálogo limpio."
                   note="Esta pantalla evita enlaces rotos y deja un punto de entrada estable para la administración de categorías."
                 />
-          
+              </PublicLayout>
             </RoleRoute>
           } />
 

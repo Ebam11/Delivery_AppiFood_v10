@@ -1,7 +1,6 @@
 // Archivo: src/pages/Addresses.jsx | Comentario: logica principal del modulo.
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../api/client';
 import Loading from '../components/Loading';
@@ -13,7 +12,6 @@ export default function Addresses() {
   const [error, setError] = useState(null);
   const { token } = useAuthStore();
   const navigate = useNavigate();
-  const { t } = useTranslation();
 
   useEffect(() => {
     fetchAddresses();
@@ -22,13 +20,11 @@ export default function Addresses() {
   const fetchAddresses = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/addresses', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/addresses');
       setAddresses(response.data.data || []);
       setError(null);
     } catch (err) {
-      setError(t('addresses.error_load'));
+      setError('Error al cargar las direcciones');
       console.error(err);
     } finally {
       setLoading(false);
@@ -36,14 +32,13 @@ export default function Addresses() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm(t('addresses.confirm_delete'))) return;
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta dirección?')) return;
+
     try {
-      await api.delete(`/api/addresses/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/addresses/${id}`);
       setAddresses(addresses.filter(a => a.id !== id));
     } catch (err) {
-      setError(t('addresses.error_delete'));
+      setError('Error al eliminar la dirección');
     }
   };
 
@@ -53,12 +48,12 @@ export default function Addresses() {
     <main className="page-addresses">
       <div className="container">
         <div className="page-header">
-          <h1>{t('addresses.title')}</h1>
+          <h1>Mis Direcciones</h1>
           <button
-            onClick={() => navigate('/addresses/create')}
+            onClick={() => navigate('/user/addresses/create')}
             className="btn btn-primary"
           >
-            <i className="fas fa-plus"></i> {t('addresses.add')}
+            <i className="fas fa-plus"></i> Agregar Dirección
           </button>
         </div>
 
@@ -69,25 +64,24 @@ export default function Addresses() {
             {addresses.map(address => (
               <div key={address.id} className="address-card">
                 <div className="address-card-header">
-                  <h3>{address.label || t('addresses.default_label')}</h3>
+                  <h3>{address.name || 'Casa'}</h3>
                   {address.is_default && (
-                    <span className="badge badge-primary">{t('addresses.default_badge')}</span>
+                    <span className="badge badge-primary">Por defecto</span>
                   )}
                 </div>
                 <p className="address-text">{address.address}</p>
-                {address.notes && <p className="address-notes">{address.notes}</p>}
                 <div className="address-actions">
                   <button
-                    onClick={() => navigate(`/addresses/${address.id}/edit`)}
+                    onClick={() => navigate(`/user/addresses/${address.id}/edit`)}
                     className="btn btn-sm btn-secondary"
                   >
-                    <i className="fas fa-edit"></i> {t('addresses.edit')}
+                    <i className="fas fa-edit"></i> Editar
                   </button>
                   <button
                     onClick={() => handleDelete(address.id)}
                     className="btn btn-sm btn-danger"
                   >
-                    <i className="fas fa-trash"></i> {t('addresses.delete')}
+                    <i className="fas fa-trash"></i> Eliminar
                   </button>
                 </div>
               </div>
@@ -96,12 +90,12 @@ export default function Addresses() {
         ) : (
           <div className="empty-state">
             <i className="fas fa-map-marker-alt"></i>
-            <p>{t('addresses.empty')}</p>
+            <p>No tienes direcciones guardadas</p>
             <button
-              onClick={() => navigate('/addresses/create')}
+              onClick={() => navigate('/user/addresses/create')}
               className="btn btn-primary"
             >
-              {t('addresses.add_first')}
+              Agregar primera dirección
             </button>
           </div>
         )}
