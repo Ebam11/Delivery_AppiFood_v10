@@ -2,10 +2,10 @@
 rpm = ["openssl"]
 
 [phases.setup]
-nixPkgs = ["php82", "php82Extensions.pdo", "php82Extensions.pdo_mysql", "php82Extensions.mbstring", "php82Extensions.tokenizer", "php82Extensions.xml", "php82Extensions.ctype", "php82Extensions.json", "php82Extensions.bcmath", "php82Extensions.fileinfo", "php82Extensions.curl", "composer"]
+nixPkgs = ["php82", "php82Extensions.pdo_mysql", "php82Extensions.mbstring", "php82Extensions.tokenizer", "php82Extensions.xml", "php82Extensions.ctype", "php82Extensions.json", "php82Extensions.bcmath", "php82Extensions.fileinfo", "php82Extensions.curl", "composer"]
 
 [phases.install]
-cmds = ["composer install --no-dev --optimize-autoloader"]
+cmds = ["composer install --no-dev --optimize-autoloader --no-interaction"]
 
 [phases.build]
 cmds = [
@@ -16,4 +16,8 @@ cmds = [
 ]
 
 [start]
-cmd = "php artisan migrate --force && php -S 0.0.0.0:8080 -t public/ public/index.php"
+cmd = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
+
+# Deshabilitar Node completamente
+[build]
+ignoreNpmBuild = true
