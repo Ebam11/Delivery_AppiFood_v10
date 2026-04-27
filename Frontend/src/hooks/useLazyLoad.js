@@ -13,6 +13,12 @@ export const useLazyLoad = (imageSrc, placeholderSrc) => {
   useEffect(() => {
     if (!imageSrc) return
 
+    if (typeof IntersectionObserver === 'undefined') {
+      setSrc(imageSrc)
+      setIsLoaded(true)
+      return
+    }
+
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {

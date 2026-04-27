@@ -14,8 +14,10 @@ use App\Http\Controllers\API\Auth\RegisterController;
 use App\Http\Controllers\API\Restaurant\CategoryController;
 use App\Http\Controllers\API\Restaurant\DashboardController as RestaurantDashboard;
 use App\Http\Controllers\API\Restaurant\OrderManagementController;
+use App\Http\Controllers\API\User\SubscriptionController;
 use App\Http\Controllers\API\Restaurant\ProductController;
 use App\Http\Controllers\API\Restaurant\ProfileRestaurantController;
+use App\Http\Controllers\API\Shared\SubscriptionPlanController;
 use App\Http\Controllers\API\Shared\NotificationController;
 use App\Http\Controllers\API\User\PaymentController;
 use App\Http\Controllers\API\Shared\SupportAssistantController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\API\User\ProfileController;
 use App\Http\Controllers\API\User\UserPaymentMethodController;
 use App\Http\Controllers\API\User\RestaurantController;
 use App\Http\Controllers\API\User\ReviewController;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
 // Endpoints publicos.
@@ -38,9 +41,15 @@ Route::prefix('auth')->group(function () {
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 });
 
+Route::get('/health', static fn (): JsonResponse => response()->json([
+    'status' => 'ok',
+    'service' => 'appifood-backend',
+]));
+
 Route::get('/restaurants', [RestaurantController::class, 'index']);
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'indexPublic']);
+    Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index']);
 Route::post('/support/chat', SupportAssistantController::class)->middleware('throttle:20,1');
 
 // Endpoints protegidos.
@@ -62,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:user')->group(function () {
         Route::prefix('payments')->group(function () {
             Route::get('/methods', [PaymentController::class, 'methods']);
+            Route::get('/{id}', [PaymentController::class, 'show']);
             Route::post('/', [PaymentController::class, 'store']);
             Route::post('/confirm', [PaymentController::class, 'confirm']);
         });
@@ -146,6 +156,13 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/{id}', [OrderManagementController::class, 'show']);
             Route::patch('/{id}/status', [OrderManagementController::class, 'updateStatus']);
         });
+    });
+
+    Route::middleware('role:user')->prefix('subscriptions')->group(function () {
+        Route::get('/', [SubscriptionController::class, 'index']);
+        Route::post('/', [SubscriptionController::class, 'store']);
+        Route::post('/{id}/confirm', [SubscriptionController::class, 'confirm']);
+        Route::patch('/{id}/cancel', [SubscriptionController::class, 'cancel']);
     });
 
     // Endpoints para rol:admin.

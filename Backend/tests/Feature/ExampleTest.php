@@ -7,14 +7,15 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
-    /**
-     * A basic test example.
-     */
-    public function test_the_application_returns_a_successful_response(): void
+    public function test_api_health_endpoint_returns_ok_response(): void
     {
         $response = $this->get('/api/health');
 
-        $response->assertStatus(404);
-        // This is a placeholder test. Replace with real API endpoint tests.
+        $response
+            ->assertOk()
+            ->assertJson([
+                'status' => 'ok',
+                'service' => 'appifood-backend',
+            ]);
     }
 }

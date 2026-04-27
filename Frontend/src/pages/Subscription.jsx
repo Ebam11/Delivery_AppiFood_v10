@@ -1,89 +1,179 @@
 // Archivo: src/pages/Subscription.jsx | Comentario: logica principal del modulo.
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { fetchJson } from '../api/fetchJson'
-
-const PLANS = [
-  {
-    id: 'free',
-    name: 'Gratis',
-    price: '$0',
-    period: 'Para siempre',
-    description: 'Perfecto para empezar',
-    features: [
-      '✓ Acceso a toda la red de restaurantes',
-      '✓ Consulta de menús y precios en tiempo real',
-      '✓ Acceso a cupones y promociones',
-      '✓ Soporte por email',
-    ],
-    cta: 'Ya estás aquí',
-    popular: false,
-  },
-  {
-    id: 'pro',
-    name: 'AppiPro',
-    price: '$24.990',
-    period: 'por mes',
-    description: 'Para usuarios frecuentes',
-    features: [
-      '✓ Todos los beneficios de Gratis',
-      '✓ Órdenes sin límite',
-      '✓ Descuento del 10% en todas tus órdenes',
-      '✓ Envío gratis en órdenes mayores a $20.000',
-      '✓ Soporte prioritario 24/7',
-      '✓ Acceso a ofertas exclusivas',
-    ],
-    cta: 'Actualizar a AppiPro',
-    popular: true,
-  },
-]
+import { useTranslation } from 'react-i18next'
+import { createSubscription, getCurrentSubscription, getSubscriptionPlans } from '../api/subscriptions'
+import SubscriptionPaymentGateway from '../components/SubscriptionPaymentGateway'
 
 export default function SubscriptionPage({ user, isAuth }) {
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(null)
+  const { t } = useTranslation()
+  const [loading, setLoading] = useState(true)
+  const [plans, setPlans] = useState([])
+  const [currentSubscription, setCurrentSubscription] = useState(null)
   const [error, setError] = useState(null)
+  const [subscribingPlanId, setSubscribingPlanId] = useState(null)
+  const [pendingSubscription, setPendingSubscription] = useState(null)
+  const [showPaymentGateway, setShowPaymentGateway] = useState(false)
+
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null')
+    } catch {
+      return null
+    }
+  })()
+
+  const isPremium = Boolean(user?.is_premium || storedUser?.is_premium || currentSubscription?.is_premium)
+
+  const formatPrice = (value) => Number(value || 0).toLocaleString('es-CO')
+
+  const visiblePlans = [
+    {
+      id: 'free',
+      name: 'Plan Gratis',
+      price: '$0',
+      period: '/siempre',
+      description: 'Seguir comprando sin pagar membresía. Perfecto si estás ajustando gastos.',
+      features: [
+        'Acceso a restaurantes y promociones normales',
+        'Sin costo fijo mensual',
+        'Ideal para presupuestos ajustados',
+        'Pagas solo lo que pides',
+      ],
+      cta: 'Seguir gratis',
+      popular: false,
+      isSelected: !isPremium,
+    },
+    {
+      id: 'premium',
+      name: 'Premium Ahorro',
+      price: '$7.900',
+      period: '/mes',
+      description: 'Gasta menos en cada pedido y encuentra ofertas pensadas para cuidar tu bolsillo.',
+      features: [
+        'Descuentos exclusivos en comidas seleccionadas',
+        'Beneficios que suelen costar menos que un domicilio',
+        'Prioridad en promociones de bajo costo',
+        'Ahorra más si pides varias veces al mes',
+        'Ideal para comer bien sin gastar de más',
+      ],
+      cta: 'Comprar Premium',
+      popular: true,
+      isSelected: isPremium,
+    },
+  ]
+
+  const FAQS = [
+    { q: t('subscription.faq_1_q'), a: t('subscription.faq_1_a') },
+    { q: t('subscription.faq_2_q'), a: t('subscription.faq_2_a') },
+    { q: t('subscription.faq_3_q'), a: t('subscription.faq_3_a') },
+    { q: t('subscription.faq_4_q'), a: t('subscription.faq_4_a') },
+  ]
+
+  useEffect(() => {
+    let mounted = true
+
+    const loadSubscriptionData = async () => {
+      setLoading(true)
+      setError(null)
+
+      try {
+        const plansResponse = await getSubscriptionPlans()
+        if (!mounted) return
+
+        setPlans(plansResponse?.data ?? plansResponse ?? [])
+
+        if (isAuth) {
+          try {
+            const subscriptionResponse = await getCurrentSubscription()
+            if (!mounted) return
+            setCurrentSubscription(subscriptionResponse?.data?.current ?? subscriptionResponse?.data ?? null)
+          } catch {
+            if (mounted) setCurrentSubscription(null)
+          }
+        }
+      } catch (err) {
+        if (mounted) setError(err.message || t('subscription.error'))
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    loadSubscriptionData()
+
+    return () => { mounted = false }
+  }, [isAuth, t])
 
   const handleSubscribe = async (planId) => {
-    if (!isAuth) {
-      navigate('/login')
-      return
-    }
+    if (!isAuth) { navigate('/login'); return }
 
     if (planId === 'free') return
 
-    setLoading(planId)
+    setSubscribingPlanId(planId)
     setError(null)
-
     try {
-      const token = localStorage.getItem('token')
-      const data = await fetchJson('/api/subscriptions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ plan_id: planId }),
-      })
-
-      // Redirigir a checkout o mostrar confirmación
-      navigate('/checkout', { state: { subscription: data } })
+      const response = await createSubscription(planId)
+      const newSubscription = response?.data ?? response
+      setPendingSubscription(newSubscription)
+      setShowPaymentGateway(true)
     } catch (err) {
-      setError(err.message || 'Error al procesar la suscripción')
+      setError(err.message || t('subscription.error'))
     } finally {
-      setLoading(null)
+      setSubscribingPlanId(null)
     }
   }
 
+  const handlePaymentSuccess = (data) => {
+    setCurrentSubscription(data)
+    setShowPaymentGateway(false)
+    setPendingSubscription(null)
+
+    const storedUser = localStorage.getItem('user')
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser)
+        const updatedUser = {
+          ...parsedUser,
+          is_premium: true,
+          subscription: data,
+        }
+        localStorage.setItem('user', JSON.stringify(updatedUser))
+        window.dispatchEvent(new Event('user-updated'))
+      } catch {
+        // Si el usuario guardado no se puede parsear, seguimos sin bloquear la compra.
+      }
+    }
+
+    setTimeout(() => {
+      navigate('/user/profile?tab=subscription')
+    }, 1500)
+  }
+
+  const handlePaymentCancel = () => {
+    setShowPaymentGateway(false)
+    setPendingSubscription(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12 flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#FF4B3E] border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
+    <div className="page-subscription min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
         {/* Header */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Planes de Suscripción
+            {t('subscription.title')}
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Elige el plan perfecto para ti y disfruta de beneficios exclusivos
+            {t('subscription.subtitle')}
           </p>
         </div>
 
@@ -94,68 +184,74 @@ export default function SubscriptionPage({ user, isAuth }) {
           </div>
         )}
 
+        {currentSubscription?.plan && (
+          <div className="mb-8 max-w-3xl mx-auto bg-white border border-green-200 rounded-2xl p-6 shadow-sm">
+            <p className="text-sm font-semibold text-green-700 mb-2">Plan actual</p>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">Premium Ahorro</h3>
+                <p className="text-gray-600 mt-1">
+                  {isPremium ? 'Activo' : 'Inactivo'} · pensado para pedir más por menos
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Cobro mensual</p>
+                <p className="text-2xl font-bold text-[#FF4B3E]">$7.900</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Plans Grid */}
         <div className="grid md:grid-cols-2 gap-8 mb-12 max-w-3xl mx-auto">
-          {PLANS.map((plan) => (
+          {visiblePlans.map((plan) => (
             <div
               key={plan.id}
               className={`relative rounded-2xl transition transform hover:scale-105 ${
-                plan.popular
-                  ? 'ring-2 ring-[#FF4B3E] shadow-2xl'
-                  : 'bg-white shadow-lg'
+                plan.popular ? 'ring-2 ring-[#FF4B3E] shadow-2xl bg-white' : 'bg-white shadow-lg'
               }`}
             >
               {plan.popular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <span className="bg-[#FF4B3E] text-white px-4 py-1 rounded-full text-sm font-bold">
-                    Más Popular
+                    Más ahorro por mes
                   </span>
                 </div>
               )}
 
               <div className={`p-8 ${plan.popular ? 'bg-white rounded-2xl' : ''}`}>
-                {/* Plan Name */}
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {plan.name}
-                </h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h2>
                 <p className="text-gray-600 text-sm mb-6">{plan.description}</p>
 
-                {/* Price */}
                 <div className="mb-6">
                   <div className="text-4xl font-bold text-gray-900">
                     {plan.price}
-                    <span className="text-lg text-gray-600 font-normal ml-2">
-                      {plan.period}
-                    </span>
+                    <span className="text-lg text-gray-600 font-normal ml-2">{plan.period}</span>
                   </div>
                 </div>
 
-                {/* Features */}
                 <div className="mb-8 space-y-3">
                   {plan.features.map((feature, idx) => (
                     <div key={idx} className="flex items-start gap-3">
-                      <span className="text-[#FF4B3E] font-bold text-lg">
-                        {feature.replace(/✓/, '')}
-                      </span>
+                      <span className="text-[#FF4B3E] font-bold">✓</span>
+                      <span>{feature}</span>
                     </div>
                   ))}
                 </div>
 
-                {/* CTA Button */}
                 <button
                   onClick={() => handleSubscribe(plan.id)}
-                  disabled={loading === plan.id}
+                  disabled={plan.isSelected || subscribingPlanId === plan.id}
                   className={`w-full py-3 rounded-lg font-bold transition ${
                     plan.popular
                       ? 'bg-[#FF4B3E] text-white hover:bg-[#e03a2d]'
                       : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  } ${loading === plan.id ? 'opacity-60 cursor-not-allowed' : ''}`}
+                  } ${(plan.isSelected || subscribingPlanId === plan.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
                 >
-                  {loading === plan.id ? (
-                    <>
-                      <i className="fas fa-spinner fa-spin mr-2"></i>
-                      Procesando...
-                    </>
+                  {subscribingPlanId === plan.id ? (
+                    <><i className="fas fa-spinner fa-spin mr-2"></i>{t('subscription.processing')}</>
+                  ) : plan.isSelected ? (
+                    'Plan actual'
                   ) : (
                     plan.cta
                   )}
@@ -168,32 +264,12 @@ export default function SubscriptionPage({ user, isAuth }) {
         {/* FAQ */}
         <div className="max-w-3xl mx-auto mt-16">
           <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Preguntas Frecuentes
+            {t('subscription.faq_title')}
           </h2>
-
           <div className="space-y-6">
-            {[
-              {
-                q: '¿Puedo cambiar de plan en cualquier momento?',
-                a: 'Sí, puedes actualizar o degradar tu plan en cualquier momento. Los cambios entrarán en vigor el próximo ciclo de facturación.',
-              },
-              {
-                q: '¿Qué métodos de pago aceptan?',
-                a: 'Aceptamos todas las tarjetas de crédito, débito, transferencia bancaria y billeteras digitales.',
-              },
-              {
-                q: '¿Hay período de prueba?',
-                a: 'Sí, todos nuestros planes pagados incluyen 7 días de prueba gratis sin compromiso.',
-              },
-              {
-                q: '¿Cómo cancelo mi suscripción?',
-                a: 'Puedes cancelar tu suscripción en cualquier momento desde tu perfil. No hay multas ni cargos adicionales.',
-              },
-            ].map((faq, idx) => (
+            {FAQS.map((faq, idx) => (
               <div key={idx} className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-lg font-bold text-gray-900 mb-3">
-                  {faq.q}
-                </h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">{faq.q}</h3>
                 <p className="text-gray-600">{faq.a}</p>
               </div>
             ))}
@@ -202,17 +278,24 @@ export default function SubscriptionPage({ user, isAuth }) {
 
         {/* Bottom CTA */}
         <div className="mt-16 bg-[#FF4B3E] rounded-2xl p-8 text-white text-center">
-          <h2 className="text-3xl font-bold mb-4">
-            ¿Preguntas? Estamos aquí para ayudarte
-          </h2>
-          <p className="text-lg mb-6 opacity-90">
-            Contacta a nuestro equipo de soporte en cualquier momento
-          </p>
-          <button className="bg-white text-[#FF4B3E] font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition">
-            Contactar Soporte
+          <h2 className="text-3xl font-bold mb-4">Ahorra sin dejar de comer rico</h2>
+          <p className="text-lg mb-6 opacity-90">El plan Premium está pensado para quien quiere pedir comida sin que el presupuesto se dispare.</p>
+          <button
+            onClick={() => handleSubscribe('premium')}
+            className="bg-white text-[#FF4B3E] font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition"
+          >
+            Comprar Premium
           </button>
         </div>
       </div>
+
+      {showPaymentGateway && pendingSubscription && (
+        <SubscriptionPaymentGateway
+          subscription={pendingSubscription}
+          onSuccess={handlePaymentSuccess}
+          onCancel={handlePaymentCancel}
+        />
+      )}
     </div>
   )
 }

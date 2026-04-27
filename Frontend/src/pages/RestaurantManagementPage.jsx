@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 
 export default function RestaurantManagementPage({ title, description, note }) {
   return (
-    <main className="min-h-[70vh] bg-[#f7f8fa]">
+    <main className="page-restaurant-management min-h-[70vh] bg-[#f7f8fa]">
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-6 sm:p-8">
           <p className="text-xs font-semibold tracking-wide text-[#FF4B3E] uppercase mb-2">Panel Restaurante</p>

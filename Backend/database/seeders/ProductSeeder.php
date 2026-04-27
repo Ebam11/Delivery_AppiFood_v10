@@ -219,5 +219,204 @@ class ProductSeeder extends Seeder
                 $payload
             );
         }
+
+        $polloRestaurantId = Restaurant::where('name', 'Pollo Dorado')->value('id');
+        $mariscosRestaurantId = Restaurant::where('name', 'Mariscos del Puerto')->value('id');
+        $trattoriaRestaurantId = Restaurant::where('name', 'Trattoria Bella')->value('id');
+        $dulceRestaurantId = Restaurant::where('name', 'Dulce Tentación')->value('id');
+        $cafeRestaurantId = Restaurant::where('name', 'Café Madrugón')->value('id');
+        $barraRestaurantId = Restaurant::where('name', 'Barra Fresca')->value('id');
+
+        // ── Pollo Dorado ──────────────────────────────────────
+        $polloProducts = [
+            ['category' => 'Pollo Asado', 'name' => 'Pollo Asado Entero', 'description' => 'Pollo asado al carbón con papas y arepa.', 'price' => 38000, 'is_featured' => true],
+            ['category' => 'Pollo Asado', 'name' => 'Medio Pollo Asado', 'description' => 'Media porción de pollo asado con ensalada.', 'price' => 22000, 'is_featured' => true],
+            ['category' => 'Broaster', 'name' => 'Broaster Personal', 'description' => 'Pollo broaster crocante con papa a la francesa.', 'price' => 24000, 'is_featured' => false],
+            ['category' => 'Acompañamientos', 'name' => 'Papas Criollas', 'description' => 'Papas criollas doradas con sal y limón.', 'price' => 9000, 'is_featured' => false],
+            ['category' => 'Bebidas', 'name' => 'Limonada Natural', 'description' => 'Limonada fresca preparada al momento.', 'price' => 6000, 'is_featured' => false],
+        ];
+
+        foreach ($polloProducts as $product) {
+            $payload = array_merge($product, [
+                'restaurant_id' => $polloRestaurantId,
+                'category_id'   => $categoryId('Pollo Dorado', $product['category']),
+                'is_available'  => true,
+            ]);
+
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
+
+        // ── Mariscos del Puerto ───────────────────────────────
+        $mariscosProducts = [
+            ['category' => 'Ceviches', 'name' => 'Ceviche Mixto', 'description' => 'Ceviche con camarón, pulpo y pescado.', 'price' => 36000, 'is_featured' => true],
+            ['category' => 'Ceviches', 'name' => 'Ceviche de Camarón', 'description' => 'Camarón fresco con limón y cebolla morada.', 'price' => 32000, 'is_featured' => true],
+            ['category' => 'Mariscos', 'name' => 'Cazuela de Mariscos', 'description' => 'Cazuela cremosa con variedad de mariscos.', 'price' => 42000, 'is_featured' => true],
+            ['category' => 'Pescados', 'name' => 'Pescado Frito', 'description' => 'Pescado entero con patacones y arroz.', 'price' => 38000, 'is_featured' => false],
+            ['category' => 'Bebidas', 'name' => 'Jugo de Mango', 'description' => 'Jugo natural frío de mango.', 'price' => 7000, 'is_featured' => false],
+        ];
+
+        foreach ($mariscosProducts as $product) {
+            $payload = array_merge($product, [
+                'restaurant_id' => $mariscosRestaurantId,
+                'category_id'   => $categoryId('Mariscos del Puerto', $product['category']),
+                'is_available'  => true,
+            ]);
+
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
+
+        // ── Trattoria Bella ───────────────────────────────────
+        $trattoriaProducts = [
+            ['category' => 'Pizzas', 'name' => 'Pizza Margherita', 'description' => 'Salsa de tomate, mozzarella y albahaca.', 'price' => 29000, 'is_featured' => true],
+            ['category' => 'Pizzas', 'name' => 'Pizza Pepperoni', 'description' => 'Mozzarella con pepperoni y orégano.', 'price' => 32000, 'is_featured' => true],
+            ['category' => 'Pastas', 'name' => 'Pasta Carbonara', 'description' => 'Pasta cremosa con panceta y parmesano.', 'price' => 27000, 'is_featured' => false],
+            ['category' => 'Entradas', 'name' => 'Bruschetta Caprese', 'description' => 'Pan tostado con tomate, queso y albahaca.', 'price' => 14000, 'is_featured' => false],
+            ['category' => 'Bebidas', 'name' => 'Limonada Rosada', 'description' => 'Limonada con un toque de frutos rojos.', 'price' => 6500, 'is_featured' => false],
+        ];
+
+        foreach ($trattoriaProducts as $product) {
+            $payload = array_merge($product, [
+                'restaurant_id' => $trattoriaRestaurantId,
+                'category_id'   => $categoryId('Trattoria Bella', $product['category']),
+                'is_available'  => true,
+            ]);
+
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
+
+        // ── Dulce Tentación ───────────────────────────────────
+        $dulceProducts = [
+            ['category' => 'Tortas', 'name' => 'Torta Red Velvet', 'description' => 'Torta húmeda con crema suave.', 'price' => 18000, 'is_featured' => true],
+            ['category' => 'Postres', 'name' => 'Brownie con Helado', 'description' => 'Brownie tibio con helado de vainilla.', 'price' => 16000, 'is_featured' => true],
+            ['category' => 'Helados', 'name' => 'Helado Artesanal', 'description' => 'Dos bolas de helado artesanal.', 'price' => 12000, 'is_featured' => false],
+            ['category' => 'Postres', 'name' => 'Cheesecake de Frutos Rojos', 'description' => 'Porción cremosa con salsa de frutos rojos.', 'price' => 17000, 'is_featured' => true],
+            ['category' => 'Bebidas', 'name' => 'Café Latte', 'description' => 'Café suave con leche vaporizada.', 'price' => 8000, 'is_featured' => false],
+        ];
+
+        foreach ($dulceProducts as $product) {
+            $payload = array_merge($product, [
+                'restaurant_id' => $dulceRestaurantId,
+                'category_id'   => $categoryId('Dulce Tentación', $product['category']),
+                'is_available'  => true,
+            ]);
+
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
+
+        // ── Café Madrugón ─────────────────────────────────────
+        $cafeProducts = [
+            ['category' => 'Desayunos', 'name' => 'Desayuno Paisa', 'description' => 'Calentado, huevo, arepa y chocolate.', 'price' => 19000, 'is_featured' => true],
+            ['category' => 'Desayunos', 'name' => 'Huevos al Gusto', 'description' => 'Huevos revueltos o pericos con arepa.', 'price' => 14000, 'is_featured' => false],
+            ['category' => 'Panadería', 'name' => 'Croissant Mantequilla', 'description' => 'Croissant recién horneado.', 'price' => 7000, 'is_featured' => false],
+            ['category' => 'Café', 'name' => 'Café Americano', 'description' => 'Café negro recién preparado.', 'price' => 6000, 'is_featured' => true],
+            ['category' => 'Jugos', 'name' => 'Jugo de Naranja', 'description' => 'Jugo natural frío de naranja.', 'price' => 6500, 'is_featured' => false],
+        ];
+
+        foreach ($cafeProducts as $product) {
+            $payload = array_merge($product, [
+                'restaurant_id' => $cafeRestaurantId,
+                'category_id'   => $categoryId('Café Madrugón', $product['category']),
+                'is_available'  => true,
+            ]);
+
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
+
+        // ── Barra Fresca ──────────────────────────────────────
+        $barraProducts = [
+            ['category' => 'Batidos', 'name' => 'Batido de Fresa', 'description' => 'Batido frío de fresa natural.', 'price' => 9000, 'is_featured' => true],
+            ['category' => 'Jugos', 'name' => 'Jugo Verde', 'description' => 'Espinaca, manzana y piña.', 'price' => 8500, 'is_featured' => false],
+            ['category' => 'Bebidas Frías', 'name' => 'Limonada con Hierbabuena', 'description' => 'Limonada refrescante con hierbabuena.', 'price' => 7000, 'is_featured' => false],
+            ['category' => 'Snacks', 'name' => 'Tostadas de Aguacate', 'description' => 'Tostadas crujientes con aguacate.', 'price' => 11000, 'is_featured' => false],
+            ['category' => 'Bebidas Frías', 'name' => 'Té Helado', 'description' => 'Té helado artesanal con limón.', 'price' => 6500, 'is_featured' => true],
+        ];
+
+        foreach ($barraProducts as $product) {
+            $payload = array_merge($product, [
+                'restaurant_id' => $barraRestaurantId,
+                'category_id'   => $categoryId('Barra Fresca', $product['category']),
+                'is_available'  => true,
+            ]);
+
+            unset($payload['category']);
+
+            if (!$payload['restaurant_id'] || !$payload['category_id']) {
+                continue;
+            }
+
+            Product::updateOrCreate(
+                [
+                    'restaurant_id' => $payload['restaurant_id'],
+                    'category_id'   => $payload['category_id'],
+                    'name'          => $payload['name'],
+                ],
+                $payload
+            );
+        }
     }
 }

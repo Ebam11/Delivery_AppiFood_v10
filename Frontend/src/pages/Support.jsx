@@ -11,7 +11,7 @@ const faqBadgeStyles = {
 
 export default function Support() {
   return (
-    <main className="min-h-screen bg-[#fff8f6] pt-8 pb-16">
+    <main className="page-support min-h-screen bg-[#fff8f6] pt-8 pb-16">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,75,62,0.16),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(255,122,89,0.12),_transparent_38%)]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">

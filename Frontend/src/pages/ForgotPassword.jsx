@@ -55,7 +55,7 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fff8f6]">
+    <div className="page-forgot-password min-h-screen flex flex-col bg-[#fff8f6]">
       <div className="flex-1 relative flex items-center justify-center px-4 py-10 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(255,75,62,0.18),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(255,122,89,0.16),_transparent_32%),linear-gradient(135deg,#fff8f6_0%,#fffdfc_55%,#fff4f1_100%)]" />
         <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-[1.1fr_0.9fr] gap-8 items-center">

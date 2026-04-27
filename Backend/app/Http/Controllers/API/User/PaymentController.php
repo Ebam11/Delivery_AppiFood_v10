@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\User;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
@@ -71,11 +72,12 @@ class PaymentController extends Controller
     public function confirm(Request $request): JsonResponse
     {
         $request->validate([
-            'transaction_id' => ['required'],
+            'transaction_id' => ['required', 'integer'],
             'reference_code'  => ['required', 'string'],
         ]);
 
         $payment = Payment::with('order')
+            ->whereKey($request->integer('transaction_id'))
             ->where('external_reference', $request->reference_code)
             ->first();
 
@@ -94,9 +96,38 @@ class PaymentController extends Controller
             $payment->order->transitionTo(OrderStatus::CONFIRMED);
         }
 
+        Notification::create([
+            'user_id' => $payment->order->user_id,
+            'title' => 'Pago confirmado',
+            'message' => "Tu pago del pedido #{$payment->order->id} fue confirmado.",
+            'type' => 'payment',
+            'data' => [
+                'order_id' => $payment->order->id,
+                'payment_id' => $payment->id,
+                'status' => PaymentStatus::COMPLETED->value,
+            ],
+        ]);
+
         return response()->json([
             'message' => 'Pago confirmado correctamente.',
             'data'    => $payment->fresh(['method', 'order.items.product', 'order.restaurant']),
+        ]);
+    }
+
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $payment = Payment::with(['method', 'order'])
+            ->whereKey($id)
+            ->first();
+
+        if (!$payment || !$payment->order || $payment->order->user_id !== $request->user()->id) {
+            return response()->json([
+                'message' => 'No se encontró el pago solicitado.',
+            ], 404);
+        }
+
+        return response()->json([
+            'data' => $payment,
         ]);
     }
 

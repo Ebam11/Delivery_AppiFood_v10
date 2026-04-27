@@ -4,6 +4,7 @@ import { useRestaurantImage } from '../hooks/useImages'
 import { useLazyLoad } from '../hooks/useLazyLoad'
 import { blurhash } from '../utils/blurhash'
 import { useFavoritesStore } from '../store/favoritesStore'
+import ScheduleDisplay, { isRestaurantOpenNow } from './ScheduleDisplay'
 
 /**
  * Tarjeta de restaurante con imagen dinámica de Unsplash + lazy loading + favoritos
@@ -13,6 +14,7 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle 
   const { ref, src, isLoaded } = useLazyLoad(image, blurhash.restaurant())
   const { isFavorite } = useFavoritesStore()
   const [isAnimating, setIsAnimating] = useState(false)
+  const [showSchedule, setShowSchedule] = useState(false)
 
   if (!restaurant || !restaurant.id) return null
   
@@ -27,7 +29,13 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle 
   const fmt = n => Number(n).toLocaleString('es-CO', { maximumFractionDigits: 0 })
   const ratingLabel = Number(restaurant.rating || 0).toFixed(1)
   const deliveryLabel = restaurant.delivery > 0 ? `$${fmt(restaurant.delivery)}` : 'Gratis'
-  const isOpen = restaurant.is_open === true || restaurant.is_open === 1 || restaurant.status === 'open'
+  
+  // Calcular si está abierto basado en schedule o is_open flag
+  const hasSchedule = Array.isArray(restaurant.schedule) && restaurant.schedule.length > 0
+  const isOpen = hasSchedule 
+    ? isRestaurantOpenNow(restaurant.schedule)
+    : (restaurant.is_open === true || restaurant.is_open === 1 || restaurant.status === 'open')
+  
   const statusLabel = isOpen ? 'Abierto ahora' : 'Consulta horario'
   
   const handleFavoriteClick = async (e) => {
@@ -40,7 +48,7 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle 
   return (
     <article
       onClick={() => onSelect && onSelect(restaurant)}
-      className="group relative cursor-pointer overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
+      className="component-restaurant-card group relative cursor-pointer overflow-hidden rounded-2xl border border-[#ececec] bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(0,0,0,0.12)]"
     >
       <div className="relative h-48 overflow-hidden bg-[#f6f6f6]">
         {(loading || !isLoaded) && (
@@ -62,9 +70,19 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle 
           </span>
         )}
 
+        {/* Badge de estado abierto/cerrado */}
+        <div className="absolute right-3 top-3 z-10">
+          <ScheduleDisplay 
+            schedule={restaurant.schedule}
+            isOpen={isOpen}
+            variant="badge"
+            language="es"
+          />
+        </div>
+
         <button
           onClick={handleFavoriteClick}
-          className={`absolute right-3 top-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md transition-all ${
+          className={`absolute right-3 bottom-3 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-md transition-all ${
             isFav
               ? 'text-[#FF4B3E]'
               : 'text-gray-300 hover:text-[#FF4B3E]'
@@ -91,6 +109,41 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle 
             <i className="fas fa-motorcycle" />{deliveryLabel}
           </span>
         </div>
+
+        {/* Horario actual o modal */}
+        {hasSchedule && (
+          <div className="mt-2.5 text-[10px]">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowSchedule(!showSchedule)
+              }}
+              className="text-[#FF4B3E] hover:underline font-medium"
+            >
+              {isOpen ? 'Ver horario completo' : 'Ver horario'}
+            </button>
+            
+            {showSchedule && (
+              <div className="absolute inset-x-0 top-full mt-1 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-3 w-72">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowSchedule(false)
+                  }}
+                  className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                >
+                  <i className="fas fa-times text-xs"></i>
+                </button>
+                <ScheduleDisplay
+                  schedule={restaurant.schedule}
+                  isOpen={isOpen}
+                  variant="card"
+                  language="es"
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </article>
   )

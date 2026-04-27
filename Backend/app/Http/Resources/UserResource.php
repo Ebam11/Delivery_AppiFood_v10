@@ -22,6 +22,7 @@ class UserResource extends JsonResource
             'avatar'     => $this->avatar
                 ? asset('storage/' . $this->avatar)
                 : null,
+            'is_premium' => $this->isPremium(),
             'restaurant' => $this->whenLoaded('restaurant', fn () => new RestaurantResource($this->restaurant)),
             'status'     => $this->status,
             'created_at' => $this->created_at->toDateString(),

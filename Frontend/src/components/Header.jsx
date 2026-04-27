@@ -7,6 +7,7 @@ import { api } from '../api/client'
 
 const RED = '#FF4B3E'
 const RED_DK = '#e03a2d'
+const DEFAULT_LOCATION = { lat: 2.4448, lng: -76.6147 }
 
 export default function Header({ isAuth, user, onLogout, isLoading }) {
   console.log('🎯 Header received:', { 
@@ -18,7 +19,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   const [drawerOpen, setDrawerOpen]     = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [addressModalOpen, setAddressModalOpen] = useState(false)
-  const [deliveryAddress, setDeliveryAddress] = useState(() => localStorage.getItem('selected_delivery_address') || 'Calle 15 # 17 - 418')
+  const [deliveryAddress, setDeliveryAddress] = useState(() => localStorage.getItem('selected_delivery_address') || 'Popayán, Cauca')
   const [tempAddress, setTempAddress] = useState('')
   const [savedAddresses, setSavedAddresses] = useState([])
   const [selectedAddressId, setSelectedAddressId] = useState(null)
@@ -31,29 +32,37 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   const navigate  = useNavigate()
   const location  = useLocation()
   const userRef   = useRef(null)
+  const storedUser = (() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || 'null')
+    } catch {
+      return null
+    }
+  })()
+  const effectiveUser = user || storedUser
 
   // FUNCIONES AUXILIARES - DEFINIDAS AL PRINCIPIO
   const getUserName = () => {
-    if (!user) {
+    if (!effectiveUser) {
       console.log('👤 getUserName: user is null/undefined')
       return 'Usuario'
     }
-    console.log('👤 getUserName: user object:', user)
-    console.log('👤 getUserName: user.name =', user.name)
-    console.log('👤 getUserName: user.nombre =', user.nombre)
-    console.log('👤 getUserName: all keys =', Object.keys(user))
-    const result = user.name || user.nombre || user.displayName || user.username || 'Usuario'
+    console.log('👤 getUserName: user object:', effectiveUser)
+    console.log('👤 getUserName: user.name =', effectiveUser.name)
+    console.log('👤 getUserName: user.nombre =', effectiveUser.nombre)
+    console.log('👤 getUserName: all keys =', Object.keys(effectiveUser))
+    const result = effectiveUser.name || effectiveUser.nombre || effectiveUser.displayName || effectiveUser.username || 'Usuario'
     console.log('👤 getUserName returning:', result)
     return result
   }
 
   const getUserEmail = () => {
-    if (!user) {
+    if (!effectiveUser) {
       console.log('📧 getUserEmail: user is null/undefined')
       return ''
     }
-    console.log('📧 getUserEmail: checking user.email =', user.email)
-    const result = user.email || user.correo || user.mail || ''
+    console.log('📧 getUserEmail: checking user.email =', effectiveUser.email)
+    const result = effectiveUser.email || effectiveUser.correo || effectiveUser.mail || ''
     console.log('📧 getUserEmail returning:', result)
     return result
   }
@@ -62,6 +71,8 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     const name = getUserName()
     return name ? name.charAt(0).toUpperCase() : 'U'
   }
+
+  const isPremium = Boolean(effectiveUser?.is_premium)
 
   const isAdmin = String(user?.role ?? user?.rol ?? 'customer').toLowerCase() === 'admin'
 
@@ -140,6 +151,33 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     const nextAddress = tempAddress.trim() || deliveryAddress
     if (!nextAddress) return
 
+    const storeLocation = (coords, label) => {
+      localStorage.setItem('selected_delivery_coords', JSON.stringify({
+        lat: Number(coords?.lat ?? DEFAULT_LOCATION.lat),
+        lng: Number(coords?.lng ?? DEFAULT_LOCATION.lng),
+        label: label || nextAddress,
+      }))
+    }
+
+    const geocodeAddress = async (address) => {
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(address)}`,
+          { headers: { Accept: 'application/json' } }
+        )
+        const results = await response.json()
+        const first = Array.isArray(results) ? results[0] : null
+
+        if (first?.lat && first?.lon) {
+          return { lat: Number(first.lat), lng: Number(first.lon) }
+        }
+      } catch (error) {
+        // Fallback to default location if geocoding fails.
+      }
+
+      return DEFAULT_LOCATION
+    }
+
     try {
       setAddressSaving(true)
       setAddressesError('')
@@ -181,6 +219,20 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
       setEditingAddressId(null)
       setDeliveryAddress(nextAddress)
       localStorage.setItem('selected_delivery_address', nextAddress)
+
+      if (/ubicaci[oó]n actual/i.test(nextAddress)) {
+        const match = nextAddress.match(/\(([-\d.]+),\s*([-\d.]+)\)/)
+        if (match) {
+          storeLocation({ lat: match[1], lng: match[2] }, nextAddress)
+        } else {
+          storeLocation(DEFAULT_LOCATION, nextAddress)
+        }
+      } else {
+        const coords = await geocodeAddress(nextAddress)
+        storeLocation(coords, nextAddress)
+      }
+
+      window.dispatchEvent(new Event('delivery-address-updated'))
       setAddressModalOpen(false)
     } catch (error) {
       setAddressesError('No se pudo guardar la dirección')
@@ -264,7 +316,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   if (isLoading) {
     return (
       <>
-        <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-50 border-b border-gray-100">
+        <header className="component-header fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-50 border-b border-gray-100">
           <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
             {/* IZQUIERDA: Hamburguesa + Logo skeleton */}
             <div className="flex items-center gap-4 flex-shrink-0">
@@ -293,7 +345,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   return (
     <>
       {/* ── TOPBAR ── */}
-      <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-50 border-b border-gray-100">
+      <header className="component-header fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-50 border-b border-gray-100">
         <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center gap-4">
           
           {/* IZQUIERDA: Hamburguesa + Logo */}
@@ -355,7 +407,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
               <div className="relative" ref={userRef}>
                 <button onClick={() => setUserMenuOpen(o => !o)}
                   className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 rounded-full transition">
-                  <div className="w-8 h-8 rounded-full bg-[#FF4B3E] text-white font-bold text-xs flex items-center justify-center">
+                  <div className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center ${isPremium ? 'bg-yellow-400 text-gray-900 shadow-sm' : 'bg-[#FF4B3E] text-white'}`}>
                     {getUserInitial()}
                   </div>
                   <i className={`fas fa-chevron-down text-xs text-gray-500 transition ${userMenuOpen ? 'rotate-180' : ''}`} />
@@ -364,7 +416,10 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-100">
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="font-bold text-sm text-gray-800">{getUserName()}</p>
+                      <p className="font-bold text-sm text-gray-800 flex items-center gap-1.5">
+                        <span>{getUserName()}</span>
+                        {isPremium && <i className="fas fa-crown text-yellow-500 text-xs" aria-hidden="true" />}
+                      </p>
                       <p className="text-xs text-gray-500 mt-1">{getUserEmail()}</p>
                     </div>
                     {[
@@ -406,7 +461,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
       {/* ── OVERLAY DRAWER ── */}
       <div onClick={() => setDrawerOpen(false)}
         style={{
-          position:'fixed', inset:0,
+          position:'fixed', top:64, left:0, right:0, bottom:0,
           background:'rgba(0,0,0,0.55)',
           zIndex:60,
           opacity: drawerOpen ? 1 : 0,
@@ -416,8 +471,8 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
       {/* ── DRAWER ── */}
       <nav style={{
-        position:'fixed', top:0, left:0,
-        width:300, height:'100%',
+        position:'fixed', top:64, left:0,
+        width:300, height:'calc(100% - 64px)',
         background:'white', zIndex:61,
         display:'flex', flexDirection:'column',
         boxShadow:'none',
@@ -436,7 +491,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         </div>
 
         {/* Perfil auth - SECCIÓN CORREGIDA */}
-        {isAuth && user && (
+        {isAuth && effectiveUser && (
           <div style={{ 
             display:'flex', 
             flexDirection:'column',
@@ -447,13 +502,13 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
             borderBottom:'1px solid #f0f0f0'
           }}>
             {console.log('🎨 DRAWER: Rendering user profile section')}
-            {console.log('🎨 DRAWER: isAuth =', isAuth, ', user =', user)}
+            {console.log('🎨 DRAWER: isAuth =', isAuth, ', user =', effectiveUser)}
             <div style={{ 
               width:64, 
               height:64, 
               borderRadius:'50%', 
-              background:RED, 
-              color:'white', 
+              background: RED,
+              color: 'white',
               fontWeight:800, 
               fontSize:24, 
               display:'flex', 
@@ -472,7 +527,10 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                 color:'#111',
                 marginBottom:4
               }}>
-                {getUserName()} {/* ← Esto debe mostrar "Camilo Acosta" */}
+                <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+                  <span>{getUserName()}</span>
+                  {isPremium && <i className="fas fa-crown" style={{ color:'#f59e0b', fontSize:12 }} aria-hidden="true" />}
+                </span> {/* ← Esto debe mostrar "Camilo Acosta" */}
               </span>
               <span style={{ 
                 display:'block', 

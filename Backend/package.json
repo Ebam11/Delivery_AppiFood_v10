@@ -3,7 +3,10 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "lint": "php ./vendor/bin/pint --test",
+        "test": "php artisan test",
+        "quality": "npm run lint && npm run test && npm run build"
     },
     "devDependencies": {
         "autoprefixer": "^10.4.27",

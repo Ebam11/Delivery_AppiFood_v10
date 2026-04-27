@@ -52,7 +52,7 @@ export default function HelpCenter() {
   }, [flatFaqs, query])
 
   return (
-    <main className="min-h-screen bg-[#fff8f6]">
+    <main className="page-help-center min-h-screen bg-[#fff8f6]">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,75,62,0.14),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(255,122,89,0.12),_transparent_35%)]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">

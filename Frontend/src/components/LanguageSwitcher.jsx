@@ -13,7 +13,7 @@ export default function LanguageSwitcher() {
   const currentLang = raw.split('-')[0].split('_')[0].toLowerCase();
 
   return (
-    <div className="flex items-center gap-1 text-sm font-medium">
+    <div className="component-language-switcher flex items-center gap-1 text-sm font-medium">
       {languages.map((lang, index) => (
         <span key={lang.code} className="flex items-center gap-1">
           <button

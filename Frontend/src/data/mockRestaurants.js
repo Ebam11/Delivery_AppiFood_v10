@@ -1,8 +1,128 @@
 // Archivo: src/data/mockRestaurants.js | Comentario: logica principal del modulo.
 import { RESTAURANT_MENUS } from './restaurantMenus';
 
+const BASE_LOCATION = 'Popayán, Cauca';
+
+const buildExtraProducts = (restaurant, index) => {
+  const baseId = (restaurant.id * 1000) + (index * 100);
+  const sharedDesserts = [
+    { suffix: 1, name: 'Postre de la Casa', category: 'postres', price: 12000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+    { suffix: 2, name: 'Brownie con Helado', category: 'postres', price: 15000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+  ];
+  const sharedOffers = [
+    { suffix: 5, name: 'Oferta 2x1 en Bebidas', category: 'ofertas', price: 9000, image: 'https://images.unsplash.com/photo-1554866585-e1b9ca5f2d5b?w=400' },
+  ];
+  const sharedBeverages = [
+    { suffix: 3, name: 'Limonada Natural', category: 'bebidas', price: 7000, image: 'https://images.unsplash.com/photo-1554866585-e1b9ca5f2d5b?w=400' },
+    { suffix: 4, name: 'Agua Mineral', category: 'bebidas', price: 5000, image: 'https://images.unsplash.com/photo-1554866585-e1b9ca5f2d5b?w=400' },
+  ];
+
+  const categoryExtras = {
+    burger: [
+      { suffix: 10, name: 'Combo Burger + Papas + Bebida', category: 'combos', price: 39000, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400' },
+      { suffix: 11, name: 'Burger Doble con Queso', category: 'burger', price: 33000, image: 'https://images.unsplash.com/photo-1550547990-a82b1d179cc6?w=400' },
+    ],
+    pizza: [
+      { suffix: 20, name: 'Combo Familiar Pizza + Bebida', category: 'combos', price: 52000, image: 'https://images.unsplash.com/photo-1604874891752-8e81e58dd086?w=400' },
+      { suffix: 21, name: 'Pizza Hawaiana', category: 'pizza', price: 34000, image: 'https://images.unsplash.com/photo-1511689915989-48d1c67b591d?w=400' },
+    ],
+    sushi: [
+      { suffix: 30, name: 'Combo Sushi Mix', category: 'combos', price: 52000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+      { suffix: 31, name: 'Sushi Tropical', category: 'sushi', price: 39000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+    ],
+    tacos: [
+      { suffix: 40, name: 'Combo Tacos + Nachos + Bebida', category: 'combos', price: 34000, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400' },
+      { suffix: 41, name: 'Quesadilla Extra Queso', category: 'tacos', price: 18000, image: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400' },
+    ],
+    asian: [
+      { suffix: 50, name: 'Combo Wok Familiar', category: 'combos', price: 46000, image: 'https://images.unsplash.com/photo-1609617529014-97deb8aab433?w=400' },
+      { suffix: 51, name: 'Arroz Frito Especial', category: 'asian', price: 24000, image: 'https://images.unsplash.com/photo-1609617529014-97deb8aab433?w=400' },
+    ],
+    dessert: [
+      { suffix: 60, name: 'Combo Postre + Café', category: 'combos', price: 18000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+      { suffix: 61, name: 'Cheesecake de Fresa', category: 'postres', price: 14000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+    ],
+    vegan: [
+      { suffix: 70, name: 'Combo Vegano del Día', category: 'combos', price: 36000, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400' },
+      { suffix: 71, name: 'Ensalada Mediterránea', category: 'vegan', price: 22000, image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400' },
+    ],
+    seafood: [
+      { suffix: 80, name: 'Combo Mar y Bebida', category: 'combos', price: 59000, image: 'https://images.unsplash.com/photo-1606787620891-759c1dc73183?w=400' },
+      { suffix: 81, name: 'Ceviche Tropical', category: 'seafood', price: 33000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
+    ],
+    chicken: [
+      { suffix: 90, name: 'Combo Pollo Familiar', category: 'combos', price: 48000, image: 'https://images.unsplash.com/photo-1618164436241-92473d360d3d?w=400' },
+      { suffix: 91, name: 'Papas a la Francesa', category: 'additionals', price: 9000, image: 'https://images.unsplash.com/photo-1585080876546-fa35db86d1f9?w=400' },
+    ],
+    coffee: [
+      { suffix: 100, name: 'Combo Brunch', category: 'combos', price: 30000, image: 'https://images.unsplash.com/photo-1447933601403-0c6688755566?w=400' },
+      { suffix: 101, name: 'Tostadas Francesas', category: 'postres', price: 16000, image: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400' },
+    ],
+  };
+
+  const extras = [
+    ...(categoryExtras[restaurant.category] || []),
+    ...sharedBeverages,
+    ...sharedDesserts,
+    ...sharedOffers,
+  ];
+
+  return extras.map((product) => ({
+    id: baseId + product.suffix,
+    ...product,
+  }));
+};
+
+const enrichRestaurant = (restaurant, index) => {
+  const streetNumber = 10 + index;
+  const address = `Calle ${streetNumber} # ${15 + (index % 5)} - ${3 + index}`;
+  const deliveryTimeMatch = (restaurant.time || '').match(/(\d+)\s*-\s*(\d+)\s*min/);
+  const deliveryMin = deliveryTimeMatch ? Number(deliveryTimeMatch[1]) : restaurant.isOpen ? 15 + (index % 4) * 5 : 30;
+  const deliveryMax = deliveryTimeMatch ? Number(deliveryTimeMatch[2]) : deliveryMin + 10;
+
+  return {
+    ...restaurant,
+    banner: restaurant.image,
+    address,
+    location: `${restaurant.name}, ${address}, ${BASE_LOCATION}`,
+    phone: `+57 313 555 ${String(1200 + index).slice(-4)}`,
+    email: `${restaurant.name.toLowerCase().replace(/[^a-z0-9]+/g, '.') }@appifood.test`,
+    delivery_time_min: deliveryMin,
+    delivery_time_max: deliveryMax,
+    delivery_cost: restaurant.delivery,
+    minimum_order: 25000 + index * 1000,
+    today_schedule: restaurant.isOpen
+      ? {
+        day: 'hoy',
+        opening_time: '08:00',
+        closing_time: '22:30',
+        is_open_now: true,
+      }
+      : {
+        day: 'hoy',
+        opening_time: '11:00',
+        closing_time: '21:00',
+        is_open_now: false,
+      },
+    menu_categories: restaurant.products
+      ? Array.from(new Set([...restaurant.products, ...buildExtraProducts(restaurant, index)].map((product) => product.category)))
+          .filter(Boolean)
+          .map((category, categoryIndex) => ({
+            id: `${restaurant.id}-${categoryIndex}`,
+            name: category,
+          }))
+      : [],
+    products: restaurant.products
+      ? [...restaurant.products, ...buildExtraProducts(restaurant, index)]
+      : buildExtraProducts(restaurant, index),
+    total_reviews: 128 + index * 14,
+    latitude: 2.444 + index * 0.002,
+    longitude: -76.606 + index * 0.002,
+  };
+};
+
 // Datos de prueba para restaurantes
-export const MOCK_RESTAURANTS = [
+const RAW_MOCK_RESTAURANTS = [
   // ABIERTOS
   {
     id: 1,
@@ -413,4 +533,6 @@ export const MOCK_RESTAURANTS = [
       { id: 2006, name: 'Cappuccino Artesano', category: 'bebidas', price: 10000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
     ],
   },
-]
+];
+
+export const MOCK_RESTAURANTS = [];

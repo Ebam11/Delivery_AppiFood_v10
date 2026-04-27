@@ -73,7 +73,7 @@ export default function RestaurantLogin({ onLogin }) {
     }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="page-restaurant-login min-h-screen flex flex-col">
       <div className="flex-1 relative flex items-center" style={{ minHeight: '100vh' }}>
         <div
           className="absolute inset-0"

@@ -19,7 +19,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'name', 'email', 'password', 'role',
-        'phone', 'id_number', 'birth_date', 'gender', 'avatar', 'status',
+        'phone', 'id_number', 'birth_date', 'gender', 'avatar', 'status', 'is_premium',
     ];
 
     protected $hidden = ['password', 'remember_token'];
@@ -29,6 +29,7 @@ class User extends Authenticatable
         'password'          => 'hashed',
         'role'              => UserRole::class,
         'status'            => 'boolean',
+        'is_premium'        => 'boolean',
         'birth_date'        => 'date',
     ];
 
@@ -81,6 +82,11 @@ class User extends Authenticatable
     public function paymentProfiles(): HasMany
     {
         return $this->hasMany(UserPaymentMethod::class);
+    }
+
+    public function isPremium(): bool
+    {
+        return (bool) $this->is_premium;
     }
 
     // ─── Scopes ────────────────────────────────────────────────

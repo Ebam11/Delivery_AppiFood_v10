@@ -6,11 +6,13 @@ use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\OrderResource;
 use App\Models\Coupon;
+use App\Models\Notification;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderTracking;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
+use App\Models\Restaurant;
 use App\Models\ShoppingCart;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -61,12 +63,18 @@ class OrderController extends Controller
         ]);
 
         $user = $request->user();
-        $cart = ShoppingCart::with('items.product', 'restaurant')
+        $cart = ShoppingCart::with('items.product', 'restaurant.schedules')
             ->where('user_id', $user->id)
             ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json(['message' => 'El carrito está vacío.'], 422);
+        }
+
+        if (!$cart->restaurant || !$this->isRestaurantOpen($cart->restaurant)) {
+            return response()->json([
+                'message' => 'El restaurante está cerrado en este momento. Intenta nuevamente dentro del horario de atención.',
+            ], 422);
         }
 
         try {
@@ -132,10 +140,22 @@ class OrderController extends Controller
                     'status'            => 'pending',
                 ]);
 
+                Notification::create([
+                    'user_id' => $user->id,
+                    'title' => 'Pedido creado',
+                    'message' => "Tu pedido #{$order->id} fue creado correctamente.",
+                    'type' => 'order_created',
+                    'data' => [
+                        'order_id' => $order->id,
+                        'restaurant_id' => $order->restaurant_id,
+                        'status' => OrderStatus::PENDING->value,
+                    ],
+                ]);
+
                 // Vaciar carrito
                 $cart->clear();
 
-                return $order->load('items.product', 'restaurant', 'payment');
+                return $order->load('items.product', 'restaurant', 'payment.method', 'tracking');
             });
 
             return response()->json([
@@ -160,9 +180,33 @@ class OrderController extends Controller
 
         $order->transitionTo(OrderStatus::CANCELLED);
 
+        Notification::create([
+            'user_id' => $request->user()->id,
+            'title' => 'Pedido cancelado',
+            'message' => "Tu pedido #{$order->id} fue cancelado.",
+            'type' => 'order_status',
+            'data' => [
+                'order_id' => $order->id,
+                'status' => OrderStatus::CANCELLED->value,
+            ],
+        ]);
+
         return response()->json([
             'message' => 'Pedido cancelado.',
             'data'    => new OrderResource($order->fresh()),
         ]);
+    }
+
+    private function isRestaurantOpen(Restaurant $restaurant): bool
+    {
+        $today = strtolower(now()->englishDayOfWeek);
+
+        $schedule = $restaurant->schedules->firstWhere('day', $today);
+
+        if (!$schedule) {
+            return false;
+        }
+
+        return $schedule->isOpenNow();
     }
 }

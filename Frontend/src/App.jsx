@@ -8,6 +8,7 @@ import CartSidebar   from './components/CartSidebar'
 import SupportChatbot from './components/SupportChatbot'
 import Home          from './pages/Home'
 import Login         from './pages/Login'
+import RestaurantLogin from './pages/RestaurantLogin'
 import Register      from './pages/Register'
 import RegisterRestaurant from './pages/RegisterRestaurant'
 import Profile       from './pages/Profile'
@@ -30,7 +31,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import RestaurantDashboard from './pages/RestaurantDashboard'
 import RestaurantManagementPage from './pages/RestaurantManagementPage'
 
-// Layout con header
+// Layout con header para páginas públicas
 function PublicLayout({ children, isAuth, user, onLogout, isLoading }) {
   return (
     <>
@@ -42,16 +43,28 @@ function PublicLayout({ children, isAuth, user, onLogout, isLoading }) {
   )
 }
 
+// Layout SIN header para restaurantes
+function RestaurantLayout({ children, isAuth, user, onLogout, isLoading }) {
+  return (
+    <>
+      {children}
+      <SupportChatbot />
+    </>
+  )
+}
+
 function RoleRoute({ user, allow = [], children }) {
   if (!user) return <Navigate to="/login" replace />
-  const role = String(user?.role ?? user?.rol ?? 'customer').toLowerCase()
+  const rawRole = String(user?.role ?? user?.rol ?? 'user').toLowerCase()
+  const role = rawRole === 'customer' ? 'user' : rawRole
   if (!allow.includes(role)) return <Navigate to="/" replace />
   return children
 }
 
 function normalizeUserRole(rawUser) {
   if (!rawUser || typeof rawUser !== 'object') return rawUser
-  const role = String(rawUser.role ?? rawUser.rol ?? 'customer').toLowerCase()
+  const rawRole = String(rawUser.role ?? rawUser.rol ?? 'user').toLowerCase()
+  const role = rawRole === 'customer' ? 'user' : rawRole
   return { ...rawUser, role }
 }
 
@@ -74,7 +87,7 @@ function PublicPage({ children, isAuth, user, onLogout, isLoading }) {
 
 function UserPage({ children, user, isAuth, onLogout, isLoading }) {
   return (
-    <RoleRoute user={user} allow={['user', 'customer']}>
+    <RoleRoute user={user} allow={['user']}>
       <PublicLayout isAuth={isAuth} user={user} onLogout={onLogout} isLoading={isLoading}>
         {children}
       </PublicLayout>
@@ -83,91 +96,151 @@ function UserPage({ children, user, isAuth, onLogout, isLoading }) {
 }
 
 export default function App() {
-  // Restaurar usuario desde localStorage al iniciar
+  // Restaurar usuario desde localStorage al iniciar - MEJORADO
   const [user, setUser] = useState(() => {
     const token = localStorage.getItem('token')
     const savedUser = localStorage.getItem('user')
     
+    // Si no hay token, no hay autenticación
     if (!token) return null
     
+    // Si hay token y usuario guardado, restaurarlo
     if (savedUser) {
       try {
         const parsedUser = normalizeUserRole(JSON.parse(savedUser))
-        console.log('📦 Restaurando usuario desde localStorage:', parsedUser)
+        console.log('📦 [INIT] Restaurando usuario desde localStorage:', parsedUser)
         return parsedUser
       } catch (e) {
-        console.log('⚠️ Could not parse saved user')
+        console.error('⚠️ [INIT] Error al parsear usuario guardado:', e)
       }
     }
     
-    return { authenticated: true }
+    // Si hay token pero no usuario guardado, retornar null para que se cargue desde /api/me
+    console.log('📦 [INIT] Token existe pero usuario no guardado, se cargará desde /api/me')
+    return null
   })
   
   const [loading, setLoading] = useState(true)
 
-  // Verificar sesión al montar
+  const syncUserFromStorage = () => {
+    const cachedUser = localStorage.getItem('user')
+    if (!cachedUser) {
+      setUser(null)
+      return
+    }
+
+    try {
+      setUser(normalizeUserRole(JSON.parse(cachedUser)))
+    } catch {
+      // Ignorar si el usuario guardado está corrupto.
+    }
+  }
+
+  const mergePremiumState = (nextUser) => {
+    const cachedUser = localStorage.getItem('user')
+    let cached = null
+
+    if (cachedUser) {
+      try {
+        cached = normalizeUserRole(JSON.parse(cachedUser))
+      } catch {
+        cached = null
+      }
+    }
+
+    if (!nextUser && cached) {
+      return cached
+    }
+
+    if (!nextUser) {
+      return nextUser
+    }
+
+    return {
+      ...cached,
+      ...nextUser,
+      is_premium: Boolean(cached?.is_premium || nextUser?.is_premium),
+      subscription: nextUser?.subscription ?? cached?.subscription ?? null,
+    }
+  }
+
+  // Verificar sesión al montar - MEJORADO
   useEffect(() => {
     const token = localStorage.getItem('token')
-    console.log('📌 App mounted, token:', token ? 'EXISTS' : 'NO TOKEN')
+    console.log('📌 [MOUNT] App montado, verificando autenticación...')
+    console.log('📌 [MOUNT] Token en localStorage:', token ? '✅ SÍ' : '❌ NO')
     
     if (!token) { 
+      console.log('📌 [MOUNT] No hay token, completando carga')
       setLoading(false)
       return 
     }
     
     let mounted = true
     
-    console.log('🔄 Fetching user profile...')
+    console.log('🔄 [MOUNT] Obteniendo datos del usuario desde /api/me...')
     fetchJson('/api/me', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(data => {
-        console.log('✅ User data received:', data)
+        console.log('✅ [MOUNT] Respuesta de /api/me recibida:', data)
         if (mounted) {
           let userData = null
           
-          if (data?.data) {
+          // Extraer datos del usuario de varias posibles estructuras de respuesta
+          if (data?.data && typeof data.data === 'object') {
             userData = data.data
-          } else if (data?.user) {
+          } else if (data?.user && typeof data.user === 'object') {
             userData = data.user
-          } else if (data?.profile) {
+          } else if (data?.profile && typeof data.profile === 'object') {
             userData = data.profile
           } else if (data?.id || data?.name || data?.email) {
             userData = data
           }
           
           if (userData && typeof userData === 'object' && Object.keys(userData).length > 0) {
-            console.log('💾 Updating user state with real data...')
-            const normalizedUser = normalizeUserRole(userData)
+            console.log('💾 [MOUNT] Actualizando estado del usuario con datos reales:', userData)
+            const normalizedUser = mergePremiumState(normalizeUserRole(userData))
             setUser(normalizedUser)
             localStorage.setItem('user', JSON.stringify(normalizedUser))
+            console.log('✅ [MOUNT] Usuario guardado en localStorage y estado actualizado')
           } else {
-            console.log('⚠️ No valid user data found, keeping cached data')
+            console.log('⚠️ [MOUNT] No hay datos válidos de usuario, usando datos guardados')
             const cachedUser = localStorage.getItem('user')
             if (cachedUser) {
               try {
                 const parsedCached = normalizeUserRole(JSON.parse(cachedUser))
                 setUser(parsedCached)
-              } catch (e) {}
+                console.log('✅ [MOUNT] Usuario restaurado del caché')
+              } catch (e) {
+                console.error('❌ [MOUNT] Error al restaurar usuario del caché:', e)
+              }
             }
           }
           setLoading(false)
         }
       })
       .catch(err => {
-        console.error('❌ Error fetching user:', err.message)
+        console.error('❌ [MOUNT] Error al obtener usuario:', err?.message)
         if (mounted) {
+          // Si el error es 401, limpiar autenticación
           if (err?.status === 401) {
+            console.log('⚠️ [MOUNT] Token inválido (401), limpiando autenticación')
             localStorage.removeItem('token')
             localStorage.removeItem('user')
             setUser(null)
           } else {
+            // Para otros errores, intentar usar datos guardados
+            console.log('⚠️ [MOUNT] Error en /api/me, intentando restaurar desde caché')
             const cachedUser = localStorage.getItem('user')
             if (cachedUser) {
               try {
                 const parsedCached = normalizeUserRole(JSON.parse(cachedUser))
                 setUser(parsedCached)
-              } catch (e) {}
+                console.log('✅ [MOUNT] Usuario restaurado del caché (fallback)')
+              } catch (e) {
+                console.error('❌ [MOUNT] Error al restaurar del caché:', e)
+              }
             }
           }
           setLoading(false)
@@ -177,8 +250,14 @@ export default function App() {
     return () => { mounted = false }
   }, [])
 
+  useEffect(() => {
+    const handleUserUpdated = () => syncUserFromStorage()
+    window.addEventListener('user-updated', handleUserUpdated)
+    return () => window.removeEventListener('user-updated', handleUserUpdated)
+  }, [])
+
   const handleLogin = (userData) => {
-    const normalizedUser = normalizeUserRole(userData)
+    const normalizedUser = mergePremiumState(normalizeUserRole(userData))
     console.log('✅ Login successful, setting user:', normalizedUser)
     setUser(normalizedUser)
     localStorage.setItem('user', JSON.stringify(normalizedUser))
@@ -247,6 +326,18 @@ export default function App() {
               ) : (
                 <Restaurants />
               )}
+            </PublicPage>
+          } />
+
+          <Route path="/restaurants/:id" element={
+            <PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
+              <RestaurantDetail />
+            </PublicPage>
+          } />
+
+          <Route path="/restaurant/:id" element={
+            <PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
+              <RestaurantDetail />
             </PublicPage>
           } />
 
@@ -319,6 +410,9 @@ export default function App() {
           <Route path="/register-restaurant" element={
             isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <RegisterRestaurant onLogin={handleLogin} />
           } />
+          <Route path="/restaurant/login" element={
+            isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <RestaurantLogin onLogin={handleLogin} />
+          } />
 
           <Route path="/admin" element={
             <RoleRoute user={user} allow={['admin']}>
@@ -337,20 +431,20 @@ export default function App() {
 
           <Route path="/restaurant/dashboard" element={
             <RoleRoute user={user} allow={['restaurant']}>
-              <PublicLayout
+              <RestaurantLayout
                 isAuth={isAuth}
                 user={user}
                 onLogout={handleLogout}
                 isLoading={loading}
               >
                 <RestaurantDashboard user={user} />
-              </PublicLayout>
+              </RestaurantLayout>
             </RoleRoute>
           } />
 
           <Route path="/restaurant/profile" element={
             <RoleRoute user={user} allow={['restaurant']}>
-              <PublicLayout
+              <RestaurantLayout
                 isAuth={isAuth}
                 user={user}
                 onLogout={handleLogout}
@@ -361,13 +455,13 @@ export default function App() {
                   description="Completa y actualiza los datos de tu local para que la información sea visible en la app."
                   note="Aquí se centraliza la configuración del restaurante: nombre, dirección, contacto y portada."
                 />
-              </PublicLayout>
+              </RestaurantLayout>
             </RoleRoute>
           } />
 
           <Route path="/restaurant/products" element={
             <RoleRoute user={user} allow={['restaurant']}>
-              <PublicLayout
+              <RestaurantLayout
                 isAuth={isAuth}
                 user={user}
                 onLogout={handleLogout}
@@ -378,7 +472,7 @@ export default function App() {
                   description="Administra el menú de tu restaurante desde aquí."
                   note="Esta vista queda lista para conectar el catálogo de productos sin romper la navegación del panel."
                 />
-              </PublicLayout>
+              </RestaurantLayout>
             </RoleRoute>
           } />
 
@@ -417,18 +511,6 @@ export default function App() {
           } />
 
           <Route path="/restaurant" element={<Navigate to="/restaurant/dashboard" replace />} />
-
-          <Route path="/restaurants/:id" element={
-            <PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
-              <RestaurantDetail />
-            </PublicPage>
-          } />
-
-          <Route path="/restaurant/:id" element={
-            <PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
-              <RestaurantDetail />
-            </PublicPage>
-          } />
 
           <Route path="/cart" element={
             <UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}>

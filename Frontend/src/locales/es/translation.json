@@ -149,9 +149,7 @@
   "discount": "Descuento:",
   "total": "Total:",
   "checkout": "Proceder al Pago",
-  "keepShopping": "Seguir Comprando",
-  "subtitle": "Tu pedido",
-  "description": "Revisa tus productos antes de continuar al pago."
+  "keepShopping": "Seguir Comprando"
 },
 "checkout": {
   "title": "Confirma tu orden",

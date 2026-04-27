@@ -120,16 +120,35 @@ export default function HomePage({ isAuth }) {
   const { fetchFavorites, toggleFavorite, isFavorite } = useFavoritesStore()
   
   // Estado para restaurantes y productos
-  const [popularRestaurants, setPopularRestaurants] = useState([])
-  const [loadingRestaurants, setLoadingRestaurants] = useState(true)
-  const [featuredProducts, setFeaturedProducts] = useState([])
-  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [popularRestaurants, setPopularRestaurants] = useState(() =>
+    MOCK_RESTAURANTS.slice(0, 8).map((restaurant, idx) => normalizeRestaurant(restaurant, idx))
+  )
+  const [loadingRestaurants, setLoadingRestaurants] = useState(false)
+  const [featuredProducts, setFeaturedProducts] = useState(() => {
+    const items = []
+    MOCK_RESTAURANTS.forEach((restaurant) => {
+      if (Array.isArray(restaurant.products)) {
+        restaurant.products.slice(0, 2).forEach((product) => {
+          items.push({
+            ...product,
+            restaurantId: restaurant.id,
+            restaurantName: restaurant.name,
+            oldPrice: product.price * 1.3,
+            pct: 15,
+          })
+        })
+      }
+    })
+    return items.slice(0, 12)
+  })
+  const [loadingProducts, setLoadingProducts] = useState(false)
 
   // Cargar restaurantes y productos del servidor
   useEffect(() => {
+    if (!token) return
+
     const loadRestaurants = async () => {
       try {
-        setLoadingRestaurants(true)
         const data = await fetchJson('/restaurants')
         const restaurantsArray = Array.isArray(data) ? data : data.data || data.restaurants || []
         
@@ -144,19 +163,18 @@ export default function HomePage({ isAuth }) {
       } catch (err) {
         console.error('Error cargando restaurantes:', err)
         setPopularRestaurants(MOCK_RESTAURANTS.slice(0, 4))
-      } finally {
-        setLoadingRestaurants(false)
       }
     }
     
     loadRestaurants()
-  }, [])
+  }, [token])
 
   // Cargar productos destacados desde los restaurantes
   useEffect(() => {
+    if (!token) return
+
     const loadProducts = async () => {
       try {
-        setLoadingProducts(true)
         const data = await fetchJson('/restaurants')
         const restaurantsArray = Array.isArray(data) ? data : data.data || data.restaurants || []
         
@@ -183,13 +201,11 @@ export default function HomePage({ isAuth }) {
         }
       } catch (err) {
         console.error('Error cargando productos:', err)
-      } finally {
-        setLoadingProducts(false)
       }
     }
     
     loadProducts()
-  }, [])
+  }, [token])
   
   // Cargar favoritos al montar
   useEffect(() => {
@@ -280,7 +296,7 @@ export default function HomePage({ isAuth }) {
   })
 
   return (
-    <div style={{ minHeight:'100vh', background:'white' }}>
+    <div className="page-home" style={{ minHeight:'100vh', background:'white' }}>
 
       {/* ══════════ HERO CARRUSEL ══════════ */}
       <section style={{ 
@@ -886,10 +902,6 @@ export default function HomePage({ isAuth }) {
                       <span>
                         <i className="fas fa-clock" style={{ marginRight: 3 }} />
                         {restaurant.time} min
-                      </span>
-                      <span>
-                        <i className="fas fa-motorcycle" style={{ marginRight: 3 }} />
-                        ${fmt(restaurant.delivery)}
                       </span>
                     </div>
                   </div>

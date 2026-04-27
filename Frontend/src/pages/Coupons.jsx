@@ -26,7 +26,7 @@ const coupons = [
 
 export default function Coupons() {
   return (
-    <main className="min-h-screen bg-[#fff8f6] py-8">
+    <main className="page-coupons min-h-screen bg-[#fff8f6] py-8">
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="rounded-3xl border border-red-100 bg-gradient-to-r from-[#fff3ef] to-[#fffaf8] p-6 sm:p-8">
           <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-[#FF4B3E] border border-red-100">

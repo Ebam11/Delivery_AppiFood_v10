@@ -7,6 +7,7 @@ const CartContext = createContext(null)
 
 const DELIVERY = 3500
 const GUEST_CART_KEY = 'guest_cart_items'
+const APPLIED_COUPON_KEY = 'applied_coupon'
 const fmt = n => Number(n).toLocaleString('es-CO')
 
 const COUPONS = {
@@ -18,7 +19,14 @@ const COUPONS = {
 export function CartProvider({ children }) {
   const [cart, setCart]               = useState([])
   const [isOpen, setIsOpen]           = useState(false)
-  const [appliedCoupon, setApplied]   = useState(null)
+  const [appliedCoupon, setApplied]   = useState(() => {
+    try {
+      const raw = localStorage.getItem(APPLIED_COUPON_KEY)
+      return raw ? JSON.parse(raw) : null
+    } catch {
+      return null
+    }
+  })
   const [recentlyAddedItemId, setRecentlyAddedItemId] = useState(null)
   const previousCartRef = useRef([])
   const hasHydratedRef = useRef(false)
@@ -169,12 +177,18 @@ export function CartProvider({ children }) {
       localStorage.removeItem(GUEST_CART_KEY)
     }
     setApplied(null)
+    localStorage.removeItem(APPLIED_COUPON_KEY)
   }, [clearCartItems, isAuthenticated])
 
   const applyCoupon = useCallback(code => {
     // Normaliza el código para evitar fallos por mayúsculas/minúsculas.
     const c = COUPONS[code.toUpperCase()]
-    if (c) { setApplied({ code: code.toUpperCase(), ...c }); return { ok: true, label: c.label } }
+    if (c) {
+      const applied = { code: code.toUpperCase(), ...c }
+      setApplied(applied)
+      localStorage.setItem(APPLIED_COUPON_KEY, JSON.stringify(applied))
+      return { ok: true, label: c.label }
+    }
     return { ok: false }
   }, [])
 

@@ -23,6 +23,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name'     => ['required', 'string', 'max:255'],
+            'restaurant_name' => ['nullable', 'string', 'max:255', 'required_if:role,restaurant'],
             'email'    => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone'    => ['nullable', 'string', 'max:20'],
@@ -38,6 +39,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'name.required'      => 'El nombre es obligatorio.',
+            'restaurant_name.required_if' => 'El nombre del restaurante es obligatorio.',
             'email.required'     => 'El correo electrónico es obligatorio.',
             'email.email'        => 'El correo electrónico no es válido.',
             'email.unique'       => 'Este correo electrónico ya está registrado.',

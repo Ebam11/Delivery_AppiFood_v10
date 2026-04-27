@@ -90,7 +90,7 @@ export default function SupportChatbot({ embedded = false }) {
   }
 
   const panel = (
-    <div className={`bg-white border border-gray-200 shadow-2xl overflow-hidden ${embedded ? 'rounded-3xl' : 'rounded-3xl w-[min(92vw,420px)] max-h-[min(78vh,720px)]'}`}>
+    <div className={`component-support-chatbot bg-white border border-gray-200 shadow-2xl overflow-hidden ${embedded ? 'rounded-3xl' : 'rounded-3xl w-[min(92vw,420px)] max-h-[min(78vh,720px)]'}`}>
       <div className="bg-gradient-to-r from-[#FF4B3E] to-[#FF7A59] text-white p-4 flex items-center justify-between gap-4">
         <div>
           <p className="font-black text-lg">Asistente AppiFood</p>
@@ -176,7 +176,7 @@ export default function SupportChatbot({ embedded = false }) {
   if (embedded) return panel
 
   return (
-    <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[80] flex flex-col items-end gap-3">
+    <div className="component-support-chatbot-float fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[80] flex flex-col items-end gap-3">
       {open ? (
         panel
       ) : (

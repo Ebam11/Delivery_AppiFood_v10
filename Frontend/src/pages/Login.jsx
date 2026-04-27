@@ -2,20 +2,21 @@
 // src/pages/LoginPage.jsx
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
 
 export default function LoginPage({ onLogin }) {
-  const [form, setForm]       = useState({ email: '', password: '', remember: false })
-  const [errors, setErrors]   = useState({})
+  const [form, setForm]         = useState({ email: '', password: '', remember: false })
+  const [errors, setErrors]     = useState({})
   const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading]  = useState(false)
+  const [loading, setLoading]   = useState(false)
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const change = e => {
     const { name, value, type, checked } = e.target
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
-    // Solo limpia el error para este campo cuando el usuario empiece a corregirlo
     if (errors[name]) {
       setErrors(er => ({ ...er, [name]: null }))
     }
@@ -33,11 +34,10 @@ export default function LoginPage({ onLogin }) {
       })
       localStorage.setItem('token', data.token)
       onLogin?.(data.user)
-      // Redirigir según rol
       const role = data.user?.role
-      if (role === 'admin')      navigate('/admin/dashboard')
+      if (role === 'admin')           navigate('/admin/dashboard')
       else if (role === 'restaurant') navigate('/restaurant/dashboard')
-      else navigate('/')
+      else                            navigate('/')
     } catch (error) {
       if (error instanceof ApiError) {
         setErrors({ email: error.message || 'Credenciales incorrectas.' })
@@ -50,14 +50,11 @@ export default function LoginPage({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Hero + Form */}
+    <div className="page-login min-h-screen flex flex-col">
       <div className="flex-1 relative flex items-center" style={{ minHeight: '100vh' }}>
-        {/* Fondo con imagen Unsplash */}
         <div className="absolute inset-0"
           style={{ background: 'linear-gradient(135deg,rgba(0,0,0,0.55),rgba(20,20,20,0.55)), url(https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1600&h=900&fit=crop) center/cover no-repeat' }} />
 
-        {/* Barra superior - Sticky */}
         <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
         </div>
@@ -65,9 +62,9 @@ export default function LoginPage({ onLogin }) {
         <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] pt-16 pb-12 flex items-center justify-between gap-10 flex-wrap">
           {/* Texto izquierdo */}
           <div className="text-white max-w-md hidden md:block">
-            <h1 className="text-5xl font-black leading-tight mb-4">Ingresa a AppiFood</h1>
+            <h1 className="text-5xl font-black leading-tight mb-4">{t('login.title')}</h1>
             <p className="text-xl font-semibold opacity-90 leading-relaxed">
-              Descubre, ordena y disfruta de la mejor comida de tu ciudad, todo en un solo lugar.
+              {t('login.subtitle')}
             </p>
           </div>
 
@@ -76,7 +73,7 @@ export default function LoginPage({ onLogin }) {
             <div className="p-7">
               <div className="text-center mb-5">
                 <span className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</span>
-                <p className="text-[#FF4B3E] font-bold text-lg mt-1">Iniciar sesión</p>
+                <p className="text-[#FF4B3E] font-bold text-lg mt-1">{t('login.heading')}</p>
               </div>
 
               {errors.email && (
@@ -87,9 +84,8 @@ export default function LoginPage({ onLogin }) {
               )}
 
               <form onSubmit={submit} className="space-y-4">
-                {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('login.email')}</label>
                   <input type="email" name="email" value={form.email} onChange={change}
                     placeholder="tucorreo@email.com" required autoFocus
                     className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition
@@ -97,9 +93,8 @@ export default function LoginPage({ onLogin }) {
                       focus:ring-2 focus:ring-[#FF4B3E]/20`} />
                 </div>
 
-                {/* Contraseña */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('login.password')}</label>
                   <div className="relative">
                     <input type={showPass ? 'text' : 'password'} name="password" value={form.password} onChange={change}
                       placeholder="••••••••" required
@@ -113,24 +108,26 @@ export default function LoginPage({ onLogin }) {
 
                 <button type="submit" disabled={loading}
                   className="w-full py-3 bg-[#FF4B3E] text-white rounded-xl font-bold hover:bg-[#e03a2d] transition disabled:opacity-60 flex items-center justify-center gap-2">
-                  {loading ? <><i className="fas fa-spinner fa-spin"></i> Ingresando...</> : <><i className="fas fa-sign-in-alt"></i> Iniciar sesión</>}
+                  {loading
+                    ? <><i className="fas fa-spinner fa-spin"></i> {t('login.loading')}</>
+                    : <><i className="fas fa-sign-in-alt"></i> {t('login.submit')}</>}
                 </button>
 
                 <div className="flex items-center justify-between text-sm flex-wrap gap-2">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" name="remember" checked={form.remember} onChange={change}
                       className="accent-[#FF4B3E] w-4 h-4" />
-                    <span className="text-gray-700">Recordarme</span>
+                    <span className="text-gray-700">{t('login.remember')}</span>
                   </label>
                   <Link to="/forgot-password" className="text-[#FF4B3E] hover:underline">
-                    ¿Olvidaste tu contraseña?
+                    {t('login.forgot')}
                   </Link>
                 </div>
 
                 <p className="text-center text-sm text-gray-500">
-                  ¿No tienes cuenta?{' '}
+                  {t('login.no_account')}{' '}
                   <Link to="/register" className="text-[#FF4B3E] font-bold hover:underline">
-                    Regístrate gratis
+                    {t('login.register_link')}
                   </Link>
                 </p>
               </form>
@@ -138,8 +135,6 @@ export default function LoginPage({ onLogin }) {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
       <Footer />
     </div>
   )

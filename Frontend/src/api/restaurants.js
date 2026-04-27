@@ -21,12 +21,16 @@ export const getRestaurantReviews = async (restaurantId) => {
 
 // Crear reseña (requiere autenticación)
 export const createReview = async (restaurantId, data) => {
-  const response = await client.post(`/restaurants/${restaurantId}/reviews`, data);
+  const response = await client.post('/reviews', {
+    ...data,
+    restaurant_id: restaurantId,
+  });
   return response.data;
 };
 
 // Obtener productos de un restaurante
 export const getRestaurantProducts = async (restaurantId) => {
-  const response = await client.get(`/restaurants/${restaurantId}/products`);
-  return response.data;
+  const response = await client.get(`/restaurants/${restaurantId}`);
+  const payload = response?.data?.data ?? response?.data ?? {};
+  return payload.products ?? [];
 };

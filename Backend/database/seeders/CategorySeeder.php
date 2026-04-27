@@ -17,6 +17,12 @@ class CategorySeeder extends Seeder
             'Parrilla del Valle' => ['Cortes', 'Acompañamientos', 'Bebidas', 'Postres'],
             'Tacos del Valle' => ['Tacos', 'Entradas', 'Bebidas', 'Postres'],
             'Verde Fresco' => ['Bowls', 'Wraps', 'Jugos', 'Postres'],
+            'Pollo Dorado' => ['Pollo Asado', 'Broaster', 'Acompañamientos', 'Bebidas'],
+            'Mariscos del Puerto' => ['Ceviches', 'Mariscos', 'Pescados', 'Bebidas'],
+            'Trattoria Bella' => ['Pizzas', 'Pastas', 'Entradas', 'Bebidas'],
+            'Dulce Tentación' => ['Tortas', 'Postres', 'Helados', 'Bebidas'],
+            'Café Madrugón' => ['Desayunos', 'Panadería', 'Café', 'Jugos'],
+            'Barra Fresca' => ['Batidos', 'Jugos', 'Bebidas Frías', 'Snacks'],
         ];
 
         foreach ($restaurants as $restaurantName => $categoryNames) {

@@ -10,11 +10,16 @@ use Illuminate\Support\Facades\DB;
 
 class UserPaymentMethodController extends Controller
 {
+    private const METHOD_TYPES = ['card', 'wallet', 'transfer', 'pse'];
+
+    private const CARD_PROVIDERS = ['visa', 'mastercard', 'amex', 'diners'];
+
+    private const GENERIC_PROVIDERS = ['visa', 'mastercard', 'amex', 'diners', 'paypal', 'bancolombia', 'davivienda', 'bbva', 'nequi', 'pse'];
+
     public function index(Request $request): JsonResponse
     {
         $methods = UserPaymentMethod::query()
             ->where('user_id', $request->user()->id)
-            ->where('type', 'card')
             ->orderByDesc('is_default')
             ->latest('id')
             ->get();
@@ -25,14 +30,15 @@ class UserPaymentMethodController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'type'         => ['required', 'in:card'],
-            'provider'     => ['required', 'in:visa,mastercard,paypal'],
+            'type'         => ['required', 'in:' . implode(',', self::METHOD_TYPES)],
+            'provider'     => ['nullable', 'in:' . implode(',', self::GENERIC_PROVIDERS)],
             'label'        => ['nullable', 'string', 'max:80'],
             'holder_name'  => ['nullable', 'string', 'max:80'],
-            'card_number'  => ['required', 'string'],
-            'exp_month'    => ['required', 'digits:2'],
-            'exp_year'     => ['required', 'digits:2'],
-            'cvv'          => ['required', 'digits_between:3,4'],
+            'card_number'  => ['nullable', 'string'],
+            'exp_month'    => ['nullable', 'digits:2'],
+            'exp_year'     => ['nullable', 'digits:2'],
+            'cvv'          => ['nullable', 'digits_between:3,4'],
+            'wallet_phone' => ['nullable', 'string', 'max:20'],
             'is_default'   => ['nullable', 'boolean'],
         ]);
 
@@ -44,6 +50,15 @@ class UserPaymentMethodController extends Controller
                 ], 422);
             }
             $validated['last_four'] = substr($digits, -4);
+            $validated['exp_month'] = str_pad((string) ($validated['exp_month'] ?? ''), 2, '0', STR_PAD_LEFT);
+            $validated['exp_year'] = substr((string) ($validated['exp_year'] ?? ''), -2);
+        } else {
+            unset($validated['card_number'], $validated['cvv'], $validated['exp_month'], $validated['exp_year'], $validated['last_four']);
+            if (($validated['type'] ?? null) === 'wallet' && empty($validated['wallet_phone'])) {
+                return response()->json([
+                    'message' => 'Debes indicar el teléfono de la billetera o medio digital.',
+                ], 422);
+            }
         }
 
         unset($validated['card_number']);
@@ -77,18 +92,21 @@ class UserPaymentMethodController extends Controller
     {
         $method = UserPaymentMethod::query()
             ->where('user_id', $request->user()->id)
-            ->where('type', 'card')
             ->findOrFail($id);
 
         $validated = $request->validate([
+            'type'         => ['nullable', 'in:' . implode(',', self::METHOD_TYPES)],
             'label'        => ['nullable', 'string', 'max:80'],
-            'provider'     => ['nullable', 'in:visa,mastercard,paypal'],
+            'provider'     => ['nullable', 'in:' . implode(',', self::GENERIC_PROVIDERS)],
             'holder_name'  => ['nullable', 'string', 'max:80'],
             'card_number'  => ['nullable', 'string'],
             'exp_month'    => ['nullable', 'digits:2'],
             'exp_year'     => ['nullable', 'digits:2'],
+            'wallet_phone' => ['nullable', 'string', 'max:20'],
             'is_default'   => ['nullable', 'boolean'],
         ]);
+
+        $type = $validated['type'] ?? $method->type;
 
         if ($request->filled('card_number')) {
             $digits = preg_replace('/\D+/', '', (string) $request->input('card_number'));
@@ -100,12 +118,22 @@ class UserPaymentMethodController extends Controller
             $validated['last_four'] = substr($digits, -4);
         }
 
-        if ($request->filled('exp_month')) {
-            $validated['exp_month'] = str_pad((string) $request->input('exp_month'), 2, '0', STR_PAD_LEFT);
+        if ($type === 'card') {
+            if ($request->filled('exp_month')) {
+                $validated['exp_month'] = str_pad((string) $request->input('exp_month'), 2, '0', STR_PAD_LEFT);
+            }
+
+            if ($request->filled('exp_year')) {
+                $validated['exp_year'] = substr((string) $request->input('exp_year'), -2);
+            }
+        } else {
+            unset($validated['card_number'], $validated['cvv'], $validated['exp_month'], $validated['exp_year'], $validated['last_four']);
         }
 
-        if ($request->filled('exp_year')) {
-            $validated['exp_year'] = substr((string) $request->input('exp_year'), -2);
+        if ($type === 'wallet' && !$request->filled('wallet_phone') && empty($method->wallet_phone)) {
+            return response()->json([
+                'message' => 'Debes indicar el teléfono de la billetera o medio digital.',
+            ], 422);
         }
 
         if (array_key_exists('is_default', $validated) && (bool) $validated['is_default']) {
@@ -130,7 +158,6 @@ class UserPaymentMethodController extends Controller
     {
         $method = UserPaymentMethod::query()
             ->where('user_id', $request->user()->id)
-            ->where('type', 'card')
             ->findOrFail($id);
 
         $method->delete();

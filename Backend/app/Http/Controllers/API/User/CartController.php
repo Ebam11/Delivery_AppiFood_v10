@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API\User;
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\Restaurant;
 use App\Models\ShoppingCart;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -43,6 +44,14 @@ class CartController extends Controller
 
         if (!$product->is_available) {
             return response()->json(['message' => 'Este producto no está disponible.'], 422);
+        }
+
+        $restaurant = Restaurant::with('schedules')->find($product->restaurant_id);
+
+        if (!$restaurant || !$this->isRestaurantOpen($restaurant)) {
+            return response()->json([
+                'message' => 'Este restaurante está cerrado en este momento. No puedes agregar productos al carrito.',
+            ], 422);
         }
 
         $cart = ShoppingCart::firstOrNew(['user_id' => $request->user()->id]);
@@ -122,6 +131,19 @@ class CartController extends Controller
         $cart?->clear();
 
         return response()->json(['message' => 'Carrito vaciado.']);
+    }
+
+    private function isRestaurantOpen(Restaurant $restaurant): bool
+    {
+        $today = strtolower(now()->englishDayOfWeek);
+
+        $schedule = $restaurant->schedules->firstWhere('day', $today);
+
+        if (!$schedule) {
+            return false;
+        }
+
+        return $schedule->isOpenNow();
     }
 
     private function formatCart(ShoppingCart $cart): array

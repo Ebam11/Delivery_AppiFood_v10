@@ -1,6 +1,7 @@
 // Archivo: src/pages/Addresses.jsx | Comentario: logica principal del modulo.
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../api/client';
 import Loading from '../components/Loading';
@@ -12,6 +13,7 @@ export default function Addresses() {
   const [error, setError] = useState(null);
   const { token } = useAuthStore();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     fetchAddresses();
@@ -20,11 +22,13 @@ export default function Addresses() {
   const fetchAddresses = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/addresses');
+      const response = await api.get('/addresses', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setAddresses(response.data.data || []);
       setError(null);
     } catch (err) {
-      setError('Error al cargar las direcciones');
+      setError(t('addresses.error_load'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -32,13 +36,14 @@ export default function Addresses() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta dirección?')) return;
-
+    if (!window.confirm(t('addresses.confirm_delete'))) return;
     try {
-      await api.delete(`/addresses/${id}`);
+      await api.delete(`/addresses/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setAddresses(addresses.filter(a => a.id !== id));
     } catch (err) {
-      setError('Error al eliminar la dirección');
+      setError(t('addresses.error_delete'));
     }
   };
 
@@ -48,12 +53,12 @@ export default function Addresses() {
     <main className="page-addresses">
       <div className="container">
         <div className="page-header">
-          <h1>Mis Direcciones</h1>
+          <h1>{t('addresses.title')}</h1>
           <button
             onClick={() => navigate('/user/addresses/create')}
             className="btn btn-primary"
           >
-            <i className="fas fa-plus"></i> Agregar Dirección
+            <i className="fas fa-plus"></i> {t('addresses.add')}
           </button>
         </div>
 
@@ -64,9 +69,9 @@ export default function Addresses() {
             {addresses.map(address => (
               <div key={address.id} className="address-card">
                 <div className="address-card-header">
-                  <h3>{address.name || 'Casa'}</h3>
+                  <h3>{address.name || t('addresses.default_label')}</h3>
                   {address.is_default && (
-                    <span className="badge badge-primary">Por defecto</span>
+                    <span className="badge badge-primary">{t('addresses.default_badge')}</span>
                   )}
                 </div>
                 <p className="address-text">{address.address}</p>
@@ -75,13 +80,13 @@ export default function Addresses() {
                     onClick={() => navigate(`/user/addresses/${address.id}/edit`)}
                     className="btn btn-sm btn-secondary"
                   >
-                    <i className="fas fa-edit"></i> Editar
+                    <i className="fas fa-edit"></i> {t('addresses.edit')}
                   </button>
                   <button
                     onClick={() => handleDelete(address.id)}
                     className="btn btn-sm btn-danger"
                   >
-                    <i className="fas fa-trash"></i> Eliminar
+                    <i className="fas fa-trash"></i> {t('addresses.delete')}
                   </button>
                 </div>
               </div>
@@ -90,12 +95,12 @@ export default function Addresses() {
         ) : (
           <div className="empty-state">
             <i className="fas fa-map-marker-alt"></i>
-            <p>No tienes direcciones guardadas</p>
+            <p>{t('addresses.empty')}</p>
             <button
               onClick={() => navigate('/user/addresses/create')}
               className="btn btn-primary"
             >
-              Agregar primera dirección
+              {t('addresses.add_first')}
             </button>
           </div>
         )}

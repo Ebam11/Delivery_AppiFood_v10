@@ -17,7 +17,7 @@ export default function ProductModal({ product, onClose }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-[80] flex items-center justify-center p-4"
+    <div className="component-product-modal fixed inset-0 bg-black/60 z-[80] flex items-center justify-center p-4"
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
         <div className="relative">

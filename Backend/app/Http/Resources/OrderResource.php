@@ -26,10 +26,19 @@ class OrderResource extends JsonResource
                 'name' => $this->restaurant->name,
                 'logo' => $this->restaurant->logo ? asset('storage/' . $this->restaurant->logo) : null,
             ]),
+            'restaurant_name'  => $this->restaurant?->name,
+            'restaurant_logo'  => $this->restaurant?->logo ? asset('storage/' . $this->restaurant->logo) : null,
+            'user'             => $this->whenLoaded('user', fn() => [
+                'id'    => $this->user->id,
+                'name'  => $this->user->name,
+                'email' => $this->user->email,
+            ]),
+            'customer_name'    => $this->user?->name,
             'items'            => $this->whenLoaded('items', fn() =>
                 $this->items->map(fn($item) => [
                     'id'         => $item->id,
                     'name'       => $item->product_name ?? $item->product?->name,
+                    'product_name'=> $item->product_name ?? $item->product?->name,
                     'quantity'   => $item->quantity,
                     'unit_price' => $item->unit_price,
                     'subtotal'   => $item->quantity * $item->unit_price,
@@ -41,13 +50,22 @@ class OrderResource extends JsonResource
                     'status'     => $t->status instanceof \BackedEnum ? $t->status->value : $t->status,
                     'comment'    => $t->comment,
                     'created_at' => $t->created_at?->toDateTimeString(),
+                    'changed_at' => $t->changed_at?->toDateTimeString() ?? $t->created_at?->toDateTimeString(),
                 ])
             ),
             'payment'          => $this->whenLoaded('payment', fn() => $this->payment ? [
                 'id'     => $this->payment->id,
                 'status' => $this->payment->status instanceof \BackedEnum ? $this->payment->status->value : $this->payment->status,
-                'method' => $this->payment->method ?? null,
+                'method' => $this->payment->method ? [
+                    'id' => $this->payment->method->id,
+                    'name' => $this->payment->method->name,
+                    'type' => $this->payment->method->type,
+                    'icon' => $this->payment->method->icon,
+                ] : null,
+                'method_name' => $this->payment->method?->name,
                 'amount' => $this->payment->amount,
+                'paid_at' => $this->payment->paid_at?->toDateTimeString(),
+                'reference_code' => $this->payment->external_reference,
             ] : null),
             'created_at'       => $this->created_at?->toDateTimeString(),
             'updated_at'       => $this->updated_at?->toDateTimeString(),
