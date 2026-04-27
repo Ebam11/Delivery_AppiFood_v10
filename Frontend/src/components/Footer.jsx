@@ -3,6 +3,8 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from './LanguageSwitcher'
+import GooglePlay from '../assets/GooglePlay.svg'
+import AppStore from '../assets/AppStore.png'
 
 export default function Footer({ restaurants = [] }) {
   const { t } = useTranslation()
@@ -33,11 +35,11 @@ export default function Footer({ restaurants = [] }) {
             <h4 className="font-bold text-[#FF4B3E] mb-4 text-sm uppercase tracking-wider">{t('footer.aboutTitle')}</h4>
             <ul className="space-y-2 text-sm">
               {[
-                { labelKey: 'footer.joinTeam',      href: '#' },
-                { labelKey: 'footer.registerRestaurant', to: '/register-restaurant' },
-                { labelKey: 'footer.blog',          href: '#' },
-                { labelKey: 'footer.terms',         href: '#' },
-                { labelKey: 'footer.privacy',       href: '#' },
+                { labelKey: 'footer.joinTeam',           href: '#' },
+                { labelKey: 'footer.registerRestaurant',  to: '/register-restaurant' },
+                { labelKey: 'footer.blog',               href: '#' },
+                { labelKey: 'footer.terms',              href: '#' },
+                { labelKey: 'footer.privacy',            href: '#' },
               ].map(item => (
                 <li key={item.labelKey}>
                   {item.to ? (
@@ -84,8 +86,12 @@ export default function Footer({ restaurants = [] }) {
             </address>
             <h4 className="font-bold text-[#FF4B3E] mb-3 text-sm uppercase tracking-wider">{t('footer.downloadTitle')}</h4>
             <div className="flex gap-2 flex-wrap">
-              <a href="#"><img src="/images/Google_Play-Badge-Logo.wine.svg" alt="Google Play" className="h-16 w-auto" /></a>
-              <a href="#"><img src="/images/App_Store_(iOS)-Badge-Logo.wine.svg" alt="App Store" className="h-16 w-auto" /></a>
+              <a href="#" target="_blank" rel="noreferrer">
+                <img src={GooglePlay} alt="Google Play" className="h-10 w-auto" />
+              </a>
+              <a href="#" target="_blank" rel="noreferrer">
+                <img src={AppStore} alt="App Store" className="h-10 w-auto" />
+              </a>
             </div>
           </div>
         </div>
