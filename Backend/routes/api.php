@@ -14,6 +14,7 @@ use App\Http\Controllers\API\Auth\RegisterController;
 use App\Http\Controllers\API\Restaurant\CategoryController;
 use App\Http\Controllers\API\Restaurant\DashboardController as RestaurantDashboard;
 use App\Http\Controllers\API\Restaurant\OrderManagementController;
+use App\Http\Controllers\API\Restaurant\ReviewManagementController;
 use App\Http\Controllers\API\User\SubscriptionController;
 use App\Http\Controllers\API\Restaurant\ProductController;
 use App\Http\Controllers\API\Restaurant\ProfileRestaurantController;
@@ -155,6 +156,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/active', [OrderManagementController::class, 'active']);
             Route::get('/{id}', [OrderManagementController::class, 'show']);
             Route::patch('/{id}/status', [OrderManagementController::class, 'updateStatus']);
+        });
+
+        Route::prefix('reviews')->group(function () {
+            Route::get('/', [ReviewManagementController::class, 'index']);
+            Route::patch('/{id}/reply', [ReviewManagementController::class, 'reply']);
         });
     });
 

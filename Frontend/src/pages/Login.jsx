@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
+import './Auth.css'
 
 export default function LoginPage({ onLogin }) {
   const [form, setForm]         = useState({ email: '', password: '', remember: false })
@@ -40,9 +41,9 @@ export default function LoginPage({ onLogin }) {
       else                            navigate('/')
     } catch (error) {
       if (error instanceof ApiError) {
-        setErrors({ email: error.message || 'Credenciales incorrectas.' })
+        setErrors({ email: error.message || (t('login.error_credentials') || 'Credenciales incorrectas.') })
       } else {
-        setErrors({ email: 'Error de conexión. Intenta de nuevo.' })
+        setErrors({ email: t('login.error_connection') || 'Error de conexión. Intenta de nuevo.' })
       }
     } finally {
       setLoading(false)
@@ -51,9 +52,8 @@ export default function LoginPage({ onLogin }) {
 
   return (
     <div className="page-login min-h-screen flex flex-col">
-      <div className="flex-1 relative flex items-center" style={{ minHeight: '100vh' }}>
-        <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg,rgba(0,0,0,0.55),rgba(20,20,20,0.55)), url(https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1600&h=900&fit=crop) center/cover no-repeat' }} />
+      <div className="flex-1 relative flex items-center auth-container">
+        <div className="absolute inset-0 auth-bg-login" />
 
         <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
@@ -87,7 +87,7 @@ export default function LoginPage({ onLogin }) {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">{t('login.email')}</label>
                   <input type="email" name="email" value={form.email} onChange={change}
-                    placeholder="tucorreo@email.com" required autoFocus
+                    placeholder={t('login.placeholder_email') || "tucorreo@email.com"} required autoFocus
                     className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition
                       ${errors.email ? 'border-red-400 bg-red-50' : 'border-gray-300 focus:border-[#FF4B3E]'}
                       focus:ring-2 focus:ring-[#FF4B3E]/20`} />

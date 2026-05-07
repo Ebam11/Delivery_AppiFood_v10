@@ -8,6 +8,7 @@ import { usePaymentStore } from '../store/paymentStore';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { Loading } from '../components/Loading';
 import PayUCheckout from '../components/PayUCheckout';
+import '../components/SharedUI.css';
 
 export const Checkout = () => {
   const navigate = useNavigate();
@@ -150,16 +151,16 @@ export const Checkout = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span className="font-medium">{t('checkout.items')} ({cart.total_items || 0})</span>
-                    <span className="font-semibold">COP ${(cart.total || 0).toLocaleString('es-CO')}</span>
+                    <span className="font-semibold">COP ${Number(cart.total || 0).toLocaleString('es-CO')}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span className="font-medium">{t('checkout.shipping')}</span>
-                    <span className="font-semibold">COP $5.000</span>
+                    <span className="font-semibold">COP ${Number(cart.delivery_cost || 0).toLocaleString('es-CO')}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t-2 border-gray-300 pt-3 mt-3">
                     <span className="text-gray-800">{t('checkout.total_to_pay')}</span>
                     <span className="text-[#FF4B3E]">
-                      COP ${((cart.total || 0) + 5000).toLocaleString('es-CO')}
+                      COP ${Number((cart.total || 0) + (cart.delivery_cost || 0)).toLocaleString('es-CO')}
                     </span>
                   </div>
                 </div>
@@ -169,14 +170,14 @@ export const Checkout = () => {
                 <button
                   type="button"
                   onClick={() => navigate('/cart')}
-                  className="flex-1 px-4 py-3.5 border-2 border-gray-200 text-gray-800 font-bold rounded-xl hover:bg-gray-50 transition"
+                  className="flex-1 button-outline py-3.5"
                 >
                   {t('checkout.back_to_cart')}
                 </button>
                 <button
                   type="submit"
                   disabled={isProcessing}
-                  className="flex-1 px-4 py-3.5 bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] text-white font-bold rounded-xl hover:shadow-lg hover:shadow-[#FF4B3E]/30 transition disabled:opacity-50"
+                  className="flex-1 button-primary py-3.5 disabled:opacity-50"
                 >
                   {isProcessing ? t('checkout.creating') : t('checkout.continue')}
                 </button>
@@ -196,16 +197,16 @@ export const Checkout = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between text-gray-600">
                     <span className="font-medium">{t('checkout.subtotal')}</span>
-                    <span className="font-semibold">COP ${(cart.total || 0).toLocaleString('es-CO')}</span>
+                    <span className="font-semibold">COP ${Number(cart.total || 0).toLocaleString('es-CO')}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
                     <span className="font-medium">{t('checkout.shipping')}</span>
-                    <span className="font-semibold">COP $5.000</span>
+                    <span className="font-semibold">COP ${Number(cart.delivery_cost || 0).toLocaleString('es-CO')}</span>
                   </div>
                   <div className="flex justify-between text-lg font-bold border-t-2 border-gray-300 pt-3">
                     <span className="text-gray-800">{t('checkout.total_to_pay_2')}</span>
                     <span className="text-[#FF4B3E]">
-                      COP ${((cart.total || 0) + 5000).toLocaleString('es-CO')}
+                      COP ${Number((cart.total || 0) + (cart.delivery_cost || 0)).toLocaleString('es-CO')}
                     </span>
                   </div>
                 </div>

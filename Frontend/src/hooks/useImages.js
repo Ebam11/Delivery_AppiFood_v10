@@ -14,6 +14,12 @@ export const useProductImage = (query, fallbackUrl = null) => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (fallbackUrl) {
+      setImage(fallbackUrl)
+      setLoading(false)
+      return
+    }
+
     if (!query) {
       setLoading(false)
       return
@@ -48,6 +54,12 @@ export const useRestaurantImage = (restaurantName, fallbackUrl = null) => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (fallbackUrl) {
+      setImage(fallbackUrl)
+      setLoading(false)
+      return
+    }
+
     if (!restaurantName) {
       setLoading(false)
       return

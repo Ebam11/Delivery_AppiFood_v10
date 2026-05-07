@@ -14,6 +14,7 @@ export const RESTAURANT_MENUS = {
       // Bebidas
       { id: 107, name: 'Refresco Grande', category: 'bebidas', price: 6000, image: 'https://images.unsplash.com/photo-1554866585-e1b9ca5f2d5b?w=400' },
       { id: 108, name: 'Cerveza Artesanal', category: 'bebidas', price: 12000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+      { id: 109, name: 'Combo Burger + Papas + Bebida', category: 'combos', price: 38000, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400' },
     ]
   },
   2: { // Pizzería La Nonna
@@ -30,6 +31,7 @@ export const RESTAURANT_MENUS = {
       // Bebidas
       { id: 207, name: 'Vino Tinto 750ml', category: 'bebidas', price: 35000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
       { id: 208, name: 'Agua con Gas', category: 'bebidas', price: 5000, image: 'https://images.unsplash.com/photo-1554866585-e1b9ca5f2d5b?w=400' },
+      { id: 209, name: 'Combo Familiar Pizza + Bebida', category: 'combos', price: 52000, image: 'https://images.unsplash.com/photo-1604874891752-8e81e58dd086?w=400' },
     ]
   },
   3: { // Sushi Paradise
@@ -46,6 +48,7 @@ export const RESTAURANT_MENUS = {
       // Bebidas
       { id: 307, name: 'Té Verde', category: 'bebidas', price: 8000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
       { id: 308, name: 'Sake Caliente', category: 'bebidas', price: 18000, image: 'https://images.unsplash.com/photo-1608270861620-7c80ca7d8bca?w=400' },
+      { id: 309, name: 'Combo Sushi Mix + Bebida', category: 'combos', price: 52000, image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400' },
     ]
   },
   4: { // Taquería El Sabor
@@ -86,14 +89,16 @@ export const RESTAURANT_MENUS = {
       // Entradas
       { id: 601, name: 'Tabla de Frutas', category: 'entradas', price: 16000, image: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd94b73?w=400' },
       { id: 602, name: 'Frutos Secos Mix', category: 'entradas', price: 14000, image: 'https://images.unsplash.com/photo-1585075482f73a9e42f0827e85f7ce5e8e1e5d07?w=400' },
-      // Platos principales
-      { id: 603, name: 'Torta Chocolate', category: 'dessert', price: 22000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
-      { id: 604, name: 'Cheesecake', category: 'dessert', price: 20000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
-      { id: 605, name: 'Tiramisú', category: 'dessert', price: 19000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
-      { id: 606, name: 'Macarons Variados', category: 'dessert', price: 18000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+      // Postres
+      { id: 603, name: 'Torta Chocolate', category: 'postres', price: 22000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+      { id: 604, name: 'Cheesecake', category: 'postres', price: 20000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+      { id: 605, name: 'Tiramisú', category: 'postres', price: 19000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
+      { id: 606, name: 'Macarons Variados', category: 'postres', price: 18000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
       // Bebidas
       { id: 607, name: 'Café Espresso', category: 'bebidas', price: 7000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
       { id: 608, name: 'Capuchino Premium', category: 'bebidas', price: 10000, image: 'https://images.unsplash.com/photo-1597318972826-82214dbf4d37?w=400' },
+      // Combos
+      { id: 609, name: 'Combo Postre + Café', category: 'combos', price: 18000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
     ]
   },
   7: { // Verde Orgánico

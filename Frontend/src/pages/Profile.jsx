@@ -6,6 +6,7 @@ import { fetchJson } from '../api/fetchJson'
 import SubscriptionTab from '../components/SubscriptionTab'
 import NotificationsTab from '../components/NotificationsTab'
 import PaymentMethodsTab from '../components/PaymentMethodsTab'
+import './Profile.css'
 
 const C = {
   red:    '#FF4B3E',
@@ -99,7 +100,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
       onLogout?.()
       navigate('/')
     } catch {
-      setError('Error al eliminar la cuenta.')
+      setError(t('profile.error_delete') || 'Error al eliminar la cuenta.')
     }
   }
 
@@ -120,19 +121,13 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
   }
 
   return (
-    <div className="page-profile" style={{ background: C.bg, minHeight: '100vh' }}>
-      <main style={{ maxWidth: 1400, margin: '0 auto', padding: '2rem', display: 'grid', gridTemplateColumns: '320px 1fr', gap: '2rem', alignItems: 'start' }}>
+    <div className="page-profile profile-page">
+      <main className="profile-main">
 
         {/* ─── SIDEBAR ─── */}
-        <aside style={{ background: C.white, borderRadius: 12, boxShadow: C.shadow, overflow: 'hidden' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 24px', borderBottom: `1px solid ${C.border}` }}>
-            <div style={{
-              width: 60, height: 60, borderRadius: '50%',
-              background: C.red, color: 'white',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 800, fontSize: 22, flexShrink: 0,
-              boxShadow: '0 4px 12px rgba(255,75,62,0.3)',
-            }}>
+        <aside className="profile-sidebar">
+          <div className="profile-sidebar-header">
+            <div className="profile-avatar">
               {initials}
             </div>
             <div style={{ minWidth: 0 }}>
@@ -148,22 +143,11 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
             </div>
           </div>
 
-          <nav style={{ padding: '12px 8px' }}>
+          <nav className="profile-nav">
             {SIDEBAR_ITEMS.map(item => (
               <button key={item.key}
                 onClick={() => item.key === 'delete' ? setShowDeleteModal(true) : setActiveTab(item.key)}
-                style={{
-                  display: 'block', width: '100%', textAlign: 'left',
-                  padding: '11px 16px',
-                  background: activeTab === item.key ? '#fff5f4' : 'none',
-                  border: 'none',
-                  borderLeft: activeTab === item.key ? `4px solid ${C.red}` : '4px solid transparent',
-                  borderRadius: 8, marginBottom: 4,
-                  fontSize: 14, fontWeight: 600,
-                  color: item.danger ? C.red : activeTab === item.key ? C.red : C.text,
-                  cursor: 'pointer', fontFamily: 'inherit',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
+                className="profile-nav-btn" style={{ background: activeTab === item.key ? "#fff5f4" : "none", borderLeft: activeTab === item.key ? "4px solid #FF4B3E" : "4px solid transparent", color: item.danger ? "#FF4B3E" : activeTab === item.key ? "#FF4B3E" : "#2c2c2c" }}
                 onMouseEnter={e => { if (activeTab !== item.key) e.currentTarget.style.background = '#f5f5f5' }}
                 onMouseLeave={e => { if (activeTab !== item.key) e.currentTarget.style.background = 'none' }}>
                 {item.label}
@@ -171,15 +155,9 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
             ))}
           </nav>
 
-          <div style={{ padding: '8px 16px 20px' }}>
+          <div className="profile-logout-wrap">
             <button onClick={onLogout}
-              style={{
-                width: '100%', padding: '10px', border: `1.5px solid ${C.border}`,
-                borderRadius: 8, background: 'white',
-                color: C.muted, fontSize: 13, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'inherit',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              }}>
+              className="profile-logout-btn">
               <i className="fas fa-sign-out-alt" style={{ fontSize: 13 }} />
               {t('profile.logout')}
             </button>
@@ -187,7 +165,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
         </aside>
 
         {/* ─── CONTENIDO PRINCIPAL ─── */}
-        <section style={{ background: C.white, borderRadius: 12, boxShadow: C.shadow, padding: '2.5rem' }}>
+        <section className="profile-content">
 
           {activeTab === 'info' && (
             <>
@@ -211,12 +189,12 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                 {/* Fila 1: Nombre y Apellido */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
                   {[
-                    { label: t('profile.first_name'), name: 'first_name', type: 'text', placeholder: 'Tu nombre' },
-                    { label: t('profile.last_name'),  name: 'last_name',  type: 'text', placeholder: 'Tu apellido' },
+                    { label: t('profile.first_name'), name: 'first_name', type: 'text', placeholder: t('profile.placeholder_first_name') || 'Tu nombre' },
+                    { label: t('profile.last_name'),  name: 'last_name',  type: 'text', placeholder: t('profile.placeholder_last_name') || 'Tu apellido' },
                   ].map(({ label, name, type, placeholder }) => (
                     <div key={name} style={{ display: 'flex', flexDirection: 'column' }}>
                       <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, fontFamily: 'Nunito, sans-serif' }}>{label}</label>
-                      <input type={type} name={name} value={form[name]} onChange={change} placeholder={placeholder} style={inputStyle} />
+                      <input type={type} name={name} value={form[name]} onChange={change} placeholder={placeholder} className="profile-input" />
                     </div>
                   ))}
                 </div>
@@ -224,12 +202,12 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                 {/* Fila 2: Email y Teléfono */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
                   {[
-                    { label: t('profile.email'), name: 'email', type: 'email', placeholder: 'correo@ejemplo.com' },
-                    { label: t('profile.phone'), name: 'phone', type: 'tel',   placeholder: '3001234567' },
+                    { label: t('profile.email'), name: 'email', type: 'email', placeholder: t('profile.placeholder_email') || 'correo@ejemplo.com' },
+                    { label: t('profile.phone'), name: 'phone', type: 'tel',   placeholder: t('profile.placeholder_phone') || '3001234567' },
                   ].map(({ label, name, type, placeholder }) => (
                     <div key={name} style={{ display: 'flex', flexDirection: 'column' }}>
                       <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, fontFamily: 'Nunito, sans-serif' }}>{label}</label>
-                      <input type={type} name={name} value={form[name]} onChange={change} placeholder={placeholder} style={inputStyle} />
+                      <input type={type} name={name} value={form[name]} onChange={change} placeholder={placeholder} className="profile-input" />
                     </div>
                   ))}
                 </div>
@@ -238,16 +216,16 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, fontFamily: 'Nunito, sans-serif' }}>{t('profile.doc_type')}</label>
-                    <select name="id_type" value={form.id_type} onChange={change} style={inputStyle}>
-                      <option value="cc">Cédula de Ciudadanía</option>
-                      <option value="ti">Tarjeta de Identidad</option>
-                      <option value="ce">Cédula de Extranjería</option>
-                      <option value="pp">Pasaporte</option>
+                    <select name="id_type" value={form.id_type} onChange={change} className="profile-input">
+                      <option value="cc">{t('profile.id_cc') || 'Cédula de Ciudadanía'}</option>
+                      <option value="ti">{t('profile.id_ti') || 'Tarjeta de Identidad'}</option>
+                      <option value="ce">{t('profile.id_ce') || 'Cédula de Extranjería'}</option>
+                      <option value="pp">{t('profile.id_pp') || 'Pasaporte'}</option>
                     </select>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, fontFamily: 'Nunito, sans-serif' }}>{t('profile.doc_number')}</label>
-                    <input type="text" name="id_number" value={form.id_number} onChange={change} placeholder="1234567890" style={inputStyle} />
+                    <input type="text" name="id_number" value={form.id_number} onChange={change} placeholder={t('profile.placeholder_id') || "1234567890"} className="profile-input" />
                   </div>
                 </div>
 
@@ -255,7 +233,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
                   <div style={{ display: 'flex', flexDirection: 'column' }}>
                     <label style={{ fontSize: 12, fontWeight: 600, color: C.muted, marginBottom: 6, fontFamily: 'Nunito, sans-serif' }}>{t('profile.birth_date')}</label>
-                    <input type="date" name="birth_date" value={form.birth_date} onChange={change} style={inputStyle} />
+                    <input type="date" name="birth_date" value={form.birth_date} onChange={change} className="profile-input" />
                   </div>
                 </div>
 
@@ -280,15 +258,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                 {/* Acciones */}
                 <div style={{ display: 'flex', gap: 12, marginTop: 8, flexWrap: 'wrap' }}>
                   <button type="submit" disabled={loading}
-                    style={{
-                      padding: '10px 24px', border: `1.5px solid ${C.green}`,
-                      background: 'white', color: C.green,
-                      borderRadius: 8, fontWeight: 700, fontSize: 14,
-                      cursor: loading ? 'not-allowed' : 'pointer',
-                      fontFamily: 'Nunito, sans-serif',
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      transition: 'all 0.2s', opacity: loading ? 0.7 : 1,
-                    }}
+                    className="profile-btn-save"
                     onMouseEnter={e => { if (!loading) { e.currentTarget.style.background = C.green; e.currentTarget.style.color = 'white' } }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.color = C.green }}>
                     {loading
@@ -297,14 +267,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                   </button>
 
                   <button type="button" onClick={() => setShowDeleteModal(true)}
-                    style={{
-                      padding: '10px 20px', border: `1.5px solid rgba(255,75,62,0.4)`,
-                      background: 'white', color: C.red,
-                      borderRadius: 8, fontWeight: 700, fontSize: 14,
-                      cursor: 'pointer', fontFamily: 'Nunito, sans-serif',
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      transition: 'all 0.2s',
-                    }}
+                    className="profile-btn-delete"
                     onMouseEnter={e => { e.currentTarget.style.background = '#fff5f5'; e.currentTarget.style.borderColor = C.red }}
                     onMouseLeave={e => { e.currentTarget.style.background = 'white'; e.currentTarget.style.borderColor = 'rgba(255,75,62,0.4)' }}>
                     <i className="fas fa-trash-alt" /> {t('profile.delete_account')}
@@ -354,9 +317,9 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
               <h2 style={{ fontFamily: 'Nunito, sans-serif', fontSize: 22, fontWeight: 800, marginBottom: 24 }}>{t('profile.help')}</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {[
-                  { icon: '📞', title: t('profile.call_us'),   desc: t('profile.call_hours') },
-                  { icon: '📧', title: t('profile.email_us'),  desc: 'AppiFood@gmail.com' },
-                  { icon: '💬', title: t('profile.live_chat'), desc: t('profile.live_chat_desc') },
+                  { icon: '📞', title: t('profile.call_us'),   desc: t('profile.call_hours') || 'Lunes a Viernes 8am - 6pm' },
+                  { icon: '📧', title: t('profile.email_us'),  desc: t('profile.email_address') || 'AppiFood@gmail.com' },
+                  { icon: '💬', title: t('profile.live_chat'), desc: t('profile.live_chat_desc') || 'Chat en vivo' },
                 ].map(({ icon, title, desc }) => (
                   <div key={title} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px', background: '#fafafa', borderRadius: 12, border: `1px solid ${C.border}` }}>
                     <span style={{ fontSize: 28 }}>{icon}</span>
@@ -373,9 +336,9 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
       </main>
 
         {showDeleteModal && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          <div className="profile-modal-overlay"
             onClick={e => e.target === e.currentTarget && setShowDeleteModal(false)}>
-          <div style={{ background: 'white', borderRadius: 16, padding: '2rem', maxWidth: 420, width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.2)' }}>
+          <div className="profile-modal">
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
               <span style={{ fontSize: 48 }}>⚠️</span>
               <h3 style={{ fontSize: 20, fontWeight: 800, margin: '12px 0 8px' }}>{t('profile.delete_title')}</h3>

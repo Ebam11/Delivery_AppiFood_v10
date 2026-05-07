@@ -2,8 +2,10 @@
 // src/components/ProductModal.jsx
 import { useState } from 'react'
 import { useCart } from '../context/useCart'
+import { useTranslation } from 'react-i18next'
 
 export default function ProductModal({ product, onClose }) {
+  const { t } = useTranslation()
   const [qty, setQty]   = useState(1)
   const { addItem, fmt } = useCart()
   const isMockProduct = Boolean(product?.isMock)
@@ -34,7 +36,7 @@ export default function ProductModal({ product, onClose }) {
           <p className="text-[#FF4B3E] font-bold text-2xl mb-5">${fmt(product.price)}</p>
 
           <div className="flex items-center justify-between mb-6 bg-gray-50 p-4 rounded-xl">
-            <span className="text-sm font-semibold text-gray-600">Cantidad</span>
+            <span className="text-sm font-semibold text-gray-600">{t('productModal.quantity') || 'Cantidad'}</span>
             <div className="flex items-center gap-3">
               <button onClick={() => setQty(q => Math.max(1, q - 1))}
                 className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center font-bold text-gray-600 hover:border-[#FF4B3E] hover:text-[#FF4B3E] hover:bg-red-50 transition text-lg">
@@ -52,11 +54,11 @@ export default function ProductModal({ product, onClose }) {
             disabled={isMockProduct}
             className="w-full py-3.5 bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] text-white rounded-xl font-bold hover:shadow-lg hover:shadow-[#FF4B3E]/30 transition text-lg disabled:opacity-50">
             <i className="fas fa-shopping-bag mr-2"></i>
-            {isMockProduct ? 'Producto de demostración' : `Agregar — $${fmt(product.price * qty)}`}
+            {isMockProduct ? (t('productModal.demo_product') || 'Producto de demostración') : `${t('productModal.add_button') || 'Agregar'} — $${fmt(product.price * qty)}`}
           </button>
           {isMockProduct && (
             <p className="mt-3 text-center text-xs text-gray-500">
-              Este producto es de demostración y no se puede agregar al carrito.
+              {t('productModal.demo_notice') || 'Este producto es de demostración y no se puede agregar al carrito.'}
             </p>
           )}
         </div>

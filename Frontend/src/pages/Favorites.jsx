@@ -1,93 +1,118 @@
 // Archivo: src/pages/Favorites.jsx | Comentario: logica principal del modulo.
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
-import { api } from '../api/client';
+import { useFavoritesStore } from '../store/favoritesStore';
 import Loading from '../components/Loading';
 import ErrorMessage from '../components/ErrorMessage';
+import { fetchJson } from '../api/fetchJson';
+import { MOCK_RESTAURANTS } from '../data/mockRestaurants';
+import './Favorites.css';
+import '../components/SharedUI.css';
+
+const normalizeRestaurant = (restaurant) => ({
+  ...restaurant,
+  image: restaurant?.banner || restaurant?.logo || restaurant?.image || restaurant?.img || '',
+  rating: Number(restaurant?.average_rating ?? restaurant?.rating ?? 0),
+  time: restaurant?.delivery_time_min
+    ? `${restaurant.delivery_time_min}-${restaurant.delivery_time_max ?? restaurant.delivery_time_min + 10} min`
+    : restaurant?.time || '-- min',
+})
 
 export default function Favorites() {
-  const [favorites, setFavorites] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const { token } = useAuthStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { token } = useAuthStore();
+  const [restaurants, setRestaurants] = useState(MOCK_RESTAURANTS.map(normalizeRestaurant));
+  const {
+    favorites,
+    loading,
+    error,
+    fetchFavorites,
+    toggleFavorite,
+    toggleFavoriteLocal
+  } = useFavoritesStore();
 
   useEffect(() => {
-    fetchFavorites();
-  }, []);
+    if (token) fetchFavorites(token)
+  }, [token, fetchFavorites])
 
-  const fetchFavorites = async () => {
-    try {
-      setLoading(true);
-      const response = await api.get('/favorites', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setFavorites(response.data.data || []);
-      setError(null);
-    } catch (err) {
-      setError(t('favorites.error_load'));
-      console.error(err);
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    let active = true
+
+    const loadRestaurants = async () => {
+      try {
+        const data = await fetchJson('/restaurants?paginate=false')
+        const restaurantsArray = Array.isArray(data) ? data : data.data || data.restaurants || []
+        const normalized = restaurantsArray.length > 0
+          ? restaurantsArray.map(normalizeRestaurant)
+          : MOCK_RESTAURANTS.map(normalizeRestaurant)
+
+        if (active) {
+          setRestaurants(normalized)
+        }
+      } catch (error) {
+        console.error('Error cargando restaurantes para favoritos:', error)
+        if (active) {
+          setRestaurants(MOCK_RESTAURANTS.map(normalizeRestaurant))
+        }
+      }
     }
-  };
+
+    loadRestaurants()
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   const handleRemoveFavorite = async (restaurantId) => {
-    try {
-      await api.post('/favorites/toggle', { restaurant_id: restaurantId }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setFavorites(favorites.filter(f => f.restaurant_id !== restaurantId));
-    } catch (err) {
-      setError(t('favorites.error_remove'));
+    if (token) {
+      // server toggle
+      const ok = await toggleFavorite(restaurantId, token)
+      if (!ok) {
+        // set error in store already
+      }
+    } else {
+      // local fallback
+      toggleFavoriteLocal(restaurantId)
     }
-  };
+  }
 
   if (loading) return <Loading />;
 
+  // Map favorite ids to restaurant objects using mocks as fallback
+  const favoriteRestaurants = (favorites || []).map(id => {
+    return restaurants.find(r => Number(r.id) === Number(id))
+      || MOCK_RESTAURANTS.find(r => Number(r.id) === Number(id))
+      || null
+  }).filter(Boolean)
+
   return (
-    <main className="page-favorites">
+    <main className="favorites-page-container">
       <div className="container">
-        <h1>{t('favorites.title')}</h1>
+        <h1 className="mb-6">{t('favorites.title')}</h1>
 
         {error && <ErrorMessage message={error} />}
 
-        {favorites.length > 0 ? (
-          <div className="favorites-grid">
-            {favorites.map(item => (
-              <div key={item.id} className="favorite-card">
-                {item.restaurant?.cover_image && (
-                  <img
-                    src={item.restaurant.cover_image}
-                    alt={item.restaurant.name}
-                    className="favorite-img"
-                  />
+        {favoriteRestaurants.length > 0 ? (
+          <div className="favorites-item-grid">
+            {favoriteRestaurants.map((restaurant) => (
+              <div key={restaurant.id} className="favorite-item">
+                {restaurant.image && (
+                  <img src={restaurant.image} alt={restaurant.name} className="favorite-img" />
                 )}
                 <div className="favorite-info">
-                  <h3>{item.restaurant?.name}</h3>
-                  <p className="description">{item.restaurant?.description?.substring(0, 100)}</p>
+                  <h3>{restaurant.name}</h3>
+                  <p className="description">{(restaurant.description || '').substring(0, 100)}</p>
                   <div className="favorite-rating">
-                    {item.restaurant?.reviews_avg_rating && (
-                      <span className="rating">
-                        <i className="fas fa-star"></i> {item.restaurant.reviews_avg_rating}
-                      </span>
-                    )}
+                    <span className="rating">{restaurant.rating ? `⭐ ${restaurant.rating}` : ''}</span>
                   </div>
                 </div>
                 <div className="favorite-actions">
-                  <button
-                    onClick={() => navigate(`/restaurants/${item.restaurant?.id}`)}
-                    className="btn btn-sm btn-primary"
-                  >
-                    {t('favorites.view')}
-                  </button>
-                  <button
-                    onClick={() => handleRemoveFavorite(item.restaurant_id)}
-                    className="btn btn-sm btn-danger"
-                  >
+                  <button onClick={() => navigate(`/restaurants/${restaurant.id}`)} className="button-primary text-sm px-4 py-2">{t('favorites.view')}</button>
+                  <button onClick={() => handleRemoveFavorite(restaurant.id)} className="button-outline text-red-500 border-red-500 hover:bg-red-500 text-sm px-4 py-2" title="Quitar favorito">
                     <i className="fas fa-heart-break"></i>
                   </button>
                 </div>
@@ -96,17 +121,12 @@ export default function Favorites() {
           </div>
         ) : (
           <div className="empty-state">
-            <i className="fas fa-heart"></i>
-            <p>{t('favorites.empty')}</p>
-            <button
-              onClick={() => navigate('/restaurants')}
-              className="btn btn-primary"
-            >
-              {t('favorites.discover')}
-            </button>
+            <i className="fas fa-heart text-4xl text-[#FF4B3E]"></i>
+            <p className="mt-3">{t('favorites.empty')}</p>
+            <button onClick={() => navigate('/restaurants')} className="button-primary mt-4">{t('favorites.discover')}</button>
           </div>
         )}
       </div>
     </main>
-  );
+  )
 }

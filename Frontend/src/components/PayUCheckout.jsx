@@ -68,8 +68,8 @@ export default function PayUCheckout({ orderId }) {
       const savedMethod = savedMethods.find((method) => `saved-${method.id}` === selectedMethod);
       const paymentMethod = savedMethod?.provider ? savedMethod.provider.toUpperCase() : selectedMethod;
       const response = await createPayment(orderId, paymentMethod);
-      if (response?.data?.payment_url) {
-        window.location.href = response.data.payment_url;
+      if (response?.payment_url) {
+        window.location.href = response.payment_url;
       }
     } catch (err) {
       console.error('Error al procesar pago:', err);
@@ -200,7 +200,7 @@ export default function PayUCheckout({ orderId }) {
         <div className="flex justify-between mt-2">
           <span className="text-gray-600">{t('payuCheckout.totalLabel')}</span>
           <span className="font-bold text-lg text-blue-600">
-            COP ${(cart?.total + 5000 || 5000).toLocaleString()}
+            COP ${Number(cart?.total || 0).toLocaleString()}
           </span>
         </div>
       </div>

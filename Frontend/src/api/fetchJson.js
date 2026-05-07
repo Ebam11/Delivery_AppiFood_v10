@@ -37,7 +37,16 @@ export async function fetchJson(url, options = {}) {
     resolvedUrl = `${normalizedBase}/${normalizedPath}`
   }
 
-  const response = await fetch(resolvedUrl, options)
+  const headers = {
+    'Accept': 'application/json',
+    ...options.headers,
+  }
+
+  if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json'
+  }
+
+  const response = await fetch(resolvedUrl, { ...options, headers })
   const data = await parseResponseBody(response)
 
   if (!response.ok) {

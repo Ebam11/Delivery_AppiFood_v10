@@ -2,6 +2,8 @@
 // src/components/Header.jsx - Versión completa corregida
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from './LanguageSwitcher'
 import { useCart } from '../context/useCart'
 import { api } from '../api/client'
 
@@ -10,6 +12,7 @@ const RED_DK = '#e03a2d'
 const DEFAULT_LOCATION = { lat: 2.4448, lng: -76.6147 }
 
 export default function Header({ isAuth, user, onLogout, isLoading }) {
+  const { t } = useTranslation()
   console.log('🎯 Header received:', { 
     isAuth, 
     isLoading,
@@ -135,7 +138,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         setTempAddress(selected.address)
       }
     } catch (error) {
-      setAddressesError('No se pudieron cargar las direcciones')
+      setAddressesError(t('header.address.errorLoad') || 'No se pudieron cargar las direcciones')
     } finally {
       setAddressesLoading(false)
     }
@@ -235,7 +238,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
       window.dispatchEvent(new Event('delivery-address-updated'))
       setAddressModalOpen(false)
     } catch (error) {
-      setAddressesError('No se pudo guardar la dirección')
+      setAddressesError(t('header.address.errorSave') || 'No se pudo guardar la dirección')
     } finally {
       setAddressSaving(false)
     }
@@ -245,7 +248,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     if (!navigator.geolocation) return
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        const nextAddress = `Ubicación actual (${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)})`
+        const nextAddress = `${t('header.address.currentLocation') || 'Ubicación actual'} (${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)})`
         setTempAddress(nextAddress)
       },
       () => {}
@@ -277,30 +280,30 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         setTempAddress(fallback?.address || '')
       }
     } catch (error) {
-      setAddressesError('No se pudo eliminar la dirección')
+      setAddressesError(t('header.address.errorDelete') || 'No se pudo eliminar la dirección')
     }
   }
 
   const NAV_LINKS = [
-    { section:'DESCUBRIR' },
-    { to:'/',            icon:'fa-home',          label:'Inicio' },
-    { to:'/restaurants', icon:'fa-store',         label:'Restaurantes' },
+    { section: t('header.nav.sectionDiscover') || 'DESCUBRIR' },
+    { to:'/',            icon:'fa-home',          label: t('header.nav.home') || 'Inicio' },
+    { to:'/restaurants', icon:'fa-store',         label: t('header.nav.restaurants') || 'Restaurantes' },
     ...(isAuth ? [
-      { section:'MI CUENTA' },
-      ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label:'Panel Admin', promo:true }] : []),
-      { to:'/user/orders',    icon:'fa-box',            label:'Mis pedidos' },
-      { to:'/user/favorites', icon:'fa-heart',          label:'Mis favoritos' },
-      { to:'/user/profile',   icon:'fa-user-cog',       label:'Mi perfil' },
+      { section: t('header.nav.sectionAccount') || 'MI CUENTA' },
+      ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label: t('header.nav.adminPanel') || 'Panel Admin', promo:true }] : []),
+      { to:'/user/orders',    icon:'fa-box',            label: t('header.nav.myOrders') || 'Mis pedidos' },
+      { to:'/user/favorites', icon:'fa-heart',          label: t('header.nav.myFavorites') || 'Mis favoritos' },
+      { to:'/user/profile',   icon:'fa-user-cog',       label: t('header.nav.myProfile') || 'Mi perfil' },
     ] : []),
-    { section:'SUSCRIPCIONES' },
-    { to:'/subscription', icon:'fa-crown',        label:'Planes de Suscripción', promo:true },
-    { section:'OFERTAS' },
-    { to:'/coupons', icon:'fa-tag',           label:'Cupones disponibles', promo:true },
-    { section:'AYUDA' },
-    { to:'/help-center', icon:'fa-question-circle', label:'Centro de ayuda', promo:true },
-    { to:'/support', icon:'fa-headset',         label:'Chat de soporte', promo:true },
-    { href:'#',      icon:'fa-mobile-alt',      label:'Descarga la app' },
-    { to:'/register-restaurant',icon:'fa-utensils',        label:'Registra tu restaurante', promo:true },
+    { section: t('header.nav.sectionSubscriptions') || 'SUSCRIPCIONES' },
+    { to:'/subscription', icon:'fa-crown',        label: t('header.nav.subscriptionPlans') || 'Planes de Suscripción', promo:true },
+    { section: t('header.nav.sectionOffers') || 'OFERTAS' },
+    { to:'/coupons', icon:'fa-tag',           label: t('header.nav.coupons') || 'Cupones disponibles', promo:true },
+    { section: t('header.nav.sectionHelp') || 'AYUDA' },
+    { to:'/help-center', icon:'fa-question-circle', label: t('header.nav.howItWorks') || 'Centro de ayuda', promo:true },
+    { to:'/support', icon:'fa-headset',         label: t('header.nav.supportChat') || 'Chat de soporte', promo:true },
+    { href:'#',      icon:'fa-mobile-alt',      label: t('header.nav.downloadApp') || 'Descarga la app' },
+    { to:'/register-restaurant',icon:'fa-utensils',        label: t('header.nav.registerRestaurant') || 'Registra tu restaurante', promo:true },
   ]
 
   const linkStyle = (promo) => ({
@@ -352,7 +355,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           <div className="flex items-center gap-4 flex-1 min-w-0 lg:max-w-[560px]">
           {/* Hamburguesa */}
             <button onClick={() => setDrawerOpen(true)}
-              className="block w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-700 hover:text-[#FF4B3E] transition flex-shrink-0">
+              className="w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-700 hover:text-[#FF4B3E] transition flex-shrink-0">
               <i className="fas fa-bars text-lg font-bold" />
             </button>
 
@@ -378,7 +381,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
               <div className="w-full flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border-2 border-transparent hover:border-[#FF4B3E] transition">
               <input
                 type="search"
-                placeholder="¿Deseas algo en especial?"
+                placeholder={t('header.searchPlaceholder') || "¿Deseas algo en especial?"}
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => e.key==='Enter' && doSearch()}
@@ -394,13 +397,16 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
           {/* DERECHA: Usuario + Carrito */}
           <div className="flex items-center justify-end gap-3 flex-1 min-w-0 lg:max-w-[420px]">
+            <div className="hidden md:block mr-2">
+              <LanguageSwitcher />
+            </div>
             {!isAuth ? (
               <>
                 <Link to="/login" className="hidden sm:inline-block px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition">
-                  Iniciar Sesión
+                  {t('header.login') || "Iniciar Sesión"}
                 </Link>
                 <Link to="/register" className="px-4 py-2 rounded-full bg-[#FF4B3E] text-white font-bold text-xs hover:bg-[#e03a2d] transition">
-                  Registrarse
+                  {t('header.register') || "Registrarse"}
                 </Link>
               </>
             ) : (
@@ -423,10 +429,10 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                       <p className="text-xs text-gray-500 mt-1">{getUserEmail()}</p>
                     </div>
                     {[
-                      ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label:'Panel Admin' }] : []),
-                      { to:'/user/profile',   icon:'fa-user',           label:'Mi perfil' },
-                      { to:'/user/orders',    icon:'fa-box',            label:'Mis pedidos' },
-                      { to:'/user/favorites', icon:'fa-heart',          label:'Favoritos' },
+                      ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label: t('header.menu.adminPanel') || 'Panel Admin' }] : []),
+                      { to:'/user/profile',   icon:'fa-user',           label: t('header.menu.profile') || 'Mi perfil' },
+                      { to:'/user/orders',    icon:'fa-box',            label: t('header.menu.orders') || 'Mis pedidos' },
+                      { to:'/user/favorites', icon:'fa-heart',          label: t('header.menu.favorites') || 'Favoritos' },
                     ].map(({ to, icon, label }) => (
                       <Link key={label} to={to}
                         onClick={() => setUserMenuOpen(false)}
@@ -437,7 +443,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                     <div className="border-t border-gray-100 my-2" />
                     <button onClick={onLogout}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-red-50 hover:text-[#FF4B3E] transition text-left">
-                      <i className="fas fa-sign-out-alt w-4" /> Cerrar sesión
+                      <i className="fas fa-sign-out-alt w-4" /> {t('header.logout') || "Cerrar sesión"}
                     </button>
                   </div>
                 )}
@@ -584,21 +590,24 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
         {/* Footer drawer */}
         <div style={{ padding:'16px 20px 24px', borderTop:'1px solid #f0f0f0', display:'flex', flexDirection:'column', gap:10 }}>
+          <div className="flex justify-center mb-2 md:hidden">
+            <LanguageSwitcher />
+          </div>
           {!isAuth ? (
             <>
               <Link to="/register" onClick={() => setDrawerOpen(false)}
                 style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'12px', background:RED, color:'white', borderRadius:999, fontWeight:700, fontSize:14, textDecoration:'none' }}>
-                <i className="fas fa-user-plus" /> Registrarse gratis
+                <i className="fas fa-user-plus" /> {t('header.registerFree') || "Registrarse gratis"}
               </Link>
               <Link to="/login" onClick={() => setDrawerOpen(false)}
                 style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'12px', border:`2px solid ${RED}`, color:RED, borderRadius:999, fontWeight:700, fontSize:14, textDecoration:'none' }}>
-                Iniciar sesión
+                {t('header.login') || "Iniciar sesión"}
               </Link>
             </>
           ) : (
             <button onClick={onLogout}
               style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'12px', background:'none', border:'1.5px solid #e5e5e5', borderRadius:999, fontSize:14, fontWeight:600, color:'#888', cursor:'pointer', fontFamily:'inherit' }}>
-              <i className="fas fa-sign-out-alt" /> Cerrar sesión
+              <i className="fas fa-sign-out-alt" /> {t('header.logout') || "Cerrar sesión"}
             </button>
           )}
         </div>
@@ -615,14 +624,14 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                 value={tempAddress}
                 onChange={e => setTempAddress(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && saveAddress()}
-                placeholder="Escribe la dirección de entrega"
+                placeholder={t('header.address.placeholder') || "Escribe la dirección de entrega"}
                 className="flex-1 border-2 border-blue-400 rounded-xl px-4 py-2.5 text-sm outline-none"
               />
             </div>
 
             <div className="max-h-[420px] overflow-y-auto bg-gray-50">
               {addressesLoading ? (
-                <div className="p-5 text-center text-sm text-gray-500">Cargando direcciones...</div>
+                <div className="p-5 text-center text-sm text-gray-500">{t('header.address.loading') || "Cargando direcciones..."}</div>
               ) : isAuth && savedAddresses.length > 0 ? (
                 savedAddresses.map((address) => (
                   <div key={address.id} className="px-4 py-3 border-b border-gray-200 bg-white flex items-start gap-3">
@@ -647,17 +656,17 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                   </div>
                 ))
               ) : (
-                <div className="p-5 text-center text-sm text-gray-500">No tienes direcciones guardadas.</div>
+                <div className="p-5 text-center text-sm text-gray-500">{t('header.address.empty') || "No tienes direcciones guardadas."}</div>
               )}
             </div>
 
             <div className="border-t border-gray-200 p-4">
               {addressesError && <p className="text-xs text-red-500 mb-2">{addressesError}</p>}
               <button onClick={useCurrentLocation} className="w-full text-emerald-500 font-bold py-2.5 rounded-xl hover:bg-emerald-50 transition">
-                <i className="fas fa-location-arrow mr-2" /> Usar mi ubicación actual
+                <i className="fas fa-location-arrow mr-2" /> {t('header.address.currentLocation') || "Usar mi ubicación actual"}
               </button>
               <button onClick={saveAddress} disabled={addressSaving} className="mt-2 w-full bg-[#FF4B3E] hover:bg-[#e03a2d] text-white font-bold py-2.5 rounded-xl transition disabled:opacity-60">
-                {addressSaving ? 'Guardando...' : editingAddressId ? 'Actualizar dirección' : 'Guardar dirección'}
+                {addressSaving ? (t('header.address.saving') || 'Guardando...') : editingAddressId ? (t('header.address.update') || 'Actualizar dirección') : (t('header.address.save') || 'Guardar dirección')}
               </button>
             </div>
           </div>

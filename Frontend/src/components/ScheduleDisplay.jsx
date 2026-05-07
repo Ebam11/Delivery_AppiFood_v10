@@ -1,5 +1,6 @@
 // Componente para mostrar el horario completo de un restaurante (7 días)
 import { useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const DAYS_ES = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 const DAYS_EN = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
@@ -68,6 +69,7 @@ export const isRestaurantOpenNow = (schedule) => {
 
 // Componente principal
 export default function ScheduleDisplay({ schedule, isOpen = true, variant = 'card', language = 'es' }) {
+  const { t } = useTranslation()
   const days = language === 'es' ? DAYS_ES : DAYS_EN
   
   // Organizar horario por día
@@ -102,7 +104,7 @@ export default function ScheduleDisplay({ schedule, isOpen = true, variant = 'ca
     return (
       <div className="text-sm">
         {today?.is_closed ? (
-          <span className="text-gray-500">Cerrado</span>
+          <span className="text-gray-500">{t('schedule.closed') || 'Cerrado'}</span>
         ) : (
           <span className="text-gray-700">
             {formatTime(today?.opening_time)} - {formatTime(today?.closing_time)}
@@ -128,41 +130,26 @@ export default function ScheduleDisplay({ schedule, isOpen = true, variant = 'ca
   
   // Vista card: tabla completa de 7 días
   return (
-    <div className="bg-white rounded-lg p-4 border border-gray-200">
-      <h3 className="font-semibold text-gray-800 mb-3 text-sm">
-        {language === 'es' ? 'Horario de atención' : 'Opening Hours'}
+    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
+      <h3 className="font-bold text-[#1a2b4c] mb-4 text-[15px]">
+        {t('schedule.opening_hours') || (language === 'es' ? 'Horarios de Apertura y Cierre' : 'Opening Hours')}
       </h3>
       
-      <div className="space-y-1.5">
+      <div className="space-y-3">
         {scheduleByDay.map((daySchedule, index) => {
-          const isToday = daySchedule.day === getTodayDayName()
+          if (daySchedule?.is_closed) return null;
+          
           return (
             <div 
               key={index}
-              className={`flex justify-between items-center text-sm py-1.5 px-2 rounded transition-colors ${
-                isToday 
-                  ? 'bg-blue-50 border-l-2 border-blue-400' 
-                  : 'hover:bg-gray-50'
-              }`}
+              className="flex justify-between items-center text-[13px] tracking-wide"
             >
-              <span className={`font-medium ${
-                isToday ? 'text-blue-700' : 'text-gray-700'
-              }`}>
+              <span className="text-[#334155]">
                 {days[index]}
               </span>
               
-              <span className={
-                daySchedule?.is_closed
-                  ? 'text-gray-400'
-                  : 'text-gray-600'
-              }>
-                {daySchedule?.is_closed ? (
-                  language === 'es' ? 'Cerrado' : 'Closed'
-                ) : (
-                  <>
-                    {formatTime(daySchedule?.opening_time)} - {formatTime(daySchedule?.closing_time)}
-                  </>
-                )}
+              <span className="text-[#1e293b]">
+                {formatTime(daySchedule?.opening_time)} - {formatTime(daySchedule?.closing_time)}
               </span>
             </div>
           )

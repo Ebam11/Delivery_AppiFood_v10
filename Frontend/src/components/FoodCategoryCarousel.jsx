@@ -1,5 +1,6 @@
 // Archivo: src/components/FoodCategoryCarousel.jsx | Comentario: logica principal del modulo.
 import { useState, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 
 const CATEGORY_THEME = {
   'Restaurantes Locales': { icon: '🍽️', color: '#FF8A3D' },
@@ -38,6 +39,7 @@ const DEFAULT_CATEGORIES = [
 ]
 
 export default function FoodCategoryCarousel({ onSelectCategory, selectedCategory, categories = DEFAULT_CATEGORIES }) {
+  const { t } = useTranslation()
   const containerRef = useRef(null)
   const dragRef = useRef({ isDragging: false, startX: 0, scrollLeft: 0, moved: false })
   const [isDragging, setIsDragging] = useState(false)
@@ -159,7 +161,7 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
                 className="text-xs font-bold text-center leading-tight"
                 style={{ color: '#1f2937', transform: 'translateZ(14px)' }}
               >
-                {category.name}
+                {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
               </span>
 
               <div

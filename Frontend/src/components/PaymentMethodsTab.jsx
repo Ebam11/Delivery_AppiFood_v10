@@ -221,7 +221,7 @@ export default function PaymentMethodsTab() {
           onClick={() => (showForm ? resetForm() : setShowForm(true))}
           className="px-4 py-2 bg-[#FF4B3E] text-white rounded-lg hover:bg-[#e03a2d] transition font-bold shadow-sm"
         >
-          {showForm ? '✕ Cancelar' : '+ Agregar Método de Pago'}
+          {showForm ? t('paymentMethodsTab.cancel', { defaultValue: '✕ Cancelar' }) : t('paymentMethodsTab.add_method', { defaultValue: '+ Agregar Método de Pago' })}
         </button>
       </div>
 
@@ -229,12 +229,12 @@ export default function PaymentMethodsTab() {
       {showForm && (
         <div className="mb-6 p-6 bg-gray-50 border border-gray-200 rounded-lg">
           <h3 className="font-bold text-lg mb-4">
-            {editingId ? 'Editar Método de Pago' : 'Nuevo Método de Pago'}
+            {editingId ? t('paymentMethodsTab.edit_method', { defaultValue: 'Editar Método de Pago' }) : t('paymentMethodsTab.new_method', { defaultValue: 'Nuevo Método de Pago' })}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Tipo de método
+                {t('paymentMethodsTab.method_type', { defaultValue: 'Tipo de método' })}
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {methodTypes.map((option) => (
@@ -259,7 +259,7 @@ export default function PaymentMethodsTab() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Etiqueta
+                  {t('paymentMethodsTab.label_name', { defaultValue: 'Etiqueta' })}
                 </label>
                 <input
                   type="text"
@@ -272,7 +272,7 @@ export default function PaymentMethodsTab() {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Proveedor / banco
+                  {t('paymentMethodsTab.provider', { defaultValue: 'Proveedor / banco' })}
                 </label>
                 <select
                   name="provider"
@@ -289,7 +289,7 @@ export default function PaymentMethodsTab() {
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Nombre del Titular *
+                {t('paymentMethodsTab.holder_name', { defaultValue: 'Nombre del Titular *' })}
               </label>
               <input
                 type="text"
@@ -306,7 +306,7 @@ export default function PaymentMethodsTab() {
               <>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Número de Tarjeta {editingId && '(últimos 4 dígitos)'} *
+                    {t('paymentMethodsTab.card_number', { defaultValue: 'Número de Tarjeta' })} {editingId && t('paymentMethodsTab.last_4', { defaultValue: '(últimos 4 dígitos)' })} *
                   </label>
                   <input
                     type="text"
@@ -323,7 +323,7 @@ export default function PaymentMethodsTab() {
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Mes *
+                      {t('paymentMethodsTab.month', { defaultValue: 'Mes *' })}
                     </label>
                     <input
                       type="number"
@@ -339,7 +339,7 @@ export default function PaymentMethodsTab() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Año *
+                      {t('paymentMethodsTab.year', { defaultValue: 'Año *' })}
                     </label>
                     <input
                       type="number"
@@ -354,7 +354,7 @@ export default function PaymentMethodsTab() {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      CVV {editingId && '(nuevo)'}
+                      CVV {editingId && t('paymentMethodsTab.new_cvv', { defaultValue: '(nuevo)' })}
                     </label>
                     <input
                       type="password"
@@ -373,7 +373,7 @@ export default function PaymentMethodsTab() {
             {formData.type === 'wallet' && (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Número de teléfono / cuenta
+                  {t('paymentMethodsTab.phone_account', { defaultValue: 'Número de teléfono / cuenta' })}
                 </label>
                 <input
                   type="text"
@@ -388,7 +388,7 @@ export default function PaymentMethodsTab() {
 
             {formData.type === 'transfer' && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-900">
-                La transferencia quedará registrada como método guardado para usar en compras futuras.
+                {t('paymentMethodsTab.transfer_hint', { defaultValue: 'La transferencia quedará registrada como método guardado para usar en compras futuras.' })}
               </div>
             )}
 
@@ -401,7 +401,7 @@ export default function PaymentMethodsTab() {
                 className="w-4 h-4 text-[#FF4B3E] rounded"
               />
               <label className="ml-2 text-sm text-gray-700">
-                Usar como método de pago predeterminado
+                {t('paymentMethodsTab.set_default', { defaultValue: 'Usar como método de pago predeterminado' })}
               </label>
             </div>
 
@@ -410,7 +410,7 @@ export default function PaymentMethodsTab() {
               disabled={submitting}
               className="w-full py-2 bg-[#FF4B3E] text-white rounded-lg hover:bg-[#e03a2d] transition font-bold disabled:opacity-50"
             >
-              {submitting ? 'Guardando...' : 'Guardar Método de Pago'}
+              {submitting ? t('paymentMethodsTab.saving', { defaultValue: 'Guardando...' }) : t('paymentMethodsTab.save_method', { defaultValue: 'Guardar Método de Pago' })}
             </button>
           </form>
         </div>
@@ -419,13 +419,13 @@ export default function PaymentMethodsTab() {
       {/* Lista de métodos de pago */}
       <div>
         <h3 className="font-bold text-lg mb-4">
-          Mis Métodos de Pago {methods.length > 0 && `(${methods.length})`}
+          {t('paymentMethodsTab.my_methods', { defaultValue: 'Mis Métodos de Pago' })} {methods.length > 0 && `(${methods.length})`}
         </h3>
 
         {methods.length === 0 ? (
           <div className="p-6 bg-gray-50 border border-gray-200 rounded-lg text-center text-gray-600">
-            <p>No tienes métodos de pago registrados</p>
-            <p className="text-sm mt-2">Agrega uno para comprar más rápido</p>
+            <p>{t('paymentMethodsTab.no_methods', { defaultValue: 'No tienes métodos de pago registrados' })}</p>
+            <p className="text-sm mt-2">{t('paymentMethodsTab.add_one', { defaultValue: 'Agrega uno para comprar más rápido' })}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -445,7 +445,7 @@ export default function PaymentMethodsTab() {
                           {getMethodMeta(method).title}
                           {method.is_default && (
                             <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-semibold">
-                              Predeterminado
+                              {t('paymentMethodsTab.default', { defaultValue: 'Predeterminado' })}
                             </span>
                           )}
                         </p>
@@ -454,7 +454,7 @@ export default function PaymentMethodsTab() {
                         </p>
                         {method.type === 'card' && (
                           <p className="text-xs text-gray-500">
-                            Vence: {method.exp_month}/{method.exp_year}
+                            {t('paymentMethodsTab.expires', { defaultValue: 'Vence:' })} {method.exp_month}/{method.exp_year}
                           </p>
                         )}
                       </div>
@@ -465,13 +465,13 @@ export default function PaymentMethodsTab() {
                       onClick={() => handleEdit(method)}
                       className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition"
                     >
-                      Editar
+                      {t('paymentMethodsTab.edit', { defaultValue: 'Editar' })}
                     </button>
                     <button
                       onClick={() => handleDelete(method.id)}
                       className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
                     >
-                      Eliminar
+                      {t('paymentMethodsTab.delete', { defaultValue: 'Eliminar' })}
                     </button>
                   </div>
                 </div>

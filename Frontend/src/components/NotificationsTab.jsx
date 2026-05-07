@@ -92,7 +92,7 @@ export default function NotificationsTab() {
             disabled={actionId === 'all'}
             style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: '#FF4B3E', color: 'white', fontWeight: 700, cursor: actionId === 'all' ? 'not-allowed' : 'pointer' }}
           >
-            {actionId === 'all' ? t('subscriptionTab.processing') : 'Marcar todas como leídas'}
+            {actionId === 'all' ? t('subscriptionTab.processing') : t('notificationsTab.mark_all_read') || 'Marcar todas como leídas'}
           </button>
         )}
       </div>
@@ -137,7 +137,7 @@ export default function NotificationsTab() {
                       disabled={actionId === notification.id}
                       style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d1d5db', background: 'white', cursor: actionId === notification.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700 }}
                     >
-                      {actionId === notification.id ? t('subscriptionTab.processing') : 'Leer'}
+                      {actionId === notification.id ? t('subscriptionTab.processing') : t('notificationsTab.read') || 'Leer'}
                     </button>
                   )}
                   <button
@@ -145,7 +145,7 @@ export default function NotificationsTab() {
                     disabled={actionId === notification.id}
                     style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #fecaca', background: '#fff5f5', color: '#dc2626', cursor: actionId === notification.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700 }}
                   >
-                    {actionId === notification.id ? t('subscriptionTab.processing') : 'Eliminar'}
+                    {actionId === notification.id ? t('subscriptionTab.processing') : t('notificationsTab.delete') || 'Eliminar'}
                   </button>
                 </div>
               </div>

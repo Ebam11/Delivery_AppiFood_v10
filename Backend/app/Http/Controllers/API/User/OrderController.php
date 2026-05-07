@@ -22,7 +22,7 @@ class OrderController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $orders = Order::with(['restaurant', 'items.product', 'payment'])
+        $orders = Order::with(['restaurant', 'items.product', 'payment', 'review'])
             ->where('user_id', $request->user()->id)
             ->latest()
             ->paginate(10);
@@ -199,12 +199,15 @@ class OrderController extends Controller
 
     private function isRestaurantOpen(Restaurant $restaurant): bool
     {
-        $today = strtolower(now()->englishDayOfWeek);
+        if (!$restaurant->is_active) {
+            return false;
+        }
 
+        $today = strtolower(now()->englishDayOfWeek);
         $schedule = $restaurant->schedules->firstWhere('day', $today);
 
         if (!$schedule) {
-            return false;
+            return true;
         }
 
         return $schedule->isOpenNow();

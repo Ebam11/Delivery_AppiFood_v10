@@ -92,7 +92,7 @@ export const Orders = () => {
                       {getStatusLabel(order.status)}
                     </p>
                     <p className="text-2xl font-bold text-blue-600 mt-2">
-                      ${order.total?.toFixed(2) || '0.00'}
+                      ${Number(order.total || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 </div>

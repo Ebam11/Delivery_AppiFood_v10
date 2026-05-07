@@ -14,9 +14,7 @@ class RestaurantResource extends JsonResource
             ? $this->schedules->firstWhere('day', $today)
             : null;
 
-        $isOpen = $todaySchedule
-            ? $todaySchedule->isOpenNow()
-            : null;
+        $isOpen = $this->is_active && (!$todaySchedule || $todaySchedule->isOpenNow());
 
         return [
             'id'                => $this->id,

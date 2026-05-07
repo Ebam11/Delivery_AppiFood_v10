@@ -52,7 +52,7 @@ export const PaymentConfirmation = () => {
       }
     };
 
-    if (transactionId && referenceCode && orderId) {
+    if (orderId) {
       checkPayment();
     }
     return () => { mounted = false };

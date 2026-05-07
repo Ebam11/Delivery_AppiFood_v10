@@ -1,0 +1,123 @@
+.page-home {
+  min-height: 100vh;
+  background: white;
+}
+
+.home-section {
+  padding: 0;
+  width: 100%;
+}
+
+.home-wrap {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: clamp(1rem, 5vw, 2.5rem);
+  padding-right: clamp(1rem, 5vw, 2.5rem);
+}
+
+.home-hero {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+}
+
+.home-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-image: url('/images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15;
+}
+
+.home-btn-red {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: linear-gradient(90deg, #FF4B3E, #e03a2d);
+  color: white;
+  border-radius: 999px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 20px 40px -10px rgba(255, 75, 62, 0.4);
+}
+
+.home-btn-red:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px -10px rgba(255, 75, 62, 0.6);
+}
+
+.home-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 26px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+.home-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: white;
+}
+
+.home-pill-active {
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #FF4B3E, #e03a2d);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 20px -5px rgba(255, 75, 62, 0.3);
+  transition: all 0.3s ease;
+}
+
+.home-pill-inactive {
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: white;
+  color: #475569;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1.5px solid #e2e8f0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Animations */
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

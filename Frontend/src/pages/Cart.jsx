@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { Loading } from '../components/Loading';
+import '../components/SharedUI.css';
 
 export const Cart = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ export const Cart = () => {
             </p>
             <button
               onClick={() => navigate('/restaurants')}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg"
+              className="button-primary"
             >
               {t('cartPage.explore')}
             </button>
@@ -78,7 +79,7 @@ export const Cart = () => {
                     </div>
 
                     <div className="w-24 text-right">
-                      <p className="font-bold text-gray-800">${item.total.toFixed(2)}</p>
+                      <p className="font-bold text-gray-800">${Number(item.total || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}</p>
                     </div>
 
                     <button
@@ -100,7 +101,7 @@ export const Cart = () => {
               <div className="space-y-3 mb-6 pb-6 border-b">
                 <div className="flex justify-between">
                   <span>{t('cartPage.subtotal')}</span>
-                  <span className="font-semibold">${cart.total?.toFixed(2) || '0.00'}</span>
+                  <span className="font-semibold">${Number(cart.total || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>{t('cartPage.shipping')}</span>
@@ -114,21 +115,21 @@ export const Cart = () => {
 
               <div className="flex justify-between items-center mb-6">
                 <span className="text-lg font-bold">{t('cartPage.total')}</span>
-                <span className="text-2xl font-bold text-blue-600">
-                  ${(cart.total + 5).toFixed(2)}
+                <span className="text-2xl font-bold text-brand">
+                  ${Number((cart.total || 0) + (cart.delivery_cost || 5)).toLocaleString('es-CO', { minimumFractionDigits: 2 })}
                 </span>
               </div>
 
               <button
                 onClick={() => navigate('/checkout')}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition"
+                className="w-full button-primary py-3 rounded-2xl"
               >
                 {t('cartPage.checkout')}
               </button>
 
               <button
                 onClick={() => navigate('/restaurants')}
-                className="w-full mt-3 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 rounded-lg transition"
+                className="w-full mt-3 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-3 rounded-2xl transition-all duration-300"
               >
                 {t('cartPage.keepShopping')}
               </button>

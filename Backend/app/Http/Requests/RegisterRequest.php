@@ -29,6 +29,8 @@ class RegisterRequest extends FormRequest
             'phone'    => ['nullable', 'string', 'max:20'],
             'role'     => ['nullable', 'string', 'in:user,restaurant'],
             'id_number' => ['nullable', 'string', 'max:30'],
+            'birth_date'=> ['nullable', 'date'],
+            'gender'    => ['nullable', 'string', 'in:male,female,other'],
         ];
     }
 

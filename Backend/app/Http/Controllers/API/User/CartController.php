@@ -150,19 +150,24 @@ class CartController extends Controller
     {
         return [
             'restaurant_id' => $cart->restaurant_id,
+            'delivery_cost' => (float) ($cart->restaurant->delivery_cost ?? 0),
             'total_items'   => $cart->getTotalItems(),
             'subtotal'      => $cart->getTotal(),
+            'total'         => $cart->getTotal(), // Compatible con frontend
             'items'         => $cart->items->map(fn($item) => [
-                'id'         => $item->id,
-                'product_id' => $item->product_id,
-                'name'       => $item->product->name,
-                'image'      => $item->product->image
+                'id'            => $item->id,
+                'product_id'    => $item->product_id,
+                'name'          => $item->product->name,
+                'product_name'  => $item->product->name, // Compatible con frontend
+                'image'         => $item->product->image
                     ? asset('storage/' . $item->product->image)
                     : null,
-                'quantity'   => $item->quantity,
-                'unit_price' => $item->unit_price,
-                'subtotal'   => $item->subtotal,
-                'notes'      => $item->notes,
+                'quantity'      => $item->quantity,
+                'unit_price'    => $item->unit_price,
+                'product_price' => $item->unit_price, // Compatible con frontend
+                'subtotal'      => $item->subtotal,
+                'total'         => $item->subtotal, // Compatible con frontend
+                'notes'         => $item->notes,
             ]),
         ];
     }

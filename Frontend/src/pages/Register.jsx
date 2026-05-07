@@ -5,6 +5,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
+import './Auth.css'
 
 const Field = ({ label, name, type='text', placeholder, show, toggleShow, errors, form, onChange }) => (
   <div>
@@ -47,7 +48,7 @@ export default function RegisterPage({ onLogin }) {
   const submit = async e => {
     e.preventDefault()
     if (form.password !== form.password_confirmation) {
-      setErrors({ password_confirmation: 'Las contraseñas no coinciden.' })
+      setErrors({ password_confirmation: t('register.error_password_match') || 'Las contraseñas no coinciden.' })
       return
     }
     setLoading(true)
@@ -69,7 +70,7 @@ export default function RegisterPage({ onLogin }) {
         else errs.email = error.message
         setErrors(errs)
       } else {
-        setErrors({ email: 'Error de conexión. Intenta de nuevo.' })
+        setErrors({ email: t('register.error_connection') || 'Error de conexión. Intenta de nuevo.' })
       }
     } finally {
       setLoading(false)
@@ -78,9 +79,8 @@ export default function RegisterPage({ onLogin }) {
 
   return (
     <div className="page-register min-h-screen flex flex-col">
-      <div className="flex-1 relative flex items-center" style={{ minHeight: '100vh' }}>
-        <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg,rgba(0,0,0,0.55),rgba(20,20,20,0.55)), url(https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1600&h=900&fit=crop) center/cover no-repeat' }} />
+      <div className="flex-1 relative flex items-center auth-container">
+        <div className="absolute inset-0 auth-bg-register" />
 
         <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
@@ -104,26 +104,26 @@ export default function RegisterPage({ onLogin }) {
               </div>
 
               <form onSubmit={submit} className="space-y-4">
-                <Field label={t('register.name')} name="name" placeholder="Tu nombre" errors={errors} form={form} onChange={change} />
+                <Field label={t('register.name')} name="name" placeholder={t('register.placeholder_name') || "Tu nombre"} errors={errors} form={form} onChange={change} />
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{t('register.doc_type')}</label>
                     <select name="id_type" value={form.id_type} onChange={change}
                       className="w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition border-gray-300 focus:border-[#FF4B3E] focus:ring-2 focus:ring-[#FF4B3E]/20">
-                      <option value="cc">Cédula</option>
-                      <option value="ti">Tarjeta de Identidad</option>
-                      <option value="ce">Cédula de Extranjería</option>
-                      <option value="pp">Pasaporte</option>
+                      <option value="cc">{t('register.id_cc') || 'Cédula'}</option>
+                      <option value="ti">{t('register.id_ti') || 'Tarjeta de Identidad'}</option>
+                      <option value="ce">{t('register.id_ce') || 'Cédula de Extranjería'}</option>
+                      <option value="pp">{t('register.id_pp') || 'Pasaporte'}</option>
                     </select>
                   </div>
-                  <Field label={t('register.doc_number')} name="id_number" placeholder="123456789" errors={errors} form={form} onChange={change} />
+                  <Field label={t('register.doc_number')} name="id_number" placeholder={t('register.placeholder_id') || "123456789"} errors={errors} form={form} onChange={change} />
                 </div>
 
-                <Field label={t('register.email')} name="email" type="email" placeholder="tucorreo@email.com" errors={errors} form={form} onChange={change} />
-                <Field label={t('register.password')} name="password" placeholder="Mínimo 8 caracteres" errors={errors} form={form} onChange={change}
+                <Field label={t('register.email')} name="email" type="email" placeholder={t('register.placeholder_email') || "tucorreo@email.com"} errors={errors} form={form} onChange={change} />
+                <Field label={t('register.password')} name="password" placeholder={t('register.placeholder_password') || "Mínimo 8 caracteres"} errors={errors} form={form} onChange={change}
                   show={showPass} toggleShow={() => setShowPass(s => !s)} />
-                <Field label={t('register.confirm_password')} name="password_confirmation" placeholder="Repite tu contraseña" errors={errors} form={form} onChange={change}
+                <Field label={t('register.confirm_password')} name="password_confirmation" placeholder={t('register.placeholder_confirm_password') || "Repite tu contraseña"} errors={errors} form={form} onChange={change}
                   show={showConf} toggleShow={() => setShowConf(s => !s)} />
 
                 <button type="submit" disabled={loading}

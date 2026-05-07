@@ -37,6 +37,9 @@ class ProfileRestaurantController extends Controller
             'delivery_time_min' => ['sometimes', 'integer', 'min:1'],
             'category_ids'      => ['nullable', 'array'],
             'category_ids.*'    => ['exists:restaurant_categories,id'],
+            'is_active'         => ['sometimes', 'boolean'],
+            'opening_time'      => ['sometimes', 'date_format:H:i'],
+            'closing_time'      => ['sometimes', 'date_format:H:i'],
         ]);
 
         $restaurant = $request->user()->restaurant;
@@ -50,13 +53,24 @@ class ProfileRestaurantController extends Controller
         } else {
             $restaurant->update($request->only(
                 'name', 'description', 'address', 'phone', 'email',
-                'delivery_cost', 'minimum_order', 'delivery_time_min'
+                'delivery_cost', 'minimum_order', 'delivery_time_min', 'is_active'
             ));
         }
 
         // Actualizar categorías del restaurante
         if ($request->has('category_ids')) {
             $restaurant->restaurantCategories()->sync($request->category_ids);
+        }
+
+        // Actualizar horarios si se proporcionan
+        if ($request->has('opening_time') && $request->has('closing_time')) {
+            $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            foreach ($days as $day) {
+                \App\Models\RestaurantSchedule::updateOrCreate(
+                    ['restaurant_id' => $restaurant->id, 'day' => $day],
+                    ['opening_time' => $request->opening_time, 'closing_time' => $request->closing_time, 'is_closed' => false]
+                );
+            }
         }
 
         return response()->json([

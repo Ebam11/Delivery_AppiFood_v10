@@ -35,7 +35,11 @@ class OrderManagementController extends Controller
     {
         $orders = Order::with(['items.product', 'user'])
             ->forRestaurant($request->user()->restaurant->id)
-            ->whereNotIn('status', [OrderStatus::DELIVERED->value, OrderStatus::CANCELLED->value])
+            ->whereNotIn('status', [
+                OrderStatus::PENDING->value,
+                OrderStatus::DELIVERED->value,
+                OrderStatus::CANCELLED->value
+            ])
             ->latest()
             ->get();
 

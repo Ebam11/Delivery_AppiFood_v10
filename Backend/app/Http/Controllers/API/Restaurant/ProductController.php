@@ -38,7 +38,7 @@ class ProductController extends Controller
             'name'           => ['required', 'string', 'max:150'],
             'description'    => ['nullable', 'string', 'max:500'],
             'image'          => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'price'          => ['required', 'numeric', 'min:0'],
+            'price'          => ['required', 'numeric', 'min:0', 'max:9999999999'],
             'discount_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
             'is_available'   => ['boolean'],
             'is_featured'    => ['boolean'],

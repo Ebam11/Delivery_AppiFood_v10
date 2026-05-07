@@ -109,7 +109,7 @@ export const OrderDetail = () => {
                       <p className="text-sm text-gray-600">x{item.quantity}</p>
                     </div>
                     <p className="font-bold text-gray-800">
-                      ${(item.quantity * item.unit_price).toFixed(2)}
+                      ${Number(item.quantity * item.unit_price).toLocaleString('es-CO', { minimumFractionDigits: 2 })}
                     </p>
                   </div>
                 ))}
@@ -134,21 +134,21 @@ export const OrderDetail = () => {
             <div className="border-t pt-6 space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-700">{t('order_detail.subtotal')}</span>
-                <span className="font-semibold">${order.subtotal?.toFixed(2)}</span>
+                <span className="font-semibold">${Number(order.subtotal || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-700">{t('order_detail.shipping')}</span>
-                <span className="font-semibold">${order.delivery_cost?.toFixed(2)}</span>
+                <span className="font-semibold">${Number(order.delivery_cost || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}</span>
               </div>
-              {order.discount > 0 && (
+              {Number(order.discount) > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>{t('order_detail.discount')}</span>
-                  <span className="font-semibold">-${order.discount?.toFixed(2)}</span>
+                  <span className="font-semibold">-${Number(order.discount || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}</span>
                 </div>
               )}
               <div className="flex justify-between text-lg font-bold border-t pt-3">
                 <span>{t('order_detail.total')}</span>
-                <span className="text-blue-600">${order.total?.toFixed(2)}</span>
+                <span className="text-blue-600">${Number(order.total || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
 

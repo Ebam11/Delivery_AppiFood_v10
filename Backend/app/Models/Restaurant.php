@@ -13,6 +13,19 @@ class Restaurant extends Model
 {
     use HasFactory;
 
+    protected static function booted()
+    {
+        static::creating(function ($restaurant) {
+            if (empty($restaurant->lat) || empty($restaurant->lng)) {
+                // Generar coordenadas aleatorias cerca a Popayán
+                // Lat: 2.4350 to 2.4550
+                // Lng: -76.6250 to -76.6050
+                $restaurant->lat = 2.4350 + (mt_rand() / mt_getrandmax()) * 0.0200;
+                $restaurant->lng = -76.6250 + (mt_rand() / mt_getrandmax()) * 0.0200;
+            }
+        });
+    }
+
     protected array $allowedIncludes = [
         'owner',
         'restaurantCategories',

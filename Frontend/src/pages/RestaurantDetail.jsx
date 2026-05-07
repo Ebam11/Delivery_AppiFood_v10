@@ -11,6 +11,33 @@ import Footer from '../components/Footer';
 import { MOCK_RESTAURANTS } from '../data/mockRestaurants';
 import heroImage from '../assets/hero.png';
 
+const formatMenuSectionTitle = (value = '') => {
+  const normalized = String(value).replace(/[_-]+/g, ' ').trim()
+  if (!normalized) return 'Sección'
+
+  const specialLabels = {
+    burgers: 'Burgers',
+    burger: 'Burgers',
+    pizza: 'Pizzas',
+    sushi: 'Sushi',
+    tacos: 'Tacos',
+    asian: 'Asiática',
+    vegan: 'Saludable',
+    seafood: 'Mariscos',
+    chicken: 'Pollo',
+    coffee: 'Café y desayunos',
+    bebidas: 'Bebidas',
+    postres: 'Postres',
+    entradas: 'Entradas',
+    combos: 'Combos',
+    ofertas: 'Ofertas',
+    otros: 'Otros',
+  }
+
+  const lower = normalized.toLowerCase()
+  return specialLabels[lower] || normalized.charAt(0).toUpperCase() + normalized.slice(1)
+}
+
 export const RestaurantDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -45,6 +72,22 @@ export const RestaurantDetail = () => {
   if (isLoading) return <Loading />;
 
   const restaurant = selectedRestaurant?.data || selectedRestaurant || fallbackRestaurant;
+  if (!restaurant) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-gray-600 text-xl">{t('restaurant_detail.not_found')}</p>
+          <button
+            onClick={() => navigate('/restaurants')}
+            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg"
+          >
+            {t('restaurant_detail.back_to_restaurants')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const coverImage = restaurant.banner || restaurant.image || restaurant.logo || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&h=900&fit=crop';
   const menuCategories = Array.isArray(restaurant.menu_categories) ? restaurant.menu_categories : [];
   const products = Array.isArray(restaurant.products) ? restaurant.products : [];
@@ -62,6 +105,43 @@ export const RestaurantDetail = () => {
       ? `${restaurant.delivery_time_min} min`
       : restaurant.delivery_time || 'No disponible';
 
+  const localDays = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const localTodayName = localDays[new Date().getDay()];
+  const allSchedules = Array.isArray(restaurant.schedules) ? restaurant.schedules : [];
+  const localTodaySchedule = allSchedules.find(s => s.day === localTodayName) || todaySchedule;
+  const backendOpenFlag = (() => {
+    if (typeof restaurant?.isOpen === 'boolean') return restaurant.isOpen
+    if (restaurant?.isOpen === 1) return true
+    if (restaurant?.isOpen === 0) return false
+    if (typeof restaurant?.is_open === 'boolean') return restaurant.is_open
+    if (restaurant?.is_open === 1) return true
+    if (restaurant?.is_open === 0) return false
+    return undefined
+  })()
+
+  let isCurrentlyOpen = restaurant.isOpen !== false;
+  if (backendOpenFlag !== undefined) {
+    isCurrentlyOpen = backendOpenFlag
+  } else if (localTodaySchedule) {
+    if (localTodaySchedule.is_closed) {
+      isCurrentlyOpen = false;
+    } else {
+      const now = new Date();
+      const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const openTime = localTodaySchedule.opening_time?.slice(0, 5) || '00:00';
+      const closeTime = localTodaySchedule.closing_time?.slice(0, 5) || '23:59';
+      isCurrentlyOpen = currentTime >= openTime && currentTime <= closeTime;
+    }
+  } else {
+    // Si no hay horario local definido, usamos is_active como base
+    isCurrentlyOpen = restaurant.is_active !== false;
+  }
+
+  const dayTranslations = {
+    monday: 'Lunes', tuesday: 'Martes', wednesday: 'Miércoles',
+    thursday: 'Jueves', friday: 'Viernes', saturday: 'Sábado', sunday: 'Domingo'
+  };
+
   useEffect(() => {
     if (!selectedProduct) {
       return;
@@ -74,22 +154,6 @@ export const RestaurantDetail = () => {
       document.body.style.overflow = previousOverflow;
     };
   }, [selectedProduct]);
-
-  if (!restaurant) {
-    return (
-      <div className="min-h-screen bg-gray-50 p-6">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-gray-600 text-xl">{t('restaurant_detail.not_found')}</p>
-          <button
-            onClick={() => navigate('/restaurants')}
-            className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg"
-          >
-            {t('restaurant_detail.back_to_restaurants')}
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="page-restaurant-detail min-h-screen bg-gradient-to-b from-[#fff7f4] to-white">
@@ -110,9 +174,9 @@ export const RestaurantDetail = () => {
               {t('restaurant_detail.back')}
             </button>
 
-            {todaySchedule ? (
-              <div className="rounded-full bg-emerald-500/90 px-4 py-2 text-sm font-bold shadow-lg">
-                {todaySchedule.is_open_now ? 'Abierto ahora' : 'Cerrado ahora'}
+            {localTodaySchedule ? (
+              <div className={`rounded-full px-4 py-2 text-sm font-bold shadow-lg ${isCurrentlyOpen ? 'bg-emerald-500/90' : 'bg-red-500/90'}`}>
+                {isCurrentlyOpen ? 'Abierto ahora' : 'Cerrado ahora'}
               </div>
             ) : null}
           </div>
@@ -173,44 +237,67 @@ export const RestaurantDetail = () => {
                 <span className="text-sm text-gray-500">{products.length} productos</span>
               </div>
 
-              {products.length > 0 ? (
-                <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-                  {products.map((product) => (
-                    <button
-                      key={product.id}
-                      type="button"
-                      onClick={() => setSelectedProduct(product)}
-                      className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
-                    >
-                      <div className="aspect-[16/10] w-full overflow-hidden bg-gray-100">
-                        <img
-                          src={product.image || heroImage}
-                          alt={product.name}
-                          onError={(event) => {
-                            event.currentTarget.src = heroImage;
-                          }}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
+              {products.length > 0 ? (() => {
+                const grouped = products.reduce((acc, p) => {
+                  const cat = (p.category || 'otros').toString().toLowerCase()
+                  if (!acc[cat]) acc[cat] = []
+                  acc[cat].push(p)
+                  return acc
+                }, {})
 
-                      <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <h3 className="text-base font-bold leading-snug text-gray-900">{product.name}</h3>
-                          <span className="whitespace-nowrap text-base font-black text-[#FF4B3E]">
-                            ${Number(product.price || 0).toLocaleString('es-CO')}
+                const preferred = ['ofertas', 'combos', 'entradas', 'burger', 'pizza', 'sushi', 'tacos', 'asian', 'vegan', 'seafood', 'chicken', 'coffee', 'bebidas', 'postres', 'otros']
+                const orderedCats = [
+                  ...preferred.filter(c => grouped[c]),
+                  ...Object.keys(grouped).filter(c => !preferred.includes(c))
+                ]
+
+                return (
+                  <div className="space-y-6">
+                    <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+                      {orderedCats.map(cat => (
+                        <button key={cat} onClick={() => document.getElementById(`section-${cat}`)?.scrollIntoView({ behavior:'smooth', block:'start' })}
+                          className="rounded-full border border-[#ffd5cf] bg-white px-4 py-2 text-xs font-bold text-[#FF4B3E] shadow-sm transition hover:bg-[#fff5f3]">
+                          {formatMenuSectionTitle(cat)}
+                        </button>
+                      ))}
+                    </div>
+
+                    {orderedCats.map(cat => (
+                      <section key={cat} id={`section-${cat}`} className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+                        <div className="flex items-center justify-between gap-3 border-b border-gray-100 bg-gradient-to-r from-[#fff7f5] to-white px-5 py-4">
+                          <div>
+                            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#FF4B3E]">Sección</p>
+                            <h3 className="mt-1 text-lg font-black text-gray-900">{formatMenuSectionTitle(cat)}</h3>
+                          </div>
+                          <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-gray-500 shadow-sm ring-1 ring-gray-100">
+                            {grouped[cat].length} items
                           </span>
                         </div>
-
-                        <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-                            {product.available !== false ? t('restaurant_detail.available') : 'No disponible'}
-                          </span>
+                        <div className="grid gap-5 p-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                          {grouped[cat].map(product => (
+                            <button key={product.id} type="button" onClick={() => setSelectedProduct(product)}
+                              className="flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+                              <div className="aspect-[16/10] w-full overflow-hidden bg-gray-100">
+                                <img src={product.image || heroImage} alt={product.name}
+                                  onError={(e)=>{ e.currentTarget.src = heroImage }} className="h-full w-full object-cover" />
+                              </div>
+                              <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
+                                <div className="flex items-start justify-between gap-3">
+                                  <h3 className="text-base font-bold leading-snug text-gray-900">{product.name}</h3>
+                                  <span className="whitespace-nowrap text-base font-black text-[#FF4B3E]">${Number(product.price || 0).toLocaleString('es-CO')}</span>
+                                </div>
+                                <div className="mt-auto flex items-center justify-between gap-3 pt-4">
+                                  <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">{product.available !== false ? t('restaurant_detail.available') : 'No disponible'}</span>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
                         </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
+                      </section>
+                    ))}
+                  </div>
+                )
+              })() : (
                 <div className="rounded-2xl bg-gray-50 p-8 text-center">
                   <p className="text-lg text-gray-600">{t('restaurant_detail.no_products')}</p>
                 </div>
@@ -272,18 +359,33 @@ export const RestaurantDetail = () => {
             </section>
 
             <section className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-100 md:p-7">
-              <h2 className="text-xl font-black text-gray-900">Horario de hoy</h2>
-              {todaySchedule ? (
-                <div className="mt-5 space-y-3 text-sm text-gray-700">
-                  <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
-                    <span className="font-semibold capitalize">{todaySchedule.day}</span>
-                    <span className="font-bold text-gray-900">
-                      {todaySchedule.opening_time} - {todaySchedule.closing_time}
-                    </span>
+              <h2 className="text-xl font-black text-gray-900">Horarios de Apertura y Cierre</h2>
+              {allSchedules.length > 0 ? (
+                <div className="mt-5 space-y-3">
+                  {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((dayKey) => {
+                    const daySchedule = allSchedules.find(s => s.day === dayKey);
+                    if (!daySchedule || daySchedule.is_closed) return null;
+                    
+                    const isToday = dayKey === localTodayName;
+
+                    return (
+                      <div key={dayKey} className="flex justify-between items-center text-[14px]">
+                        <span className={`capitalize ${isToday ? 'font-bold text-[#FF4B3E]' : 'text-gray-600'}`}>
+                          {dayTranslations[dayKey] || dayKey}
+                          {isToday && " (Hoy)"}
+                        </span>
+                        <span className={`font-medium ${isToday ? 'text-gray-900' : 'text-gray-800'}`}>
+                          {daySchedule.opening_time?.slice(0, 5)} - {daySchedule.closing_time?.slice(0, 5)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  
+                  <div className="pt-4 mt-2 border-t border-gray-100">
+                    <p className={`text-sm font-semibold ${isCurrentlyOpen ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {isCurrentlyOpen ? 'Abierto en este momento' : 'Cerrado en este momento'}
+                    </p>
                   </div>
-                  <p className="text-gray-500">
-                    {todaySchedule.is_open_now ? 'Abierto en este momento' : 'Cerrado en este momento'}
-                  </p>
                 </div>
               ) : (
                 <p className="mt-4 text-sm text-gray-500">No hay horario configurado aún.</p>

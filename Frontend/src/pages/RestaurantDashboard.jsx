@@ -5,9 +5,9 @@ import { fetchJson } from '../api/fetchJson'
 import { useAuthStore } from '../store/authStore'
 import LanguageSwitcher from '../components/LanguageSwitcher'
 
-const P  = '#e71d1d'
-const PL = 'rgba(231,29,29,0.1)'
-const BG = '#FFF8F5'
+const P  = '#FF4B3E'
+const PL = 'rgba(255, 75, 62, 0.1)'
+const BG = '#f8fafc'
 const toPercent = (value, max = 100) => {
   const safeMax = Math.max(Number(max) || 0, 1)
   const safeValue = Number(value) || 0
@@ -58,12 +58,21 @@ const CONTACTS = [
   { id:6, name:'Frank Miller',   role:'Customer',      time:'08:14 AM', lastMsg:'Please confirm my order details before delive...',  unread:2, online:true  },
 ]
 
-const normalizeRestaurantStatus = (status) => {
-  if (status === 'delivered') return 'completed'
-  if (status === 'preparing' || status === 'pending') return 'on_process'
-  if (status === 'cancelled') return 'cancelled'
-  return status || 'on_process'
-}
+const mapRestaurantReview = (rev) => ({
+  id: rev.id,
+  dish: rev.product?.name || rev.dish || 'Plato',
+  category: rev.product?.category?.name || rev.category || 'General',
+  rating: Number(rev.rating || 0),
+  date: rev.created_at ? new Date(rev.created_at).toLocaleDateString() : (rev.date || ''),
+  text: rev.comment || rev.text || '',
+  author: rev.user?.name || rev.author || 'Cliente',
+  totalReviews: rev.product?.reviews_count || 0,
+  avgRating: rev.product?.average_rating || 0,
+  featured: Boolean(rev.is_featured),
+  response: rev.reply || rev.response || ''
+})
+
+const normalizeRestaurantStatus = (status) => status || 'pending'
 
 const mapRestaurantOrder = (order) => {
   const items = Array.isArray(order?.items)
@@ -91,17 +100,27 @@ const mapRestaurantOrder = (order) => {
   }
 }
 
-const mapRestaurantProduct = (product) => ({
-  id: product?.id,
-  name: product?.name || 'Producto',
-  description: product?.description || '',
-  price: Number(product?.price ?? 0),
-  category: product?.category?.name || product?.category_name || 'Sin categoría',
-  img: product?.image || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop',
-  rating: Number(product?.rating ?? 0),
-  orders: Number(product?.orders ?? 0),
-  active: Boolean(product?.is_available),
-})
+const mapRestaurantProduct = (product) => {
+  const getImageUrl = (path) => {
+    if (!path) return 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop';
+    if (path.startsWith('http')) return path;
+    const baseUrl = API_URL.replace('/api', '').replace(/\/$/, '');
+    return `${baseUrl}/storage/${path.replace(/^\/+/, '')}`;
+  };
+
+  return {
+    id: product?.id,
+    name: product?.name || 'Producto',
+    description: product?.description || '',
+    price: Number(product?.price ?? 0),
+    category_id: product?.category_id,
+    category: product?.category?.name || product?.category_name || 'Sin categoría',
+    img: getImageUrl(product?.image || product?.img),
+    rating: Number(product?.rating ?? 0),
+    orders: Number(product?.orders ?? 0),
+    active: Boolean(product?.is_available),
+  };
+};
 const CALENDAR_EVENTS = [
   { id:1, title:'Weekly Specials Review',    type:'Menu Updates', date:'2026-04-07', start:'3:00 PM',  end:'4:00 PM',  location:'Kitchen',             team:['Head Chef','Sous Chef'],         notes:'Finalize weekly specials and update menu options for the coming week.' },
   { id:2, title:'Private Dining Event',      type:'Events',       date:'2026-04-07', start:'7:00 PM',  end:'10:00 PM', location:'Private Dining Room', team:['Event Coordinator','Head Chef'],  notes:'VIP client reservation; provide personalized service with customized menu and decor.' },
@@ -118,67 +137,6 @@ const EVENT_COLORS = {
   'Menu Updates': '#fbbf24',
   'Inventory Checks': '#6366f1',
   'Events':       '#1a202c',
-}
-
-const INITIAL_INVENTORY = [
-  { id:1,  name:'Fresh Salmon',         category:'Food Ingredients',          status:'available', qty:45, reorder:50 },
-  { id:2,  name:'Olive Oil',            category:'Food Ingredients',          status:'low',       qty:10, reorder:20 },
-  { id:3,  name:'Spaghetti Pasta',      category:'Food Ingredients',          status:'available', qty:50, reorder:60 },
-  { id:4,  name:'Salt',                 category:'Food Ingredients',          status:'available', qty:60, reorder:30 },
-  { id:5,  name:'Black Pepper',         category:'Food Ingredients',          status:'low',       qty:15, reorder:20 },
-  { id:6,  name:'Butter',               category:'Food Ingredients',          status:'available', qty:40, reorder:50 },
-  { id:7,  name:'Chef\'s Knife',        category:'Kitchen Tools & Equipment', status:'available', qty:5,  reorder:10 },
-  { id:8,  name:'Cutting Board',        category:'Kitchen Tools & Equipment', status:'out',       qty:0,  reorder:15 },
-  { id:9,  name:'Dishwashing Detergent',category:'Cleaning Supplies',         status:'available', qty:25, reorder:20 },
-  { id:10, name:'Mixing Bowls',         category:'Kitchen Tools & Equipment', status:'available', qty:25, reorder:15 },
-]
-
-const INITIAL_PURCHASES = [
-  { id:'PO1001', date:'Apr 01, 2026', item:'Fresh Salmon',          category:'Food Ingredients',          vendor:'Ocean Fresh Suppliers',  price:15.00,  qty:10,  total:150.00, status:'pending',   delivery:50  },
-  { id:'PO1002', date:'Apr 02, 2026', item:'Olive Oil',             category:'Food Ingredients',          vendor:'Mediterranean Oils Co.', price:10.00,  qty:20,  total:200.00, status:'shipped',   delivery:75  },
-  { id:'PO1003', date:'Apr 03, 2026', item:'Spaghetti Pasta',       category:'Food Ingredients',          vendor:'Italian Imports',        price:3.50,   qty:50,  total:175.00, status:'delivered', delivery:100 },
-  { id:'PO1004', date:'Apr 04, 2026', item:'Dishwashing Detergent', category:'Cleaning Supplies',         vendor:'CleanPro Supplies',      price:12.00,  qty:15,  total:180.00, status:'pending',   delivery:30  },
-  { id:'PO1005', date:'Apr 05, 2026', item:'Espresso Machine',      category:'Kitchen Tools & Equipment', vendor:'Barista Equipment Inc.', price:150.00, qty:1,   total:150.00, status:'delivered', delivery:100 },
-  { id:'PO1006', date:'Apr 06, 2026', item:'White Plates',          category:'Kitchen Tools & Equipment', vendor:'Kitchen Essentials',     price:2.00,   qty:100, total:200.00, status:'shipped',   delivery:75  },
-  { id:'PO1007', date:'Apr 07, 2026', item:'Garlic Cloves',         category:'Food Ingredients',          vendor:'Organic Farms',          price:1.00,   qty:100, total:100.00, status:'pending',   delivery:20  },
-]
-
-const INITIAL_PROMOS = [
-  { id:1, title:'2x1 en Tacos',           type:'2x1',        discount:0,  minOrder:0,  startDate:'2026-04-01', endDate:'2026-04-30', active:true,  uses:42, target:'Todos los clientes'    },
-  { id:2, title:'10% en primer pedido',   type:'percentage', discount:10, minOrder:0,  startDate:'2026-04-01', endDate:'2026-06-30', active:true,  uses:28, target:'Clientes nuevos'       },
-  { id:3, title:'Envío gratis +$30',      type:'free_ship',  discount:0,  minOrder:30, startDate:'2026-04-15', endDate:'2026-05-15', active:false, uses:0,  target:'Todos los clientes'    },
-  { id:4, title:'20% off fines de semana',type:'percentage', discount:20, minOrder:0,  startDate:'2026-04-01', endDate:'2026-04-30', active:true,  uses:15, target:'Clientes recurrentes'  },
-  { id:5, title:'Postre gratis +$25',     type:'free_item',  discount:0,  minOrder:25, startDate:'2026-05-01', endDate:'2026-05-31', active:false, uses:0,  target:'Todos los clientes'    },
-]
-
-const ANALYTICS_DATA = {
-  hourlyOrders: [
-    { hour:'8am',  orders:5  }, { hour:'9am',  orders:12 }, { hour:'10am', orders:8  },
-    { hour:'11am', orders:22 }, { hour:'12pm', orders:45 }, { hour:'1pm',  orders:52 },
-    { hour:'2pm',  orders:38 }, { hour:'3pm',  orders:18 }, { hour:'4pm',  orders:10 },
-    { hour:'5pm',  orders:14 }, { hour:'6pm',  orders:35 }, { hour:'7pm',  orders:48 },
-    { hour:'8pm',  orders:42 }, { hour:'9pm',  orders:25 }, { hour:'10pm', orders:12 },
-  ],
-  avgTicket:       [28,32,29,35,31,38,36,40],
-  avgTicketMonths: ['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct'],
-  topDishes: [
-    { name:'Paella Valenciana',  revenue:840, orders:42, margin:65 },
-    { name:'Tacos al Pastor',    revenue:570, orders:38, margin:72 },
-    { name:'Ceviche Mixto',      revenue:540, orders:27, margin:68 },
-    { name:'Sangría de la Casa', revenue:330, orders:33, margin:80 },
-    { name:'Enchiladas Suizas',  revenue:465, orders:31, margin:60 },
-  ],
-  customerTypes: [
-    { label:'Clientes Nuevos',    value:35, color:'#e71d1d' },
-    { label:'Recurrentes (2-5x)', value:45, color:'#fbbf24' },
-    { label:'Frecuentes (6x+)',   value:20, color:'#1a202c' },
-  ],
-  kpis: [
-    { label:'Ticket Promedio',      value:'$34.50',  trend:'+8%',   up:true },
-    { label:'Tasa Cancelación',     value:'8.2%',    trend:'-2%',   up:true },
-    { label:'Clientes Recurrentes', value:'65%',     trend:'+5%',   up:true },
-    { label:'Tiempo Prep. Prom.',   value:'18 min',  trend:'-3min', up:true },
-  ],
 }
 
 const ACTIVITY = [
@@ -201,9 +159,22 @@ function Stars({ rating, size = 'text-sm' }) {
 
 function Badge({ status }) {
   const { t } = useTranslation()
-  if (status === 'completed')  return <span className="px-3 py-1 rounded-lg text-xs font-semibold text-white" style={{ background: P }}>{t('rd.status_completed')}</span>
-  if (status === 'on_process') return <span className="px-3 py-1 rounded-lg text-xs font-semibold text-orange-600 bg-orange-100">{t('rd.status_on_process')}</span>
-  return <span className="px-3 py-1 rounded-lg text-xs font-semibold text-white bg-gray-800">{t('rd.status_cancelled')}</span>
+  const config = {
+    pending:    { color: '#fbbf24', bg: '#fffbeb', text: 'orders.status_pending' },
+    confirmed:  { color: '#6366f1', bg: '#eef2ff', text: 'orders.status_confirmed' },
+    preparing:  { color: '#a855f7', bg: '#f5f3ff', text: 'orders.status_preparing' },
+    on_the_way: { color: '#06b6d4', bg: '#ecfeff', text: 'orders.status_on_the_way' },
+    delivered:  { color: '#10b981', bg: '#f0fdf4', text: 'orders.status_delivered' },
+    completed:  { color: '#10b981', bg: '#f0fdf4', text: 'orders.status_delivered' },
+    cancelled:  { color: '#ef4444', bg: '#fef2f2', text: 'orders.status_cancelled' },
+  }
+  const c = config[status] || config.pending
+  return (
+    <span className="px-3 py-1 rounded-lg text-xs font-semibold" 
+      style={{ background: c.bg, color: c.color }}>
+      {t(c.text)}
+    </span>
+  )
 }
 
 function Toast({ message }) {
@@ -214,7 +185,7 @@ function Toast({ message }) {
   )
 }
 
-function OrderDetailModal({ order, onClose, onAdvance }) {
+function OrderDetailModal({ order, onClose, onAdvance, onStatusChange }) {
   const { t } = useTranslation()
   if (!order) return null
   const total = order.items.reduce((s, i) => s + i.price * i.qty, 0)
@@ -305,15 +276,21 @@ function OrderDetailModal({ order, onClose, onAdvance }) {
               </div>
             </div>
           </div>
-          {NEXT_STATUS[order.status] && (
-            <button
-              onClick={() => { onAdvance(order.id); onClose() }}
-              className="w-full py-3 rounded-xl font-bold text-white text-sm hover:opacity-90 transition"
-              style={{ background: P }}
-            >
-              {t('rd.mark_completed')}
-            </button>
-          )}
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('rd.update_status')}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {['pending', 'confirmed', 'preparing', 'on_the_way', 'delivered', 'cancelled'].map(st => (
+                <button
+                  key={st}
+                  onClick={() => { onStatusChange(order.id, st); onClose() }}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold border transition ${order.status === st ? 'text-white border-red-500' : 'text-gray-500 border-gray-100 hover:bg-gray-50'}`}
+                  style={order.status === st ? { background: P } : {}}
+                >
+                  {t(`orders.status_${st}`)}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -322,23 +299,38 @@ function OrderDetailModal({ order, onClose, onAdvance }) {
 
 function Sidebar({ active, onNav, open, onClose, user, onLogout }) {
   const { t } = useTranslation()
-  const NAV = [
-    { id:'dashboard',       icon:'⊞', label: t('rd.dashboard') },
-    { id:'orders',          icon:'☰', label: t('rd.orders') },
-    { id:'messages',        icon:'💬', label: t('rd.messages') },
-    { id:'calendar',        icon:'📅', label: t('rd.calendar') },
-    { id:'menu',            icon:'🍽', label: t('rd.menu') },
-    { id:'inventory',       icon:'📦', label: t('rd.inventory') },
-    { id:'promotions',      icon:'🎯', label: t('rd.promotions') },
-    { id:'analytics',       icon:'📈', label: t('rd.analytics') },
-    { id:'reviews',         icon:'★',  label: t('rd.reviews') },
-    { id:'restaurant-info', icon:'🏪', label: t('rd.restaurant_info') },
+  const NAV_SECTIONS = [
+    {
+      title: t('rd.main_group', { defaultValue: 'Principal' }),
+      items: [
+        { id:'dashboard',       icon:'⊞', label: t('rd.dashboard') },
+        { id:'orders',          icon:'☰', label: t('rd.orders') },
+        { id:'calendar',        icon:'📅', label: t('rd.calendar') },
+        { id:'messages',        icon:'💬', label: t('rd.messages') },
+      ]
+    },
+    {
+      title: t('rd.management_group', { defaultValue: 'Gestión' }),
+      items: [
+        { id:'menu',            icon:'🍽', label: t('rd.menu') },
+        { id:'inventory',       icon:'📦', label: t('rd.inventory') },
+        { id:'promotions',      icon:'🎯', label: t('rd.promotions') },
+      ]
+    },
+    {
+      title: t('rd.admin_group', { defaultValue: 'Administración' }),
+      items: [
+        { id:'analytics',       icon:'📈', label: t('rd.analytics') },
+        { id:'reviews',         icon:'★',  label: t('rd.reviews') },
+        { id:'restaurant-info', icon:'🏪', label: t('rd.restaurant_info') },
+      ]
+    }
   ]
   return (
     <>
       {open && <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={onClose} />}
       <aside className={`
-        fixed top-0 left-0 h-full w-[200px] bg-white border-r border-gray-100 z-50
+        fixed top-0 left-0 h-full w-[220px] bg-white border-r border-gray-100 z-50
         flex flex-col transition-transform duration-300 shadow-sm
         ${open ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0
       `}>
@@ -347,20 +339,23 @@ function Sidebar({ active, onNav, open, onClose, user, onLogout }) {
             <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm" style={{ background: P }}>A</div>
             <span className="font-bold text-gray-800 text-base capitalize">AppiFood</span>
           </div>
-          <div className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
-            <span className="text-xs font-semibold text-gray-500">Idioma</span>
-            <LanguageSwitcher />
-          </div>
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-0.5">
-          {NAV.map(item => (
-            <button key={item.id} onClick={() => { onNav(item.id); onClose() }}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
-                ${active === item.id ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
-              style={active === item.id ? { background: P } : {}}>
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </button>
+        <nav className="flex-1 px-3 py-4 overflow-y-auto space-y-6">
+          {NAV_SECTIONS.map((section, idx) => (
+            <div key={idx}>
+              <p className="px-3 text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{section.title}</p>
+              <div className="space-y-0.5">
+                {section.items.map(item => (
+                  <button key={item.id} onClick={() => { onNav(item.id); onClose() }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all
+                      ${active === item.id ? 'text-white font-semibold' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}
+                    style={active === item.id ? { background: P } : {}}>
+                    <span className="text-base">{item.icon}</span>
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
         <div className="px-4 pb-5 space-y-2">
@@ -401,13 +396,14 @@ function TopBar({ title, breadcrumb, onMenuOpen, user }) {
           )}
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <div className="hidden sm:flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
           <span className="text-gray-400 text-sm">🔍</span>
           <input placeholder={t('rd.search')} className="bg-transparent text-sm outline-none w-32 text-gray-600 placeholder-gray-400" />
         </div>
+        <LanguageSwitcher />
         <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 border border-gray-200 text-gray-500">🔔</button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 border-l border-gray-100 pl-4 ml-2">
           <div className="text-right hidden sm:block">
             <p className="text-xs font-semibold text-gray-800">{user?.name || t('rd.restaurant_info')}</p>
             <p className="text-xs text-gray-400">{t('rd.restaurant_label')}</p>
@@ -444,7 +440,7 @@ function DashboardSection({ orders, menu, stats, loading }) {
     <div className="space-y-6">
       {loading && (
         <div className="rounded-2xl border border-gray-100 bg-white px-4 py-3 text-sm text-gray-500 shadow-sm">
-          Cargando datos del restaurante...
+          {t('rd.loading_data') || "Cargando datos del restaurante..."}
         </div>
       )}
 
@@ -661,7 +657,7 @@ function DashboardSection({ orders, menu, stats, loading }) {
   )
 }
 
-function OrdersSection({ orders, onAdvance }) {
+function OrdersSection({ orders, onAdvance, onStatusChange }) {
   const { t } = useTranslation()
   const [filter,   setFilter]   = useState('all')
   const [search,   setSearch]   = useState('')
@@ -670,8 +666,10 @@ function OrdersSection({ orders, onAdvance }) {
 
   const counts = {
     all:        orders.length,
-    on_process: orders.filter(o => o.status === 'on_process').length,
-    completed:  orders.filter(o => o.status === 'completed').length,
+    pending:    orders.filter(o => o.status === 'pending').length,
+    preparing:  orders.filter(o => o.status === 'preparing' || o.status === 'confirmed').length,
+    on_the_way: orders.filter(o => o.status === 'on_the_way').length,
+    delivered:  orders.filter(o => o.status === 'delivered' || o.status === 'completed').length,
     cancelled:  orders.filter(o => o.status === 'cancelled').length,
   }
 
@@ -683,9 +681,11 @@ function OrdersSection({ orders, onAdvance }) {
 
   const FILTERS = [
     { key:'all',        label: t('rd.all') },
-    { key:'on_process', label: t('rd.on_process') },
-    { key:'completed',  label: t('rd.completed') },
-    { key:'cancelled',  label: t('rd.cancelled_col') },
+    { key:'pending',    label: t('orders.status_pending') },
+    { key:'preparing',  label: t('orders.status_preparing') },
+    { key:'on_the_way', label: t('orders.status_on_the_way') },
+    { key:'delivered',  label: t('orders.status_delivered') },
+    { key:'cancelled',  label: t('orders.status_cancelled') },
   ]
 
   return (
@@ -693,9 +693,9 @@ function OrdersSection({ orders, onAdvance }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: t('rd.total_orders_col'), value: counts.all,        icon:'📋', color: P },
-          { label: t('rd.on_process'),       value: counts.on_process, icon:'⏳', color:'#f59e0b' },
-          { label: t('rd.completed'),        value: counts.completed,  icon:'✅', color:'#10b981' },
-          { label: t('rd.cancelled_col'),    value: counts.cancelled,  icon:'✕',  color:'#6b7280' },
+          { label: t('orders.status_pending'), value: counts.pending,    icon:'⏳', color:'#f59e0b' },
+          { label: t('orders.status_preparing'), value: counts.preparing,  icon:'👨‍🍳', color:'#a855f7' },
+          { label: t('orders.status_delivered'), value: counts.delivered,  icon:'✅', color:'#10b981' },
         ].map((s,i) => (
           <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between">
@@ -765,11 +765,15 @@ function OrdersSection({ orders, onAdvance }) {
                     <td className="px-4 py-3 text-sm font-semibold" style={{ color: P }}>${o.amount.toFixed(2)}</td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}><Badge status={o.status} /></td>
                     <td className="px-4 py-3" onClick={e => e.stopPropagation()}>
-                      {NEXT_STATUS[o.status] ? (
-                        <button onClick={() => onAdvance(o.id)} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 hover:bg-gray-50 transition text-gray-600">
-                          {t('rd.complete_btn')}
-                        </button>
-                      ) : <span className="text-xs text-gray-300">—</span>}
+                      <select 
+                        value={o.status} 
+                        onChange={(e) => onStatusChange(o.id, e.target.value)}
+                        className="text-xs border border-gray-200 rounded-lg px-2 py-1 outline-none focus:border-red-500 bg-white"
+                      >
+                        {['pending', 'confirmed', 'preparing', 'on_the_way', 'delivered', 'cancelled'].map(st => (
+                          <option key={st} value={st}>{t(`orders.status_${st}`)}</option>
+                        ))}
+                      </select>
                     </td>
                   </tr>
                 ))}
@@ -814,11 +818,15 @@ function OrdersSection({ orders, onAdvance }) {
                 <button className="flex-1 py-2 border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 hover:bg-gray-50 transition" onClick={() => setSelected(o)}>
                   {t('rd.view_details')}
                 </button>
-                {NEXT_STATUS[o.status] && (
-                  <button className="flex-1 py-2 rounded-xl text-xs font-semibold text-white hover:opacity-90 transition" style={{ background: P }} onClick={() => onAdvance(o.id)}>
-                    {t('rd.complete_btn')}
-                  </button>
-                )}
+                <select 
+                  value={o.status} 
+                  onChange={(e) => onStatusChange(o.id, e.target.value)}
+                  className="flex-1 py-2 border border-gray-200 rounded-xl text-xs font-semibold text-gray-600 bg-white outline-none focus:border-red-500"
+                >
+                  {['pending', 'confirmed', 'preparing', 'on_the_way', 'delivered', 'cancelled'].map(st => (
+                    <option key={st} value={st}>{t(`orders.status_${st}`)}</option>
+                  ))}
+                </select>
               </div>
             </div>
           ))}
@@ -830,23 +838,26 @@ function OrdersSection({ orders, onAdvance }) {
           order={selected}
           onClose={() => setSelected(null)}
           onAdvance={id => { onAdvance(id); setSelected(null) }}
+          onStatusChange={onStatusChange}
         />
       )}
     </div>
   )
 }
-function MenuSection({ menu, onAdd, onDelete }) {
+function MenuSection({ menu, categories, onAdd, onDelete }) {
   const { t } = useTranslation()
   const [showModal, setShowModal] = useState(false)
   const [catFilter, setCatFilter] = useState('Todos')
   const [search,    setSearch]    = useState('')
-  const [form, setForm] = useState({ name:'', description:'', price:'', category:'Plato Fuerte', img:'' })
+  const [form, setForm] = useState({ name:'', description:'', price:'', category_id: '', img:'', file:null, newCategoryName: '' })
+  const [isNewCat, setIsNewCat] = useState(false)
   const [preview, setPreview] = useState(null)
 
-  const CATEGORIES = [t('rd.all_categories'),'Plato Fuerte','Entrada','Postre','Bebida','Desayuno','Comida']
+  const SUGGESTIONS = ['Plato Fuerte', 'Entrada', 'Postre', 'Bebida', 'Desayuno', 'Comida', 'Snacks', 'Ensaladas']
+  const CATEGORIES = [t('rd.all_categories'), ...categories.map(c => c.name)]
 
   const visible = menu
-    .filter(m => catFilter === t('rd.all_categories') || catFilter === 'Todos' || m.category === catFilter)
+    .filter(m => catFilter === t('rd.all_categories') || catFilter === 'Todos' || m.category?.name === catFilter || m.category === catFilter)
     .filter(m => m.name.toLowerCase().includes(search.toLowerCase()))
 
   const handleImage = e => {
@@ -854,13 +865,22 @@ function MenuSection({ menu, onAdd, onDelete }) {
     if (!file) return
     const url = URL.createObjectURL(file)
     setPreview(url)
-    setForm(f => ({ ...f, img: url }))
+    setForm(f => ({ ...f, img: url, file }))
   }
 
   const submit = () => {
-    if (!form.name || !form.price) return
-    onAdd({ id:Date.now(), ...form, price:parseFloat(form.price), rating:0, orders:0, active:true, img:'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop' })
-    setForm({ name:'', description:'', price:'', category:'Plato Fuerte', img:'' })
+    if (!form.name || !form.price) {
+      alert('Por favor completa el nombre y el precio');
+      return;
+    }
+    if (!form.category_id && !form.newCategoryName) {
+      alert('Por favor selecciona o escribe una categoría');
+      return;
+    }
+    onAdd(form)
+    setForm({ name:'', description:'', price:'', category_id:'', img:'', file:null, newCategoryName: '' })
+    setIsNewCat(false)
+    setPreview(null)
     setShowModal(false)
   }
 
@@ -899,7 +919,7 @@ function MenuSection({ menu, onAdd, onDelete }) {
               </span>
             </div>
             <div className="p-4">
-              <p className="text-xs text-gray-400 mb-0.5">{item.category}</p>
+              <p className="text-xs text-gray-400 mb-0.5">{item.category?.name || item.category}</p>
               <p className="font-bold text-gray-800 text-sm">{item.name}</p>
               <div className="flex items-center justify-between mt-2 mb-3">
                 <span className="text-xs text-gray-400">⭐ {item.rating} · {item.orders} {t('rd.orders_label')}</span>
@@ -956,16 +976,39 @@ function MenuSection({ menu, onAdd, onDelete }) {
                   <label className="block text-xs font-semibold text-gray-600 mb-1">{t('rd.price_label')}</label>
                   <input type="number" value={form.price} onChange={e => setForm(f => ({ ...f, price:e.target.value }))} placeholder="0.00" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#e71d1d]" />
                 </div>
-                <div>
+                <div className="flex flex-col">
                   <label className="block text-xs font-semibold text-gray-600 mb-1">{t('rd.category')}</label>
-                  <select value={form.category} onChange={e => setForm(f => ({ ...f, category:e.target.value }))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#e71d1d]">
-                    <option>Plato Fuerte</option>
-                    <option>Entrada</option>
-                    <option>Postre</option>
-                    <option>Bebida</option>
-                    <option>Desayuno</option>
-                    <option>Comida</option>
-                  </select>
+                  <div className="flex gap-2">
+                     {!isNewCat ? (
+                       <select value={form.category_id} onChange={e => {
+                         const val = e.target.value
+                         if (val === 'NEW') {
+                           setIsNewCat(true)
+                           setForm(f => ({ ...f, category_id: '', newCategoryName: '' }))
+                         } else if (val.startsWith('SUGGEST:')) {
+                           const name = val.replace('SUGGEST:', '')
+                           setForm(f => ({ ...f, category_id: '', newCategoryName: name }))
+                         } else {
+                           setForm(f => ({ ...f, category_id: val, newCategoryName: '' }))
+                         }
+                       }} className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#e71d1d]">
+                         <option value="">Seleccionar...</option>
+                         {categories.map(cat => (
+                           <option key={cat.id} value={cat.id}>{cat.name}</option>
+                         ))}
+                         <hr />
+                         {SUGGESTIONS.map(s => (
+                           <option key={s} value={`SUGGEST:${s}`}>Sugerencia: {s}</option>
+                         ))}
+                         <option value="NEW" className="font-bold text-[#e71d1d]">+ Nueva categoría...</option>
+                       </select>
+                     ) : (
+                       <div className="flex-1 flex gap-2">
+                         <input type="text" value={form.newCategoryName} onChange={e => setForm(f => ({ ...f, newCategoryName:e.target.value }))} placeholder="Nombre de categoría" className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#e71d1d]" />
+                         <button onClick={() => setIsNewCat(false)} className="px-2 text-gray-400 hover:text-gray-600">✕</button>
+                       </div>
+                     )}
+                   </div>
                 </div>
               </div>
             </div>
@@ -980,9 +1023,7 @@ function MenuSection({ menu, onAdd, onDelete }) {
   )
 }
 
-function ReviewsSection() {
-  const { t } = useTranslation()
-  const [reviews, setReviews] = useState(REVIEWS_DATA.map(r => ({ ...r, featured: false, response: '' })))
+function ReviewsSection({ reviews, onReply, showToast, t }) {
   const [selected,   setSelected]   = useState(null)
   const [response,   setResponse]   = useState('')
   const [filterFeat, setFilterFeat] = useState('all')
@@ -993,11 +1034,11 @@ function ReviewsSection() {
   const maxBar   = Math.max(...POS_DATA, 1)
 
   const RATINGS = [
-    { label:'Calidad de Comida', value:4.8 },
-    { label:'Servicio',          value:4.6 },
-    { label:'Ambiente',          value:4.7 },
-    { label:'Precio/Valor',      value:4.5 },
-    { label:'Limpieza',          value:4.9 },
+    { label: t('rd.food_quality') || 'Calidad de Comida', value:4.8 },
+    { label: t('rd.service')      || 'Servicio',          value:4.6 },
+    { label: t('rd.ambiance')     || 'Ambiente',          value:4.7 },
+    { label: t('rd.price_value')  || 'Precio/Valor',      value:4.5 },
+    { label: t('rd.cleanliness')  || 'Limpieza',          value:4.9 },
   ]
 
   const visible = reviews.filter(r =>
@@ -1089,80 +1130,81 @@ function ReviewsSection() {
               placeholder={t('rd.reply_placeholder')}
               className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none focus:border-[#e71d1d] resize-none mb-4" />
             <div className="flex gap-3">
-              <button onClick={() => setSelected(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition">{t('rd.cancel')}</button>
-              <button
-                onClick={() => { setReviews(prev => prev.map(r => r.id === selected.id ? { ...r, response } : r)); setSelected(null); setResponse('') }}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90 transition" style={{ background: P }}>
-                {t('rd.send')}
+              <button onClick={() => setSelected(null)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition">{t('rd.cancel')}
+                
               </button>
-            </div>
-          </div>
-        </div>
-      )}
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-          <div className="flex gap-2 flex-wrap">
-            {['All Rating','All Category','All Menu'].map(f => (
-              <button key={f} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition">{f} ▾</button>
-            ))}
-          </div>
-          <span className="text-xs text-gray-400">{t('rd.this_year')}</span>
-        </div>
-        <div className="divide-y divide-gray-50">
-          {visible.map(r => (
-            <div key={r.id} className={`flex gap-4 px-5 py-4 hover:bg-gray-50 transition ${r.featured ? 'border-l-4' : ''}`} style={r.featured ? { borderColor: P } : {}}>
-              <img src={INITIAL_MENU.find(m => m.name === r.dish)?.img || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop'}
-                alt={r.dish} className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
-                onError={e => { e.target.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop' }} />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-semibold text-gray-800 text-sm">{r.dish}</p>
-                      {r.featured && <span className="px-1.5 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: P }}>{t('rd.featured_badge')}</span>}
-                    </div>
-                    <p className="text-xs text-gray-400">{r.category}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">☰ {r.totalReviews} Reviews · ⭐ {r.avgRating} Overall Rate</p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="flex items-center gap-0.5 justify-end">
-                      {[1,2,3,4,5].map(s => <span key={s} className="text-sm" style={{ color: s <= Math.floor(r.rating) ? P : '#e5e7eb' }}>★</span>)}
-                      <span className="text-xs text-gray-500 ml-1">{r.rating}/5</span>
-                    </div>
-                    <p className="text-xs text-gray-400 mt-0.5">{r.date}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 mt-2 leading-relaxed">{r.text}</p>
-                <p className="text-xs font-semibold mt-1" style={{ color: P }}>{r.author}</p>
-                {r.response && (
-                  <div className="mt-2 p-2 rounded-lg bg-gray-50 border-l-2" style={{ borderColor: P }}>
-                    <p className="text-xs font-semibold text-gray-600">{t('rd.reply_review')}:</p>
-                    <p className="text-xs text-gray-500 mt-0.5">{r.response}</p>
-                  </div>
-                )}
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => { setSelected(r); setResponse(r.response || '') }}
-                    className="px-3 py-1 rounded-lg text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
-                    {r.response ? t('rd.edit_reply') : t('rd.reply_btn')}
-                  </button>
-                  <button onClick={() => setReviews(prev => prev.map(rv => rv.id === r.id ? { ...rv, featured: !rv.featured } : rv))}
-                    className="px-3 py-1 rounded-lg text-xs font-semibold border transition"
-                    style={r.featured ? { borderColor: P, color: P, background: PL } : { borderColor: '#e5e7eb', color: '#6b7280' }}>
-                    {r.featured ? t('rd.remove_featured') : t('rd.add_featured')}
+                  <button
+                    onClick={() => { onReply(selected.id, response); setSelected(null); setResponse('') }}
+                    className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white hover:opacity-90 transition" style={{ background: P }}>
+                    {t('rd.send')}
                   </button>
                 </div>
               </div>
             </div>
-          ))}
+          )}
+
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex gap-2 flex-wrap">
+                {['All Rating','All Category','All Menu'].map(f => (
+                  <button key={f} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 text-gray-500 hover:bg-gray-50 transition">{f} ▾</button>
+                ))}
+              </div>
+              <span className="text-xs text-gray-400">{t('rd.this_year')}</span>
+            </div>
+            <div className="divide-y divide-gray-50">
+              {visible.map(r => (
+                <div key={r.id} className={`flex gap-4 px-5 py-4 hover:bg-gray-50 transition ${r.featured ? 'border-l-4' : ''}`} style={r.featured ? { borderColor: P } : {}}>
+                  <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                    {/* Buscamos la imagen en el menu o usamos placeholder */}
+                    <img src={INITIAL_MENU.find(m => m.name === r.dish)?.img || 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop'}
+                      alt={r.dish} className="w-full h-full object-cover"
+                      onError={e => { e.target.src='https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop' }} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-gray-800 text-sm">{r.dish}</p>
+                          {r.featured && <span className="px-1.5 py-0.5 rounded-full text-xs font-bold text-white" style={{ background: P }}>{t('rd.featured_badge')}</span>}
+                        </div>
+                        <p className="text-xs text-gray-400">{r.category}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">⭐ {r.rating} · {r.date}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div className="flex items-center gap-0.5 justify-end">
+                          {[1,2,3,4,5].map(s => <span key={s} className="text-sm" style={{ color: s <= Math.floor(r.rating) ? P : '#e5e7eb' }}>★</span>)}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-2 leading-relaxed italic">"{r.text}"</p>
+                    <p className="text-xs font-semibold mt-1" style={{ color: P }}>- {r.author}</p>
+                    
+                    {r.response && (
+                      <div className="mt-3 p-3 rounded-xl bg-gray-50 border-l-4" style={{ borderColor: P }}>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{t('rd.restaurant_reply') || 'Respuesta del Restaurante'}</p>
+                        <p className="text-xs text-gray-600 leading-relaxed">{r.response}</p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 mt-3">
+                      <button onClick={() => { setSelected(r); setResponse(r.response || '') }}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
+                        {r.response ? t('rd.edit_reply') : t('rd.reply_btn')}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="px-5 py-3 border-t border-gray-100 text-xs text-gray-400">
+              {t('rd.showing')} {visible.length} {t('rd.of')} {reviews.length} {t('rd.showing_reviews')}
+            </div>
+          </div>
         </div>
-        <div className="px-5 py-3 border-t border-gray-100 text-xs text-gray-400">
-          {t('rd.showing')} {visible.length} {t('rd.of')} {reviews.length} {t('rd.showing_reviews')}
-        </div>
-      </div>
-    </div>
-  )
-}
+      )
+    }
 
 function MessagesSection() {
   const { t } = useTranslation()
@@ -1446,14 +1488,34 @@ function CalendarSection() {
   )
 }
 
-function InventorySection() {
+function InventorySection({ token, showToast }) {
   const { t } = useTranslation()
   const [tab,       setTab]       = useState('inventory')
-  const [inventory, setInventory] = useState(INITIAL_INVENTORY)
-  const [purchases, setPurchases] = useState(INITIAL_PURCHASES)
+  const [inventory, setInventory] = useState([])
+  const [purchases, setPurchases] = useState([])
   const [invFilter, setInvFilter] = useState('all')
   const [poFilter,  setPoFilter]  = useState('all')
   const [search,    setSearch]    = useState('')
+  const [loading,   setLoading]   = useState(true)
+
+  useEffect(() => {
+    const loadInv = async () => {
+      try {
+        setLoading(true)
+        const [invRes, poRes] = await Promise.all([
+          fetchJson('/api/restaurant/inventory', { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetchJson('/api/restaurant/purchases', { headers: { 'Authorization': `Bearer ${token}` } })
+        ])
+        setInventory(invRes.data || invRes || [])
+        setPurchases(poRes.data || poRes || [])
+      } catch (err) {
+        console.error('Error loading inventory:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadInv()
+  }, [token])
 
   const STATUS_INV = {
     available: { label: t('rd.available'),     bg:'bg-green-100',  text:'text-green-700' },
@@ -1490,7 +1552,7 @@ function InventorySection() {
           <div className="flex items-center justify-between mb-1">
             <div>
               <p className="text-xs text-gray-400">{t('rd.supply_overview')}</p>
-              <p className="text-3xl font-bold text-gray-800">1,654</p>
+              <p className="text-3xl font-bold text-gray-800">{purchases.reduce((s,p) => s + p.total, 0).toLocaleString()}</p>
             </div>
             <span className="text-xs text-gray-400">{t('rd.last_8_months')}</span>
           </div>
@@ -1676,14 +1738,30 @@ function InventorySection() {
   )
 }
 
-function PromotionsSection() {
+function PromotionsSection({ token, showToast }) {
   const { t } = useTranslation()
-  const [promos, setPromos]       = useState(INITIAL_PROMOS)
+  const [promos, setPromos]       = useState([])
+  const [loading, setLoading]     = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({
     title:'', type:'percentage', discount:'', minOrder:'',
-    startDate:'', endDate:'', target:'Todos los clientes'
+    startDate:'', endDate:''
   })
+
+  useEffect(() => {
+    const loadPromos = async () => {
+      try {
+        setLoading(true)
+        const res = await fetchJson('/api/restaurant/promotions', { headers: { 'Authorization': `Bearer ${token}` } })
+        setPromos(res.data || res || [])
+      } catch (err) {
+        console.error('Error loading promos:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadPromos()
+  }, [token])
 
   const PROMO_TYPES = {
     percentage: { label: t('subscription.plan_free_f3') !== '' ? '% Descuento' : '% Descuento', icon:'%'   },
@@ -1692,13 +1770,47 @@ function PromotionsSection() {
     free_item:  { label:'Item Gratis',   icon:'🎁'  },
   }
 
-  const toggle = id => setPromos(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
-
-  const submit = () => {
+  const submit = async () => {
     if (!form.title || !form.startDate || !form.endDate) return
-    setPromos(prev => [...prev, { ...form, id: Date.now(), discount: parseFloat(form.discount) || 0, minOrder: parseFloat(form.minOrder) || 0, active: true, uses: 0 }])
-    setForm({ title:'', type:'percentage', discount:'', minOrder:'', startDate:'', endDate:'', target:'Todos los clientes' })
-    setShowModal(false)
+    try {
+      const res = await fetchJson('/api/restaurant/promotions', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ ...form, active: true })
+      })
+      setPromos(prev => [...prev, res.data || res])
+      setForm({ title:'', type:'percentage', discount:'', minOrder:'', startDate:'', endDate:'' })
+      setShowModal(false)
+      showToast(t('rd.promo_created'))
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error')
+    }
+  }
+
+  const toggle = async (id) => {
+    try {
+      await fetchJson(`/api/restaurant/promotions/${id}/toggle`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      setPromos(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error')
+    }
+  }
+
+  const deletePromo = async (id) => {
+    if (!window.confirm(t('rd.confirm_delete'))) return
+    try {
+      await fetchJson(`/api/restaurant/promotions/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      setPromos(prev => prev.filter(p => p.id !== id))
+      showToast(t('rd.promo_deleted'))
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error')
+    }
   }
 
   const activeCount = promos.filter(p => p.active).length
@@ -1773,7 +1885,7 @@ function PromotionsSection() {
             </div>
             <div className="flex gap-2 pt-3 border-t border-gray-100">
               <button className="flex-1 py-1.5 border border-gray-200 rounded-lg text-xs font-semibold text-gray-600 hover:bg-gray-50 transition">{t('rd.edit')}</button>
-              <button onClick={() => setPromos(prev => prev.filter(p => p.id !== promo.id))}
+              <button onClick={() => deletePromo(promo.id)}
                 className="flex-1 py-1.5 border border-gray-100 rounded-lg text-xs font-semibold text-gray-400 hover:border-red-200 hover:text-red-500 hover:bg-red-50 transition">
                 {t('rd.delete')}
               </button>
@@ -1847,16 +1959,26 @@ function PromotionsSection() {
   )
 }
 
-function AnalyticsSection() {
+function AnalyticsSection({ stats }) {
   const { t } = useTranslation()
-  const maxHourly  = Math.max(...ANALYTICS_DATA.hourlyOrders.map(h => h.orders))
-  const maxTicket  = Math.max(...ANALYTICS_DATA.avgTicket)
-  const maxRevenue = Math.max(...ANALYTICS_DATA.topDishes.map(d => d.revenue))
+  
+  const analytics = stats?.analytics || {
+    hourlyOrders: [],
+    avgTicket: [],
+    avgTicketMonths: [],
+    topDishes: [],
+    customerTypes: [],
+    kpis: []
+  }
+
+  const maxHourly  = Math.max(...(analytics.hourlyOrders?.map(h => h.orders) || [1]), 1)
+  const maxTicket  = Math.max(...(analytics.avgTicket || [1]), 1)
+  const maxRevenue = Math.max(...(analytics.topDishes?.map(d => d.revenue) || [1]), 1)
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {ANALYTICS_DATA.kpis.map((k, i) => (
+        {analytics.kpis?.map((k, i) => (
           <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
             <p className="text-xs text-gray-400">{k.label}</p>
             <p className="text-2xl font-bold text-gray-800 mt-1">{k.value}</p>
@@ -1874,7 +1996,7 @@ function AnalyticsSection() {
           <span className="text-xs text-gray-400">{t('rd.today')}</span>
         </div>
         <div className="flex items-end gap-1.5 h-40">
-          {ANALYTICS_DATA.hourlyOrders.map((h, i) => {
+          {analytics.hourlyOrders?.map((h, i) => {
             const isPeak = h.orders === maxHourly
             return (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
@@ -1901,11 +2023,11 @@ function AnalyticsSection() {
             <span className="text-xs text-gray-400">{t('rd.last_8_months_label')}</span>
           </div>
           <div className="flex items-end gap-3 h-32">
-            {ANALYTICS_DATA.avgTicket.map((v, i) => (
+            {analytics.avgTicket?.map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
                 <span className="text-xs font-semibold text-gray-600">${v}</span>
                 <div className="w-full rounded-t-lg" style={{ height:`${(v/maxTicket)*85}%`, background: P }} />
-                <span className="text-xs text-gray-400">{ANALYTICS_DATA.avgTicketMonths[i]}</span>
+                <span className="text-xs text-gray-400">{analytics.avgTicketMonths?.[i]}</span>
               </div>
             ))}
           </div>
@@ -1933,7 +2055,7 @@ function AnalyticsSection() {
             </div>
           </div>
           <div className="space-y-2 mt-2">
-            {ANALYTICS_DATA.customerTypes.map((c, i) => (
+            {analytics.customerTypes?.map((c, i) => (
               <div key={i} className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full" style={{ background: c.color }} />
@@ -1955,7 +2077,7 @@ function AnalyticsSection() {
           <span className="text-xs text-gray-400">{t('rd.this_month')}</span>
         </div>
         <div className="space-y-4">
-          {ANALYTICS_DATA.topDishes.map((d, i) => (
+          {analytics.topDishes?.map((d, i) => (
             <div key={i} className="flex items-center gap-4">
               <span className="text-sm font-bold text-gray-300 w-4">{i+1}</span>
               <div className="flex-1 min-w-0">
@@ -1984,20 +2106,35 @@ function AnalyticsSection() {
 function RestaurantInfoSection({ user, showToast }) {
   const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
+  const { token } = useAuthStore()
+
   const [form, setForm] = useState({
-    name:        user?.name        || '',
-    email:       user?.email       || '',
-    phone:       user?.phone       || '',
-    address:     user?.address     || '',
-    city:        user?.city        || 'Popayán',
-    description: user?.description || '',
-    openTime:    '11:00',
-    closeTime:   '22:00',
+    name:        String(user?.restaurant?.name        || user?.name        || ''),
+    email:       String(user?.restaurant?.email       || user?.email       || ''),
+    phone:       String(user?.restaurant?.phone       || user?.phone       || ''),
+    address:     String(user?.restaurant?.address     || (typeof user?.address === 'string' ? user.address : '') || ''),
+    city:        String(user?.restaurant?.city        || 'Popayán'),
+    description: String(user?.restaurant?.description || ''),
+    opening_time: user?.restaurant?.schedules?.[0]?.opening_time?.substring(0, 5) || '11:00',
+    closing_time: user?.restaurant?.schedules?.[0]?.closing_time?.substring(0, 5) || '22:00',
+    is_active:    user?.restaurant?.is_active ?? true,
   })
 
-  const save = () => {
-    setEditing(false)
-    showToast(t('rd.info_saved'))
+  const save = async () => {
+    try {
+      const activeToken = token || localStorage.getItem('token')
+      if (!activeToken) throw new Error('No se encontró el token de autenticación')
+
+      await fetchJson('/api/restaurant/profile', {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${activeToken}` },
+        body: JSON.stringify(form)
+      })
+      setEditing(false)
+      showToast(t('rd.info_saved'))
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error')
+    }
   }
 
   return (
@@ -2050,39 +2187,36 @@ function RestaurantInfoSection({ user, showToast }) {
 
         <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
           <h3 className="font-semibold text-gray-800 mb-4 pb-3 border-b border-gray-100">{t('rd.schedule')}</h3>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">{t('rd.open_from')}</label>
-              <input type="time" value={form.openTime} onChange={e => setForm(p => ({ ...p, openTime: e.target.value }))}
+              <label className="block text-xs font-semibold text-gray-500 mb-1">{t('rd.opening_time')}</label>
+              <input type="time" value={form.opening_time} onChange={e => setForm({ ...form, opening_time: e.target.value })}
                 disabled={!editing}
                 className={`w-full border rounded-xl px-3 py-2 text-sm outline-none transition
                   ${editing ? 'border-gray-200 focus:border-[#e71d1d] bg-white' : 'border-transparent bg-gray-50 text-gray-700'}`} />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1">{t('rd.closes_at')}</label>
-              <input type="time" value={form.closeTime} onChange={e => setForm(p => ({ ...p, closeTime: e.target.value }))}
+              <label className="block text-xs font-semibold text-gray-500 mb-1">{t('rd.closing_time')}</label>
+              <input type="time" value={form.closing_time} onChange={e => setForm({ ...form, closing_time: e.target.value })}
                 disabled={!editing}
                 className={`w-full border rounded-xl px-3 py-2 text-sm outline-none transition
                   ${editing ? 'border-gray-200 focus:border-[#e71d1d] bg-white' : 'border-transparent bg-gray-50 text-gray-700'}`} />
             </div>
           </div>
 
-          <h3 className="font-semibold text-gray-800 mt-6 mb-4 pb-3 border-b border-gray-100">{t('rd.state')}</h3>
-          <div className="space-y-3">
-            {[
-              { label: t('rd.restaurant_active'),  key:'active'   },
-              { label: t('rd.accepts_online'),      key:'online'   },
-              { label: t('rd.delivery_available'),  key:'delivery' },
-            ].map((s, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <span className="text-sm text-gray-700">{s.label}</span>
-                <button disabled={!editing}
-                  className="w-11 h-6 rounded-full transition-colors relative"
-                  style={{ background: P, opacity: editing ? 1 : 0.7 }}>
-                  <span className="absolute top-0.5 translate-x-5 w-5 h-5 bg-white rounded-full shadow" />
-                </button>
-              </div>
-            ))}
+          <h3 className="font-semibold text-gray-800 mt-6 mb-4 pb-3 border-b border-gray-100">Estado de Operación</h3>
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+            <div>
+              <p className="text-sm font-bold text-gray-700">{form.is_active ? 'ABIERTO' : 'CERRADO MANUALMENTE'}</p>
+              <p className="text-xs text-gray-400">Controla si el restaurante aparece disponible para los clientes</p>
+            </div>
+            <button
+              disabled={!editing}
+              onClick={() => setForm({ ...form, is_active: !form.is_active })}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.is_active ? 'bg-green-500' : 'bg-gray-300'} ${!editing && 'opacity-50 cursor-not-allowed'}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
           </div>
         </div>
       </div>
@@ -2098,6 +2232,8 @@ export default function RestaurantDashboard({ user, onLogout }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [orders,      setOrders]      = useState([])
   const [menu,        setMenu]        = useState([])
+  const [reviews,     setReviews]     = useState([])
+  const [categories,  setCategories]  = useState([])
   const [toast,       setToast]       = useState(null)
   const [stats,       setStats]       = useState(null)
   const [loading,     setLoading]     = useState(true)
@@ -2107,6 +2243,8 @@ export default function RestaurantDashboard({ user, onLogout }) {
     if (!token) {
       setOrders([])
       setMenu([])
+      setReviews([])
+      setCategories([])
       setStats(null)
       setLoading(false)
       return
@@ -2115,42 +2253,26 @@ export default function RestaurantDashboard({ user, onLogout }) {
     const loadDashboardData = async () => {
       try {
         setLoading(true)
-        const [dashboardData, ordersData, productsData] = await Promise.all([
-          fetchJson('/api/restaurant/dashboard', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetchJson('/api/restaurant/orders', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetchJson('/api/restaurant/products', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
+        const [dashboardData, ordersData, productsData, reviewsData, categoriesData] = await Promise.all([
+          fetchJson('/api/restaurant/dashboard',  { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetchJson('/api/restaurant/orders',     { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetchJson('/api/restaurant/products',   { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetchJson('/api/restaurant/reviews',    { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetchJson('/api/restaurant/categories', { headers: { 'Authorization': `Bearer ${token}` } }),
         ])
 
-        const ordersList = Array.isArray(ordersData?.data)
-          ? ordersData.data
-          : Array.isArray(ordersData?.data?.data)
-            ? ordersData.data.data
-            : Array.isArray(ordersData?.data?.items)
-              ? ordersData.data.items
-              : []
-
-        const productsList = Array.isArray(productsData?.data)
-          ? productsData.data
-          : Array.isArray(productsData?.data?.data)
-            ? productsData.data.data
-            : Array.isArray(productsData?.data?.items)
-              ? productsData.data.items
-              : []
+        const ordersList   = ordersData?.data || (Array.isArray(ordersData) ? ordersData : [])
+        const productsList = productsData?.data || (Array.isArray(productsData) ? productsData : [])
+        const reviewsList  = reviewsData?.data || (Array.isArray(reviewsData) ? reviewsData : [])
 
         setStats(dashboardData.data || dashboardData)
         setOrders(ordersList.map(mapRestaurantOrder))
         setMenu(productsList.map(mapRestaurantProduct))
+        setReviews(reviewsList.map(mapRestaurantReview))
+        setCategories(categoriesData?.data || categoriesData || [])
       } catch (error) {
-        console.error('Error cargando datos del dashboard:', error)
-        setStats(null)
-        setOrders([])
-        setMenu([])
+        console.error('Error loading dashboard data:', error)
+        showToast(t('rd.error_loading') || 'Error al cargar datos del restaurante')
       } finally {
         setLoading(false)
       }
@@ -2174,36 +2296,87 @@ export default function RestaurantDashboard({ user, onLogout }) {
 
   const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 3000) }
 
+  const handleReplyReview = async (id, reply) => {
+    try {
+      await fetchJson(`/api/restaurant/reviews/${id}/reply`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ reply })
+      })
+      setReviews(prev => prev.map(r => r.id === id ? { ...r, response: reply } : r))
+      showToast(t('rd.reply_sent') || 'Respuesta enviada correctamente')
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error')
+    }
+  }
+
+  const handleUpdateStatus = async (id, status) => {
+    try {
+      await fetchJson(`/api/restaurant/orders/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status })
+      })
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o))
+      showToast(t('rd.order_updated') || 'Pedido actualizado correctamente')
+    } catch (err) {
+      console.error('Error updating order status:', err)
+      showToast('Error: ' + err.message, 'error')
+    }
+  }
+
   const handleAdvance = id => {
-    setOrders(prev => prev.map(o => o.id === id && NEXT_STATUS[o.status] ? { ...o, status: NEXT_STATUS[o.status] } : o))
-    showToast(t('rd.order_updated'))
+    const order = orders.find(o => o.id === id)
+    if (!order) return
+    const sequence = ['pending', 'confirmed', 'preparing', 'on_the_way', 'delivered']
+    const currentIndex = sequence.indexOf(order.status)
+    if (currentIndex !== -1 && currentIndex < sequence.length - 1) {
+      handleUpdateStatus(id, sequence[currentIndex + 1])
+    }
   }
 
   const handleAdd = async item => {
     try {
-      // Si no tiene ID, es un nuevo producto que debe enviarse a la API
-      if (!item.id || item.id === Date.now() || String(item.id).startsWith('temp')) {
+      let category_id = item.category_id
+
+      // Si es una nueva categoría, primero la creamos
+      if (item.newCategoryName) {
+        try {
+          const catRes = await fetchJson('/api/restaurant/categories', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ name: item.newCategoryName })
+          })
+          const newCat = catRes.data || catRes
+          category_id = newCat.id
+          setCategories(prev => [...prev, newCat])
+        } catch (catErr) {
+          console.error('Error al crear categoría:', catErr)
+          showToast('Error al crear categoría: ' + catErr.message, 'error')
+          return
+        }
+      }
+
+      const formData = new FormData()
+      formData.append('name', item.name)
+      formData.append('description', item.description || '')
+      formData.append('price', item.price)
+      formData.append('category_id', category_id)
+      formData.append('is_available', 1)
+      
+      if (item.file) {
+        formData.append('image', item.file)
+      }
+
+      if (!item.id || String(item.id).startsWith('temp') || item.id > 1000000000) {
         const response = await fetchJson('/api/restaurant/products', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({
-            name: item.name,
-            description: item.description || '',
-            price: parseFloat(item.price),
-            category_id: item.category_id || null,
-            image: item.img || null,
-            is_available: item.active !== false,
-            is_featured: false,
-          }),
+          body: formData
         })
-        
-        if (response.success && response.data) {
-          const newProduct = response.data
-          setMenu(prev => [newProduct, ...prev])
-          showToast(`${item.name} ${t('rd.added_success')}`)
-        } else {
-          showToast(`Error: ${response.message || 'No se pudo crear el producto'}`)
-        }
+        const newProd = mapRestaurantProduct(response.data || response)
+        setMenu(prev => [newProd, ...prev])
+        showToast(t('rd.dish_added'))
       } else {
         // Producto existente, solo actualizar estado local
         setMenu(prev => [item, ...prev])
@@ -2211,7 +2384,8 @@ export default function RestaurantDashboard({ user, onLogout }) {
       }
     } catch (error) {
       console.error('Error al agregar producto:', error)
-      showToast(`Error: ${error.message}`)
+      const msg = error.response?.data?.message || error.message || 'Error desconocido'
+      showToast(`Error: ${msg}`, 'error')
     }
   }
 
@@ -2239,7 +2413,14 @@ export default function RestaurantDashboard({ user, onLogout }) {
   const handleLogout = () => { onLogout?.(); navigate('/') }
 
   const { title, breadcrumb } = PAGE_META[page]
-  const props = { orders, menu, onAdvance: handleAdvance, onAdd: handleAdd, onDelete: handleDelete, user, stats, loading }
+  const props = { 
+    orders, menu, reviews, categories, 
+    onAdvance: handleAdvance, 
+    onStatusChange: handleUpdateStatus,
+    onAdd: handleAdd, onDelete: handleDelete, 
+    onReply: handleReplyReview,
+    user, stats, loading, showToast, t
+  }
 
   return (
     <div className="page-restaurant-dashboard flex min-h-screen" style={{ background: BG }}>
@@ -2253,23 +2434,22 @@ export default function RestaurantDashboard({ user, onLogout }) {
               {breadcrumb && <p className="text-xs text-gray-400">{breadcrumb.join(' / ')}</p>}
             </div>
           </div>
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-4 py-3 shadow-sm">
+          <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white px-5 py-4 shadow-sm">
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-gray-400">AppiFood</p>
-              <h1 className="text-xl font-bold text-gray-800">{title}</h1>
-              {breadcrumb && <p className="text-xs text-gray-400 mt-1">{breadcrumb.join(' / ')}</p>}
+              <p className="text-xs uppercase tracking-[0.2em] text-gray-400 mb-1">AppiFood Restaurant</p>
+              <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+              {breadcrumb && <p className="text-sm text-gray-500 mt-1">{breadcrumb.join(' / ')}</p>}
             </div>
-            <LanguageSwitcher />
           </div>
           {page === 'dashboard'       && <DashboardSection  {...props} />}
           {page === 'orders'          && <OrdersSection     {...props} />}
           {page === 'messages'        && <MessagesSection />}
           {page === 'calendar'        && <CalendarSection />}
           {page === 'menu'            && <MenuSection       {...props} />}
-          {page === 'inventory'       && <InventorySection />}
-          {page === 'promotions'      && <PromotionsSection />}
-          {page === 'analytics'       && <AnalyticsSection />}
-          {page === 'reviews'         && <ReviewsSection />}
+          {page === 'inventory'       && <InventorySection token={token} showToast={showToast} />}
+          {page === 'promotions'      && <PromotionsSection token={token} showToast={showToast} />}
+          {page === 'analytics'       && <AnalyticsSection stats={stats} />}
+          {page === 'reviews'         && <ReviewsSection    {...props} />}
           {page === 'restaurant-info' && <RestaurantInfoSection user={user} showToast={showToast} />}
         </main>
       </div>

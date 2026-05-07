@@ -387,9 +387,9 @@ class RestaurantSeeder extends Seeder
 
             $alwaysOpen = $data['always_open'] ?? false;
             $alwaysClosed = $data['always_closed'] ?? false;
-            $openingTime = $data['opening_time'] ?? '08:00:00';
-            $closingTime = $data['closing_time'] ?? '22:00:00';
-            $closedDays = $data['closed_days'] ?? ['sunday'];
+            $openingTime = $data['opening_time'] ?? '11:30:00';
+            $closingTime = $data['closing_time'] ?? '21:45:00';
+            $closedDays = $data['closed_days'] ?? [];
 
             unset($data['owner_email'], $data['categories']);
             unset($data['always_open'], $data['always_closed'], $data['opening_time'], $data['closing_time'], $data['closed_days']);

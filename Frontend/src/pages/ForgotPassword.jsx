@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Footer from '../components/Footer'
 import { resetPassword, sendPasswordResetLink } from '../api/auth'
 
 export default function ForgotPassword() {
+  const { t } = useTranslation()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const token = searchParams.get('token') || ''
@@ -40,14 +42,14 @@ export default function ForgotPassword() {
           password: form.password,
           password_confirmation: form.password_confirmation,
         })
-        setMessage('Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión.')
+        setMessage(t('forgotPassword.reset_success') || 'Tu contraseña se actualizó correctamente. Ya puedes iniciar sesión.')
         setTimeout(() => navigate('/login'), 1500)
       } else {
         await sendPasswordResetLink(form.email)
-        setMessage('Te enviamos un correo con el enlace para restablecer tu contraseña.')
+        setMessage(t('forgotPassword.link_sent') || 'Te enviamos un correo con el enlace para restablecer tu contraseña.')
       }
     } catch (requestError) {
-      const responseMessage = requestError?.response?.data?.message || 'No se pudo procesar la solicitud. Intenta nuevamente.'
+      const responseMessage = requestError?.response?.data?.message || (t('forgotPassword.error_generic') || 'No se pudo procesar la solicitud. Intenta nuevamente.')
       setError(responseMessage)
     } finally {
       setLoading(false)
@@ -61,13 +63,13 @@ export default function ForgotPassword() {
         <div className="relative z-10 w-full max-w-5xl grid lg:grid-cols-[1.1fr_0.9fr] gap-8 items-center">
           <div className="text-gray-900 hidden lg:block">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-red-100 text-[#FF4B3E] font-bold text-sm shadow-sm">
-              <i className="fas fa-key" /> Recuperación segura
+              <i className="fas fa-key" /> {t('forgotPassword.badge') || 'Recuperación segura'}
             </span>
             <h1 className="mt-6 text-5xl font-black leading-tight">
-              Recupera el acceso a tu cuenta en minutos.
+              {t('forgotPassword.title') || 'Recupera el acceso a tu cuenta en minutos.'}
             </h1>
             <p className="mt-4 text-lg text-gray-600 max-w-xl">
-              Te guiamos para solicitar el enlace de restablecimiento o para crear una contraseña nueva si ya recibiste el token.
+              {t('forgotPassword.subtitle') || 'Te guiamos para solicitar el enlace de restablecimiento o para crear una contraseña nueva si ya recibiste el token.'}
             </p>
           </div>
 
@@ -76,12 +78,12 @@ export default function ForgotPassword() {
               <div className="text-center mb-6">
                 <Link to="/" className="font-['Satisfy'] text-4xl text-[#FF4B3E]">AppiFood</Link>
                 <h2 className="mt-3 text-2xl font-black text-gray-900">
-                  {isResetMode ? 'Crear nueva contraseña' : '¿Olvidaste tu contraseña?'}
+                  {isResetMode ? (t('forgotPassword.create_new') || 'Crear nueva contraseña') : (t('forgotPassword.forgot_question') || '¿Olvidaste tu contraseña?')}
                 </h2>
                 <p className="mt-2 text-sm text-gray-500">
                   {isResetMode
-                    ? 'Escribe la nueva clave que usarás para entrar a tu cuenta.'
-                    : 'Ingresa tu correo y te enviaremos un enlace de recuperación.'}
+                    ? (t('forgotPassword.reset_hint') || 'Escribe la nueva clave que usarás para entrar a tu cuenta.')
+                    : (t('forgotPassword.forgot_hint') || 'Ingresa tu correo y te enviaremos un enlace de recuperación.')}
                 </p>
               </div>
 
@@ -99,7 +101,7 @@ export default function ForgotPassword() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Correo electrónico</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">{t('forgotPassword.email') || 'Correo electrónico'}</label>
                   <input
                     type="email"
                     name="email"
@@ -115,7 +117,7 @@ export default function ForgotPassword() {
                 {isResetMode && (
                   <>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Nueva contraseña</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">{t('forgotPassword.new_password') || 'Nueva contraseña'}</label>
                       <input
                         type="password"
                         name="password"
@@ -128,7 +130,7 @@ export default function ForgotPassword() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">Confirmar contraseña</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">{t('forgotPassword.confirm_password') || 'Confirmar contraseña'}</label>
                       <input
                         type="password"
                         name="password_confirmation"
@@ -148,15 +150,15 @@ export default function ForgotPassword() {
                   disabled={loading}
                   className="w-full rounded-2xl py-3.5 bg-[#FF4B3E] text-white font-black hover:bg-[#e03a2d] transition disabled:opacity-60"
                 >
-                  {loading ? 'Procesando...' : isResetMode ? 'Restablecer contraseña' : 'Enviar enlace de recuperación'}
+                  {loading ? (t('forgotPassword.processing') || 'Procesando...') : isResetMode ? (t('forgotPassword.submit_reset') || 'Restablecer contraseña') : (t('forgotPassword.submit_link') || 'Enviar enlace de recuperación')}
                 </button>
 
                 <div className="flex flex-col sm:flex-row gap-3 text-sm text-center justify-between">
                   <Link to="/login" className="text-[#FF4B3E] font-semibold hover:underline">
-                    Volver a iniciar sesión
+                    {t('forgotPassword.back_to_login') || 'Volver a iniciar sesión'}
                   </Link>
                   <Link to="/support" className="text-gray-600 hover:text-[#FF4B3E]">
-                    ¿Necesitas ayuda?
+                    {t('forgotPassword.need_help') || '¿Necesitas ayuda?'}
                   </Link>
                 </div>
               </form>

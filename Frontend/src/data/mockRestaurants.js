@@ -4,7 +4,7 @@ import { RESTAURANT_MENUS } from './restaurantMenus';
 const BASE_LOCATION = 'Popayán, Cauca';
 
 const buildExtraProducts = (restaurant, index) => {
-  const baseId = (restaurant.id * 1000) + (index * 100);
+  const baseId = restaurant.id * 1000 + index * 100;
   const sharedDesserts = [
     { suffix: 1, name: 'Postre de la Casa', category: 'postres', price: 12000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
     { suffix: 2, name: 'Brownie con Helado', category: 'postres', price: 15000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
@@ -38,7 +38,7 @@ const buildExtraProducts = (restaurant, index) => {
       { suffix: 50, name: 'Combo Wok Familiar', category: 'combos', price: 46000, image: 'https://images.unsplash.com/photo-1609617529014-97deb8aab433?w=400' },
       { suffix: 51, name: 'Arroz Frito Especial', category: 'asian', price: 24000, image: 'https://images.unsplash.com/photo-1609617529014-97deb8aab433?w=400' },
     ],
-    dessert: [
+    postres: [
       { suffix: 60, name: 'Combo Postre + Café', category: 'combos', price: 18000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
       { suffix: 61, name: 'Cheesecake de Fresa', category: 'postres', price: 14000, image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400' },
     ],
@@ -80,6 +80,15 @@ const enrichRestaurant = (restaurant, index) => {
   const deliveryMin = deliveryTimeMatch ? Number(deliveryTimeMatch[1]) : restaurant.isOpen ? 15 + (index % 4) * 5 : 30;
   const deliveryMax = deliveryTimeMatch ? Number(deliveryTimeMatch[2]) : deliveryMin + 10;
 
+  const schedules = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => ({
+    day,
+    is_closed: !restaurant.isOpen,
+    opening_time: restaurant.isOpen ? '08:00' : null,
+    closing_time: restaurant.isOpen ? '22:30' : null,
+  }));
+
+  const allProducts = restaurant.products ? [...restaurant.products, ...buildExtraProducts(restaurant, index)] : buildExtraProducts(restaurant, index);
+
   return {
     ...restaurant,
     banner: restaurant.image,
@@ -91,30 +100,13 @@ const enrichRestaurant = (restaurant, index) => {
     delivery_time_max: deliveryMax,
     delivery_cost: restaurant.delivery,
     minimum_order: 25000 + index * 1000,
-    today_schedule: restaurant.isOpen
-      ? {
-        day: 'hoy',
-        opening_time: '08:00',
-        closing_time: '22:30',
-        is_open_now: true,
-      }
-      : {
-        day: 'hoy',
-        opening_time: '11:00',
-        closing_time: '21:00',
-        is_open_now: false,
-      },
-    menu_categories: restaurant.products
-      ? Array.from(new Set([...restaurant.products, ...buildExtraProducts(restaurant, index)].map((product) => product.category)))
-          .filter(Boolean)
-          .map((category, categoryIndex) => ({
-            id: `${restaurant.id}-${categoryIndex}`,
-            name: category,
-          }))
-      : [],
-    products: restaurant.products
-      ? [...restaurant.products, ...buildExtraProducts(restaurant, index)]
-      : buildExtraProducts(restaurant, index),
+    schedules,
+    today_schedule: schedules[new Date().getDay() === 0 ? 6 : new Date().getDay() - 1] || null,
+    menu_categories: Array.from(new Set(allProducts.map((product) => product.category))).filter(Boolean).map((category, categoryIndex) => ({
+      id: `${restaurant.id}-${categoryIndex}`,
+      name: category,
+    })),
+    products: allProducts,
     total_reviews: 128 + index * 14,
     latitude: 2.444 + index * 0.002,
     longitude: -76.606 + index * 0.002,
@@ -535,4 +527,4 @@ const RAW_MOCK_RESTAURANTS = [
   },
 ];
 
-export const MOCK_RESTAURANTS = [];
+export const MOCK_RESTAURANTS = RAW_MOCK_RESTAURANTS.map((restaurant, index) => enrichRestaurant(restaurant, index));

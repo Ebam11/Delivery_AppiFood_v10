@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getAssistantReply, supportShortcuts } from '../utils/supportAssistant'
 
 const AI_ENDPOINT = import.meta.env.VITE_AI_ASSISTANT_URL || '/api/support/chat'
@@ -41,14 +42,15 @@ async function resolveAnswer(message, history) {
   return getAssistantReply(message)
 }
 
-export default function SupportChatbot({ embedded = false }) {
+export default function SupportChatbot({ embedded = false, startOpen = false }) {
+  const { t } = useTranslation()
   const location = useLocation()
   const bottomRef = useRef(null)
-  const [open, setOpen] = useState(embedded)
+  const [open, setOpen] = useState(embedded || startOpen)
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [messages, setMessages] = useState([
-    makeMessage('assistant', 'Hola, soy el asistente de AppiFood. Puedo ayudarte con pedidos, pagos, direcciones y suscripciones.'),
+    makeMessage('assistant', t('supportChatbot.welcome') || 'Hola, soy el asistente de AppiFood. Puedo ayudarte con pedidos, pagos, direcciones y suscripciones.'),
   ])
 
   const hiddenRoutes = ['/support', '/user/support', '/coupons']
@@ -82,7 +84,7 @@ export default function SupportChatbot({ embedded = false }) {
     } catch (error) {
       setMessages((current) => [
         ...current,
-        makeMessage('assistant', 'No pude procesar tu mensaje en este momento. Abre el centro de soporte o intenta de nuevo.'),
+        makeMessage('assistant', t('supportChatbot.error') || 'No pude procesar tu mensaje en este momento. Abre el centro de soporte o intenta de nuevo.'),
       ])
     } finally {
       setIsSending(false)
@@ -90,15 +92,15 @@ export default function SupportChatbot({ embedded = false }) {
   }
 
   const panel = (
-    <div className={`component-support-chatbot bg-white border border-gray-200 shadow-2xl overflow-hidden ${embedded ? 'rounded-3xl' : 'rounded-3xl w-[min(92vw,420px)] max-h-[min(78vh,720px)]'}`}>
-      <div className="bg-gradient-to-r from-[#FF4B3E] to-[#FF7A59] text-white p-4 flex items-center justify-between gap-4">
+    <div className={`component-support-chatbot bg-white border border-gray-200 shadow-2xl overflow-hidden ${embedded ? 'rounded-3xl' : 'rounded-2xl w-[min(88vw,380px)] max-h-[min(70vh,680px)]'}`}>
+      <div className="bg-white text-gray-900 border-b border-gray-100 p-4 flex items-center justify-between gap-4">
         <div>
-          <p className="font-black text-lg">Asistente AppiFood</p>
-          <p className="text-white/85 text-xs">Soporte inteligente y respuestas rápidas</p>
+          <p className="font-black text-lg">{t('supportChatbot.title') || 'Asistente IA'}</p>
+          <p className="text-gray-500 text-xs">{t('supportChatbot.subtitle') || 'Respuestas rápidas sobre pedidos, pagos y soporte'}</p>
         </div>
         {!embedded && (
-          <button onClick={() => setOpen(false)} className="w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 transition flex items-center justify-center">
-            <i className="fas fa-minus text-sm" />
+          <button onClick={() => setOpen(false)} className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 transition flex items-center justify-center text-gray-700">
+            <i className="fas fa-chevron-down text-sm" />
           </button>
         )}
       </div>
@@ -131,7 +133,7 @@ export default function SupportChatbot({ embedded = false }) {
           {isSending && (
             <div className="flex justify-start">
               <div className="bg-white text-gray-500 border border-gray-100 rounded-2xl rounded-bl-md px-4 py-3 text-sm shadow-sm">
-                Escribiendo respuesta...
+                {t('supportChatbot.typing') || 'Escribiendo respuesta...'}
               </div>
             </div>
           )}
@@ -157,7 +159,7 @@ export default function SupportChatbot({ embedded = false }) {
               value={input}
               onChange={(event) => setInput(event.target.value)}
               onKeyDown={(event) => event.key === 'Enter' && sendMessage(input)}
-              placeholder="Escribe tu pregunta..."
+              placeholder={t('supportChatbot.placeholder') || "Escribe tu pregunta..."}
               className="flex-1 min-w-0 px-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#FF4B3E]/20 focus:border-[#FF4B3E] text-sm"
             />
             <button
@@ -176,14 +178,14 @@ export default function SupportChatbot({ embedded = false }) {
   if (embedded) return panel
 
   return (
-    <div className="component-support-chatbot-float fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-[80] flex flex-col items-end gap-3">
+    <div className="component-support-chatbot-float fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-40 flex flex-col items-end gap-3">
       {open ? (
         panel
       ) : (
         <button
           onClick={() => setOpen(true)}
           className="group w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-r from-[#FF4B3E] to-[#FF7A59] text-white border-2 border-white shadow-xl shadow-[#FF4B3E]/30 flex items-center justify-center hover:scale-105 transition"
-          aria-label="Abrir asistente de soporte"
+          aria-label={t('supportChatbot.open_aria') || "Abrir asistente de soporte"}
         >
           <i className="fas fa-message text-xl group-hover:scale-110 transition" />
         </button>

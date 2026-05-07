@@ -206,7 +206,11 @@ export function CartProvider({ children }) {
       : appliedCoupon.value
     : 0
   // El domicilio solo aplica cuando hay al menos un producto en el carrito.
-  const total    = subtotal - discount + (cart.length ? DELIVERY : 0)
+  const currentDeliveryCost = (isAuthenticated && typeof serverCart?.delivery_cost !== 'undefined')
+    ? Number(serverCart.delivery_cost)
+    : DELIVERY
+
+  const total    = subtotal - discount + (cart.length ? currentDeliveryCost : 0)
   const count    = useMemo(() => {
     if (isAuthenticated && typeof serverCart?.total_items !== 'undefined' && serverCart?.total_items !== null) {
       return Number(serverCart.total_items)

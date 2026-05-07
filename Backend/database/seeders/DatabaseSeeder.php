@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             FavoriteSeeder::class,
             NotificationSeeder::class,
             BannerSeeder::class,
+            RestaurantProductsBackfillSeeder::class,
         ]);
     }
 }

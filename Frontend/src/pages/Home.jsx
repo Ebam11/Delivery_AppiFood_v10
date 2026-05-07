@@ -2,6 +2,7 @@
 // src/pages/HomePage.jsx
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import ProductModal from '../components/ProductModal'
 import RestaurantCard from '../components/RestaurantCard'
 import Footer from '../components/Footer'
@@ -9,6 +10,8 @@ import { useFavoritesStore } from '../store/favoritesStore'
 import { useAuthStore } from '../store/authStore'
 import { fetchJson } from '../api/fetchJson'
 import { MOCK_RESTAURANTS } from '../data/mockRestaurants'
+import { COUPONS } from '../data/coupons'
+import './Home.css'
 
 const STATIC_RESTAURANTS = []
 
@@ -54,63 +57,10 @@ const CATEGORIES = [
 
 const fmt = n => Number(n).toLocaleString('es-CO')
 
-const S = {
-  /* ── colores ── */
-  red:    '#FF4B3E',
-  redDk:  '#e03a2d',
-  dark:   '#1a1a1a',
 
-  /* ── secciones ── */
-  section: { padding: '0', width: '100%' },
-  wrap:    { width: '100%', paddingLeft: 'clamp(1rem, 5vw, 2rem)', paddingRight: 'clamp(1rem, 5vw, 2rem)' },
-
-  /* ── héroe ── */
-  hero: {
-    minHeight: 'calc(100vh - 64px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-    background: 'linear-gradient(135deg,#1a1a1a 0%,#2d1515 50%,#3d1a00 100%)',
-  },
-  heroBg: {
-    position:'absolute', inset:0,
-    backgroundImage: 'url(/images/hero-bg.jpg)',
-    backgroundSize:'cover', backgroundPosition:'center',
-    opacity: 0.15,
-  },
-
-  /* ── botones ── */
-  btnRed: {
-    display:'inline-flex', alignItems:'center', gap:8,
-    padding:'12px 24px', background:'#FF4B3E', color:'white',
-    borderRadius:999, fontWeight:700, border:'none', cursor:'pointer',
-    textDecoration:'none', fontSize:14, transition:'background 0.2s',
-  },
-  btnOutline: {
-    display:'inline-flex', alignItems:'center', gap:8,
-    padding:'10px 22px', background:'transparent', color:'white',
-    border:'2px solid white', borderRadius:999,
-    fontWeight:700, cursor:'pointer', textDecoration:'none',
-    fontSize:14, transition:'all 0.2s',
-  },
-
-  /* ── pills de categoría ── */
-  pillActive: {
-    padding:'6px 16px', borderRadius:999,
-    background:'#FF4B3E', color:'white',
-    fontWeight:700, fontSize:13, border:'none', cursor:'pointer',
-  },
-  pillInactive: {
-    padding:'6px 16px', borderRadius:999,
-    background:'white', color:'#555',
-    fontWeight:600, fontSize:13,
-    border:'1.5px solid #e5e5e5', cursor:'pointer',
-  },
-}
 
 export default function HomePage({ isAuth }) {
+  const { t } = useTranslation()
   const {
     stats = { restaurants:'6+', avg_delivery:'25 min', avg_rating:'4.8' },
   } = {}
@@ -142,6 +92,7 @@ export default function HomePage({ isAuth }) {
     return items.slice(0, 12)
   })
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const couponCarouselRef = useRef(null)
 
   // Cargar restaurantes y productos del servidor
   useEffect(() => {
@@ -224,6 +175,15 @@ export default function HomePage({ isAuth }) {
       return
     }
     await toggleFavorite(restaurantId, token)
+  }
+
+  const scrollCoupons = (direction) => {
+    if (!couponCarouselRef.current) return
+    const amount = couponCarouselRef.current.clientWidth * 0.72
+    couponCarouselRef.current.scrollBy({
+      left: direction * amount,
+      behavior: 'smooth',
+    })
   }
   
   // Carrusel de hero
@@ -325,8 +285,7 @@ export default function HomePage({ isAuth }) {
         }} />
 
         {/* Contenido */}
-        <div style={{
-          ...S.wrap,
+        <div className="home-wrap" style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -339,7 +298,7 @@ export default function HomePage({ isAuth }) {
         }}>
           {/* Contenido Slide */}
           <div style={{ maxWidth: 600, textAlign: 'center' }}>
-            <p style={{ color:S.red, fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:12, animation: 'fadeInDown 0.6s ease' }}>
+            <p style={{ color: '#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:12, animation: 'fadeInDown 0.6s ease' }}>
               {heroSlides[heroIdx].subtitle}
             </p>
             <h1 style={{ fontSize:'clamp(2.2rem,5vw,3.5rem)', fontWeight:900, color:'white', lineHeight:1.1, marginBottom:16, whiteSpace:'pre-line', animation: 'fadeInDown 0.8s ease 0.1s backwards' }}>
@@ -349,7 +308,7 @@ export default function HomePage({ isAuth }) {
             {/* Badge Descuento */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 24, animation: 'fadeInUp 0.6s ease 0.2s backwards' }}>
               <span style={{
-                background: S.red,
+                background: '#FF4B3E',
                 color: 'white',
                 padding: '10px 18px',
                 borderRadius: 12,
@@ -365,11 +324,11 @@ export default function HomePage({ isAuth }) {
             </div>
 
             <div style={{ display:'flex', gap:12, flexWrap:'wrap', justifyContent: 'center', marginBottom:40, animation: 'fadeInUp 0.6s ease 0.3s backwards' }}>
-              <a href="#fastfoods" style={S.btnRed}>
-                <i className="fas fa-utensils" /> Ordenar ahora
+              <a href="#fastfoods" className="home-btn-red">
+                <i className="fas fa-utensils" /> {t('home.order_now') || "Ordenar ahora"}
               </a>
-              <a href="#popular" style={S.btnOutline}>
-                <i className="fas fa-store" /> Ver restaurantes
+              <a href="#popular" className="home-btn-outline">
+                <i className="fas fa-store" /> {t('home.view_restaurants') || "Ver restaurantes"}
               </a>
             </div>
 
@@ -384,10 +343,10 @@ export default function HomePage({ isAuth }) {
                     height: 10,
                     borderRadius: 999,
                     border: 'none',
-                    background: heroIdx === i ? S.red : 'rgba(255,255,255,0.2)',
+                    background: heroIdx === i ? '#FF4B3E' : 'rgba(255,255,255,0.2)',
                     cursor: 'pointer',
                     transition: 'all 0.4s ease',
-                    boxShadow: heroIdx === i ? `0 0 20px ${S.red}80` : 'none',
+                    boxShadow: heroIdx === i ? `0 0 20px rgba(255,75,62,0.5)` : 'none',
                     padding: 0,
                   }}
                   title={`Ir a oferta ${i + 1}`}
@@ -411,36 +370,24 @@ export default function HomePage({ isAuth }) {
         </div>
       </section>
 
-      {/* Animaciones CSS */}
-      <style>{`
-        @keyframes fadeInDown {
-          from { opacity: 0; transform: translateY(-20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-
       {/* ══════════ RESTAURANTES POPULARES ══════════ */}
-      <section id="popular" style={{ ...S.section, padding:'48px 0 64px', background:'white' }}>
-        <div style={S.wrap}>
+      <section id="popular" className="home-section" style={{ padding:'48px 0 64px', background:'white' }}>
+        <div className="home-wrap">
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-end', marginBottom:40 }}>
             <div style={{ animation: 'fadeInDown 0.6s ease' }}>
-              <p style={{ color:S.red, fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>
-                Destacados
+              <p style={{ color:'#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:6 }}>
+                {t('home.featured') || "Destacados"}
               </p>
               <h2 style={{ fontSize:'clamp(1.8rem,3vw,2.4rem)', fontWeight:900, color:'#111', margin:0 }}>
-                Restaurantes Populares
+                {t('home.popular_restaurants') || "Restaurantes Populares"}
               </h2>
             </div>
             <div style={{ display:'flex', gap:12 }}>
               {[[-1,'←'],[1,'→']].map(([dir, lbl]) => (
                 <button key={dir} onClick={() => slide(dir)}
                   style={{
-                    width:44, height:44, borderRadius:'50%', border:`2px solid ${dir===1 ? S.red : '#e5e5e5'}`,
-                    background: dir===1 ? S.red : 'white',
+                    width:44, height:44, borderRadius:'50%', border:`2px solid ${dir===1 ? '#FF4B3E' : '#e5e5e5'}`,
+                    background: dir===1 ? '#FF4B3E' : 'white',
                     color: dir===1 ? 'white' : '#555',
                     fontWeight:700, fontSize:16, cursor:'pointer',
                     display:'flex', alignItems:'center', justifyContent:'center',
@@ -449,8 +396,8 @@ export default function HomePage({ isAuth }) {
                   onMouseEnter={(e) => {
                     e.target.style.transform = 'scale(1.1)'
                     if (dir === -1) {
-                      e.target.style.background = S.red
-                      e.target.style.borderColor = S.red
+                      e.target.style.background = '#FF4B3E'
+                      e.target.style.borderColor = '#FF4B3E'
                       e.target.style.color = 'white'
                     }
                   }}
@@ -480,7 +427,7 @@ export default function HomePage({ isAuth }) {
                 }}>
                   <div style={{
                     width:50, height:50,
-                    border:'4px solid ' + S.red,
+                    border:'4px solid #FF4B3E',
                     borderTop: '4px solid transparent',
                     borderRadius:'50%',
                     animation: 'spin 1s linear infinite'
@@ -516,17 +463,147 @@ export default function HomePage({ isAuth }) {
         </div>
       </section>
 
+      {/* ══════════ CUPONES ══════════ */}
+      <section className="home-section" style={{ background: 'linear-gradient(135deg, #fff8f5 0%, #ffffff 100%)', padding: '22px 0 54px' }}>
+        <div className="home-wrap">
+          <div style={{ display:'flex', alignItems:'end', justifyContent:'space-between', gap:16, flexWrap:'wrap', marginBottom:18 }}>
+            <div>
+              <p style={{ color:'#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8 }}>
+                <i className="fas fa-ticket-alt"></i> {t('home.saveMore') || "Ahorra más en tus pedidos"}
+              </p>
+              <h2 style={{ fontSize:'clamp(1.8rem,3vw,2.4rem)', fontWeight:900, color:'#111', margin:'0 0 8px' }}>
+                {t('home.featuredCoupons') || "Cupones destacados"}
+              </h2>
+              <p style={{ color:'#666', fontSize:16, maxWidth:720 }}>
+                {t('home.carouselHint') || "Arrastra el carrusel o usa las flechas para descubrir promociones rápidas y fáciles de aplicar."}
+              </p>
+            </div>
+
+            <div style={{ display:'flex', gap:10 }}>
+              <button
+                type="button"
+                onClick={() => scrollCoupons(-1)}
+                aria-label="Ver cupones anteriores"
+                style={{
+                  width:44,
+                  height:44,
+                  borderRadius:999,
+                  border:'1px solid #f0d8d4',
+                  background:'white',
+                  color:'#444',
+                  boxShadow:'0 8px 20px rgba(0,0,0,0.06)',
+                  cursor:'pointer',
+                }}
+              >
+                <i className="fas fa-chevron-left"></i>
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollCoupons(1)}
+                aria-label="Ver siguientes cupones"
+                style={{
+                  width:44,
+                  height:44,
+                  borderRadius:999,
+                  border:'1px solid #f0d8d4',
+                  background:'white',
+                  color:'#444',
+                  boxShadow:'0 8px 20px rgba(0,0,0,0.06)',
+                  cursor:'pointer',
+                }}
+              >
+                <i className="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <div
+            ref={couponCarouselRef}
+            style={{
+              display:'grid',
+              gridAutoFlow:'column',
+              gridAutoColumns:'minmax(290px, 1fr)',
+              gap:18,
+              overflowX:'auto',
+              paddingBottom:8,
+              scrollSnapType:'x mandatory',
+              scrollbarWidth:'none',
+              msOverflowStyle:'none',
+            }}
+          >
+            {COUPONS.map((coupon, idx) => (
+              <article
+                key={coupon.code}
+                style={{
+                  scrollSnapAlign:'start',
+                  position:'relative',
+                  overflow:'hidden',
+                  borderRadius:24,
+                  background:`linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.98))`,
+                  border:'1px solid rgba(255,75,62,0.09)',
+                  boxShadow:'0 14px 34px rgba(0,0,0,0.08)',
+                  minHeight:240,
+                }}
+              >
+                <div style={{ position:'absolute', inset:0, background:`linear-gradient(135deg, ${idx % 2 === 0 ? 'rgba(255,75,62,0.12)' : 'rgba(255,184,77,0.12)'} 0%, transparent 55%)` }} />
+                <div style={{ position:'relative', padding:20, display:'flex', flexDirection:'column', height:'100%' }}>
+                  <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:12 }}>
+                    <div>
+                      <span style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'6px 12px', borderRadius:999, background:'rgba(255,255,255,0.9)', color:'#FF4B3E', fontWeight:800, fontSize:11, border:'1px solid rgba(255,75,62,0.12)' }}>
+                        <i className={coupon.icon}></i> {coupon.badge}
+                      </span>
+                      <h3 style={{ margin:'12px 0 6px', fontSize:22, lineHeight:1.05, fontWeight:900, color:'#111' }}>{coupon.title}</h3>
+                      <p style={{ margin:0, color:'#666', fontSize:14, maxWidth:240 }}>{coupon.description}</p>
+                    </div>
+                    <div style={{ flex:'0 0 auto', minWidth:92, textAlign:'center', padding:'12px 10px', borderRadius:18, background:'linear-gradient(135deg, #FF4B3E 0%, #ff705f 100%)', color:'white', boxShadow:'0 10px 22px rgba(255,75,62,0.24)' }}>
+                      <div style={{ fontSize:12, fontWeight:800, letterSpacing:'0.06em', opacity:0.95 }}>AHORRA</div>
+                      <div style={{ fontSize:18, fontWeight:900, marginTop:4 }}>{coupon.benefit}</div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop:'auto', paddingTop:18, display:'flex', alignItems:'center', justifyContent:'space-between', gap:12, flexWrap:'wrap' }}>
+                    <div style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 12px', borderRadius:16, background:'rgba(255,255,255,0.9)', border:'1px dashed rgba(255,75,62,0.25)' }}>
+                      <code style={{ fontWeight:900, letterSpacing:'0.16em', color:'#222' }}>{coupon.code}</code>
+                    </div>
+                    <Link
+                      to="/coupons"
+                      style={{
+                        display:'inline-flex',
+                        alignItems:'center',
+                        gap:8,
+                        padding:'11px 16px',
+                        borderRadius:999,
+                        background:'#111',
+                        color:'white',
+                        fontWeight:800,
+                        textDecoration:'none',
+                        boxShadow:'0 10px 24px rgba(17,17,17,0.2)',
+                      }}
+                    >
+                      {t('home.viewDetail') || "Ver detalle"}
+                      <i className="fas fa-arrow-right"></i>
+                    </Link>
+                  </div>
+
+                  <p style={{ margin:'12px 0 0', fontSize:12, color:'#7a7a7a' }}>{coupon.terms}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ══════════ OFERTAS ══════════ */}
-      <section id="ofertas" style={{ ...S.section, background:'linear-gradient(135deg, #fafbfc 0%, #fff9f0 100%)', padding:'48px 0 64px' }}>
-        <div style={S.wrap}>
+      <section id="ofertas" className="home-section" style={{ background:'linear-gradient(135deg, #fafbfc 0%, #fff9f0 100%)', padding:'48px 0 64px' }}>
+        <div className="home-wrap">
           <p style={{ color:'#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8, animation: 'fadeInDown 0.6s ease' }}>
-            <i className="fas fa-tag"></i> Descuentos especiales
+            <i className="fas fa-tag"></i> {t('home.specialDiscounts') || "Descuentos especiales"}
           </p>
           <h2 style={{ fontSize:'clamp(1.8rem,3vw,2.4rem)', fontWeight:900, color:'#111', margin:'0 0 8px', animation: 'fadeInDown 0.7s ease 0.1s backwards' }}>
-            Ofertas
+            {t('home.offersTitle') || "Ofertas"}
           </h2>
           <p style={{ color:'#666', fontSize:16, marginBottom:32, animation: 'fadeInUp 0.6s ease 0.2s backwards' }}>
-            Platos con descuentos especiales
+            {t('home.offersSubtitle') || "Platos con descuentos especiales"}
           </p>
 
           {loadingProducts ? (
@@ -551,7 +628,8 @@ export default function HomePage({ isAuth }) {
             <>
             <div style={{
               display:'grid',
-              gridTemplateColumns:'repeat(auto-fill, minmax(240px, 1fr))',
+              gridTemplateColumns:'repeat(auto-fit, minmax(240px, 1fr))',
+              gridAutoFlow:'row dense',
               gap:24,
               marginBottom:40,
             }}>
@@ -606,7 +684,7 @@ export default function HomePage({ isAuth }) {
                           position: 'absolute',
                           top: 12,
                           right: 12,
-                          background: S.red,
+                          background: '#FF4B3E',
                           color: 'white',
                           padding: '6px 12px',
                           borderRadius: 12,
@@ -736,7 +814,7 @@ export default function HomePage({ isAuth }) {
                         style={{
                           width: '100%',
                           padding: '10px',
-                          background: S.red,
+                          background: '#FF4B3E',
                           color: 'white',
                           border: 'none',
                           borderRadius: 12,
@@ -749,8 +827,8 @@ export default function HomePage({ isAuth }) {
                           justifyContent: 'center',
                           gap: 6,
                         }}
-                        onMouseEnter={(e) => e.target.style.background = S.redDk}
-                        onMouseLeave={(e) => e.target.style.background = S.red}
+                        onMouseEnter={(e) => e.target.style.background = '#e03a2d'}
+                        onMouseLeave={(e) => e.target.style.background = '#FF4B3E'}
                       >
                         <i className="fas fa-plus" /> Agregar
                       </button>
@@ -761,7 +839,7 @@ export default function HomePage({ isAuth }) {
 
             {/* Call to action */}
             <div style={{ textAlign:'center', marginTop:40, animation: 'fadeInUp 0.6s ease 0.5s backwards' }}>
-              <Link to="/restaurants" style={S.btnRed}>
+              <Link to="/restaurants" className="home-btn-red">
                 <i className="fas fa-utensils" /> Ver más ofertas
               </Link>
             </div>
@@ -771,8 +849,8 @@ export default function HomePage({ isAuth }) {
       </section>
 
       {/* ══════════ RESTAURANTES CERCANOS ══════════ */}
-      <section style={{ ...S.section, background:'white', padding:'48px 0 64px' }}>
-        <div style={S.wrap}>
+      <section className="home-section" style={{ background:'white', padding:'48px 0 64px' }}>
+        <div className="home-wrap">
           <p style={{ color:'#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8, animation: 'fadeInDown 0.6s ease' }}>
             <i className="fas fa-map-marker-alt"></i> Para ti
           </p>
@@ -804,7 +882,8 @@ export default function HomePage({ isAuth }) {
           ) : (
             <div style={{
               display:'grid',
-              gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))',
+              gridTemplateColumns:'repeat(auto-fit, minmax(180px, 1fr))',
+              gridAutoFlow:'row dense',
               gap:16,
               marginBottom:40,
             }}>
@@ -912,153 +991,6 @@ export default function HomePage({ isAuth }) {
         </div>
       </section>
 
-      {/* ══════════ RESTAURANTES FAVORITOS ══════════ */}
-      {isAuth && popularRestaurants.filter(r => isFavorite(r.id)).length > 0 && (
-        <section style={{ ...S.section, background:'white', padding:'48px 0 64px' }}>
-          <div style={S.wrap}>
-            <p style={{ color:'#FF4B3E', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:8, animation: 'fadeInDown 0.6s ease' }}>
-              <i className="fas fa-heart"></i> Tus favoritos
-            </p>
-            <h2 style={{ fontSize:'clamp(1.8rem,3vw,2.4rem)', fontWeight:900, color:'#111', margin:'0 0 8px', animation: 'fadeInDown 0.7s ease 0.1s backwards' }}>
-              Restaurantes Favoritos
-            </h2>
-            <p style={{ color:'#666', fontSize:16, marginBottom:32, animation: 'fadeInUp 0.6s ease 0.2s backwards' }}>
-              Tus restaurantes guardados
-            </p>
-            
-            <div style={{
-              display:'grid',
-              gridTemplateColumns:'repeat(auto-fill, minmax(180px, 1fr))',
-              gap:16,
-              marginBottom:40,
-            }}>
-              {popularRestaurants.filter(r => isFavorite(r.id)).map((restaurant, idx) => (
-                <div
-                  key={restaurant.id || idx}
-                  onClick={() => handleRestaurantSelect(restaurant)}
-                  style={{
-                    position: 'relative',
-                    borderRadius: 16,
-                    overflow: 'hidden',
-                    background: 'white',
-                    cursor: 'pointer',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                    transition: 'all 0.3s ease',
-                    animation: `fadeInUp 0.6s ease ${0.05 * (idx % 4)}s backwards`,
-                    transform: 'translateY(0)',
-                    border: '1px solid #f0f0f0',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)'
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.12)'
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)'
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)'
-                  }}
-                >
-                  {/* Imagen */}
-                  <div style={{
-                    width: '100%',
-                    height: 110,
-                    background: 'linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%)',
-                    overflow: 'hidden',
-                    position: 'relative',
-                  }}>
-                    <img
-                      src={restaurant.img || '/images/placeholder.png'}
-                      alt={restaurant.name}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease',
-                      }}
-                      onMouseEnter={(e) => e.target.style.transform = 'scale(1.1)'}
-                      onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                    />
-                    
-                    {/* Favorito badge */}
-                    <div style={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      background: '#FF4B3E',
-                      color: 'white',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: 14,
-                      boxShadow: '0 2px 8px rgba(255, 75, 62, 0.3)',
-                    }}>
-                      <i className="fas fa-heart"></i>
-                    </div>
-                    
-                    {/* Rating badge */}
-                    {restaurant.rating && (
-                      <div style={{
-                        position: 'absolute',
-                        bottom: 8,
-                        left: 8,
-                        background: '#facc15',
-                        color: '#111',
-                        padding: '2px 8px',
-                        borderRadius: 10,
-                        fontWeight: 700,
-                        fontSize: 11,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 3,
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                      }}>
-                        <i className="fas fa-star" style={{ fontSize: 9 }} /> {restaurant.rating}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div style={{ padding: 12 }}>
-                    <h3 style={{
-                      fontSize: 12,
-                      fontWeight: 700,
-                      color: '#111',
-                      margin: '0 0 6px',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}>
-                      {restaurant.name}
-                    </h3>
-
-                    {/* Stats */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      fontSize: 10,
-                      color: '#666',
-                      flexWrap: 'wrap',
-                    }}>
-                      <span>
-                        <i className="fas fa-clock" style={{ marginRight: 3 }} />
-                        {restaurant.time} min
-                      </span>
-                      <span>
-                        <i className="fas fa-motorcycle" style={{ marginRight: 3 }} />
-                        ${fmt(restaurant.delivery)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ══════════ CÓMO FUNCIONA ══════════ */}
       <section id="how" className="py-24 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-5xl mx-auto px-6">
@@ -1090,48 +1022,7 @@ export default function HomePage({ isAuth }) {
         </div>
       </section>
 
-      {/* ══════════ BANNER CUPÓN ══════════ */}
-      {!isAuth && (
-        <section style={{ paddingBottom:64 }}>
-          <div style={S.wrap}>
-            <div style={{
-              borderRadius:24, padding:'48px 40px',
-              display:'flex', alignItems:'center', justifyContent:'space-between',
-              gap:32, flexWrap:'wrap',
-              background:'linear-gradient(135deg,#1a1a1a,#3d1a00)',
-            }}>
-              <div>
-                <p style={{ color:'#facc15', fontWeight:700, fontSize:12, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:12 }}>
-                  Oferta especial
-                </p>
-                <h2 style={{ color:'white', fontWeight:900, fontSize:'clamp(1.5rem,3vw,2rem)', margin:'0 0 8px' }}>
-                  ¡15% de descuento<br />en tu primer pedido!
-                </h2>
-                <p style={{ color:'#ccc', marginBottom:20, fontSize:15 }}>
-                  Regístrate gratis y usa este cupón en tu primera orden.
-                </p>
-                <button onClick={() => { navigator.clipboard?.writeText('BIENVENIDO'); setCopied(true); setTimeout(()=>setCopied(false),2500) }}
-                  style={{
-                    display:'inline-flex', alignItems:'center', gap:12,
-                    background:'#facc15', color:'#111',
-                    border:'none', borderRadius:16,
-                    padding:'12px 20px', fontWeight:700, cursor:'pointer',
-                    fontSize:14, marginBottom:20,
-                  }}>
-                  <i className="fas fa-ticket-alt" />
-                  <span>BIENVENIDO</span>
-                  <small style={{ fontWeight:400 }}>{copied ? '✅ Copiado!' : 'Clic para copiar'}</small>
-                </button>
-                <br />
-                <Link to="/register" style={S.btnRed}>
-                  <i className="fas fa-user-plus" /> Crear cuenta gratis
-                </Link>
-              </div>
-              <div style={{ fontSize:100, userSelect:'none' }}>🍔</div>
-            </div>
-          </div>
-        </section>
-      )}
+
 
       {modal && <ProductModal product={modal} onClose={() => setModal(null)} />}
       <Footer restaurants={STATIC_RESTAURANTS} />

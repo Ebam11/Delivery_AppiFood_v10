@@ -1,8 +1,25 @@
 import { create } from 'zustand'
 import { api } from '../api/client'
 
+const LOCAL_KEY = 'local_favorites'
+
+const normalizeFavoriteIds = (ids = []) => {
+  return ids
+    .map((id) => Number(id))
+    .filter((id) => Number.isFinite(id))
+}
+
+const loadLocalFavorites = () => {
+  try {
+    const raw = localStorage.getItem(LOCAL_KEY)
+    return normalizeFavoriteIds(raw ? JSON.parse(raw) : [])
+  } catch (e) {
+    return []
+  }
+}
+
 export const useFavoritesStore = create((set, get) => ({
-  favorites: [],
+  favorites: loadLocalFavorites(),
   loading: false,
   error: null,
 
@@ -10,6 +27,7 @@ export const useFavoritesStore = create((set, get) => ({
   fetchFavorites: async (token) => {
     if (!token) {
       set({ favorites: [] })
+      try { localStorage.removeItem(LOCAL_KEY) } catch (e) {}
       return
     }
 
@@ -18,8 +36,9 @@ export const useFavoritesStore = create((set, get) => ({
       const response = await api.get('/favorites', {
         headers: { Authorization: `Bearer ${token}` }
       })
-      const favoriteIds = (response.data?.data || []).map(f => f.restaurant_id || f.id)
+      const favoriteIds = normalizeFavoriteIds((response.data?.data || []).map(f => f.restaurant_id ?? f.id))
       set({ favorites: favoriteIds, loading: false })
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify(favoriteIds)) } catch (e) {}
     } catch (error) {
       console.error('Error cargando favoritos:', error)
       set({ loading: false, error: 'Error al cargar favoritos' })
@@ -28,12 +47,14 @@ export const useFavoritesStore = create((set, get) => ({
 
   // Toggle favorito local
   toggleFavoriteLocal: (restaurantId) => {
+    const normalizedId = Number(restaurantId)
     const state = get()
-    const isFavorited = state.favorites.includes(restaurantId)
+    const isFavorited = state.favorites.includes(normalizedId)
     const updated = isFavorited
-      ? state.favorites.filter(id => id !== restaurantId)
-      : [...state.favorites, restaurantId]
+      ? state.favorites.filter(id => id !== normalizedId)
+      : [...state.favorites, normalizedId]
     set({ favorites: updated })
+    try { localStorage.setItem(LOCAL_KEY, JSON.stringify(updated)) } catch(e){}
     return !isFavorited
   },
 
@@ -59,20 +80,26 @@ export const useFavoritesStore = create((set, get) => ({
 
   // Verificar si es favorito
   isFavorite: (restaurantId) => {
-    return get().favorites.includes(restaurantId)
+    return get().favorites.includes(Number(restaurantId))
   },
 
   // Agregar favorito sin servidor
   addLocalFavorite: (restaurantId) => {
+    const normalizedId = Number(restaurantId)
     const state = get()
-    if (!state.favorites.includes(restaurantId)) {
-      set({ favorites: [...state.favorites, restaurantId] })
+    if (!state.favorites.includes(normalizedId)) {
+      const updated = [...state.favorites, normalizedId]
+      set({ favorites: updated })
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify(updated)) } catch(e){}
     }
   },
 
   // Remover favorito sin servidor
   removeLocalFavorite: (restaurantId) => {
+    const normalizedId = Number(restaurantId)
     const state = get()
-    set({ favorites: state.favorites.filter(id => id !== restaurantId) })
+    const updated = state.favorites.filter(id => id !== normalizedId)
+    set({ favorites: updated })
+    try { localStorage.setItem(LOCAL_KEY, JSON.stringify(updated)) } catch(e){}
   },
 }))

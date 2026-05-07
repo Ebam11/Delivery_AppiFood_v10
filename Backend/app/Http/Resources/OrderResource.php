@@ -67,6 +67,13 @@ class OrderResource extends JsonResource
                 'paid_at' => $this->payment->paid_at?->toDateTimeString(),
                 'reference_code' => $this->payment->external_reference,
             ] : null),
+            'review'           => $this->whenLoaded('review', fn() => $this->review ? [
+                'id' => $this->review->id,
+                'rating' => $this->review->rating,
+                'comment' => $this->review->comment,
+                'restaurant_reply' => $this->review->restaurant_reply,
+                'created_at' => $this->review->created_at?->toDateTimeString(),
+            ] : null),
             'created_at'       => $this->created_at?->toDateTimeString(),
             'updated_at'       => $this->updated_at?->toDateTimeString(),
         ];

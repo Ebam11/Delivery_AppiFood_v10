@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { fetchJson } from '../api/fetchJson'
+import { useAuthStore } from '../store/authStore'
 
 // ─────────────────────────────────────────
 // CONSTANTES
@@ -19,6 +21,43 @@ const generateMockSeries = ({ points = 12, base = 100, wave = 24, trend = 4, flo
     return Math.max(floor, Math.round(val))
   })
 )
+
+const mapAdminUser = (user) => ({
+  id: user.id,
+  name: user.name,
+  email: user.email,
+  phone: user.phone || '-',
+  city: 'Popayán',
+  status: user.status ? 'active' : 'suspended',
+  joined: user.created_at,
+  orders: user.orders_count || 0,
+  subscription: user.is_premium ? 'Premium' : 'Free'
+})
+
+const mapAdminRestaurant = (res) => ({
+  id: res.id,
+  name: res.name,
+  owner: res.owner?.name || '-',
+  email: res.email,
+  phone: res.phone || '-',
+  city: res.address || 'Popayán',
+  status: res.is_active ? 'active' : (!res.is_verified ? 'pending' : 'suspended'),
+  joined: res.created_at,
+  orders: res.orders_count || 0,
+  rating: res.average_rating || 0
+})
+
+const mapAdminOrder = (order) => ({
+  id: `#ORD${order.id}`,
+  date: order.created_at?.split('T')[0] || '',
+  time: order.created_at?.split('T')[1]?.substring(0, 5) || '',
+  customer: order.user?.name || order.customer_name || 'Cliente',
+  restaurant: order.restaurant?.name || 'Restaurante',
+  type: order.delivery_address ? 'Online' : 'Dine-In',
+  qty: order.items_count || 1,
+  amount: Number(order.total || 0),
+  status: order.status
+})
 
 // ─────────────────────────────────────────
 // DATOS MOCK
@@ -56,20 +95,9 @@ const ORDERS = [
   { id:'#ORD1030', date:'2026-03-23', time:'08:47 AM', customer:'Miguel Torres',  restaurant:'La Bandeja Paisa',  type:'Dine-In',  qty:3, amount:36.00, status:'on_process' },
 ]
 
-const REVIEWS = [
-  { id:1, reviewer:'María García',   restaurant:'La Paella Dorada', rating:5,   date:'Mar 20, 2026', text:'Excelente comida, aunque el domicilio se demoró un poco. Los platos llegaron bien empacados.',  status:'pending'  },
-  { id:2, reviewer:'Carlos López',   restaurant:'Tacos del Norte',  rating:4,   date:'Mar 19, 2026', text:'La pizza llegó fría, pero el sabor era bueno. La masa estaba deliciosa.',                       status:'answered' },
-  { id:3, reviewer:'Ana Rodríguez',  restaurant:'Pizza Paradise',   rating:5,   date:'Mar 18, 2026', text:'Increíble servicio! El repartidor fue muy amable y la comida llegó perfecta.',                  status:'pending'  },
-  { id:4, reviewer:'Pedro Martínez', restaurant:'La Bandeja Paisa', rating:3,   date:'Mar 17, 2026', text:'Pedí una ensalada César pero llegó sin el aderezo. El pollo estaba seco.',                      status:'answered' },
-  { id:5, reviewer:'Laura Sánchez',  restaurant:'Burger Bros',      rating:4.5, date:'Mar 16, 2026', text:'Muy buena hamburguesa, la carne estaba jugosa y el pan fresco. Recomendado.',                   status:'pending'  },
-]
+const REVIEWS = []
 
-const NOTIFICATIONS_HISTORY = [
-  { id:1, date:'28/03/2026 - 11:30', subject:'Mantenimiento programado',      preview:'El sistema estará en mantenimiento el próximo domingo de 2:00 a 6:00 AM.',  recipients:'Todos los usuarios' },
-  { id:2, date:'26/03/2026 - 15:45', subject:'Oferta 2x1 habilitada',         preview:'Aprovecha nuestra promoción 2x1 en todos los restaurantes participantes.',   recipients:'Solo clientes'      },
-  { id:3, date:'25/03/2026 - 10:10', subject:'Recordatorio de actualización', preview:'La nueva versión del sistema estará disponible a partir del lunes.',          recipients:'Solo restaurantes'  },
-  { id:4, date:'23/03/2026 - 09:15', subject:'Nueva función de seguimiento',  preview:'Hemos implementado el seguimiento en tiempo real para todos los pedidos.',    recipients:'Todos los usuarios' },
-]
+const NOTIFICATIONS_HISTORY = []
 
 // ─────────────────────────────────────────
 // UTILIDADES
@@ -793,26 +821,68 @@ function OrdersSection({ orders, t }) {
 // ─────────────────────────────────────────
 // REVIEWS SECTION
 // ─────────────────────────────────────────
-function ReviewsSection({ showToast, t }) {
-  const [reviews,  setReviews]  = useState(REVIEWS)
+function ReviewsSection({ showToast, token, t }) {
+  const [reviews,  setReviews]  = useState([])
+  const [loading,  setLoading]  = useState(true)
   const [selected, setSelected] = useState(null)
   const [response, setResponse] = useState('')
   const [filter,   setFilter]   = useState('all')
 
+  useEffect(() => {
+    const loadReviews = async () => {
+      try {
+        setLoading(true)
+        const res = await fetchJson('/api/admin/reviews', { headers: { 'Authorization': `Bearer ${token}` } })
+        setReviews(res.data || res || [])
+      } catch (err) {
+        console.error('Error loading reviews:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadReviews()
+  }, [token])
+
   const visible = reviews.filter(r => filter === 'all' || r.status === filter)
 
+  const handleReviewAction = async (id, action, data = {}) => {
+    try {
+      let endpoint = `/api/admin/reviews/${id}`
+      let method = 'DELETE'
+      
+      if (action === 'reply') {
+        endpoint = `/api/admin/reviews/${id}/reply`
+        method = 'PATCH'
+      }
+
+      await fetchJson(endpoint, {
+        method,
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: method === 'PATCH' ? JSON.stringify({ reply: data.response }) : undefined
+      })
+
+      if (action === 'reply') {
+        setReviews(prev => prev.map(r => r.id === id ? { ...r, status: 'answered', text: data.response } : r))
+        showToast(t('adminDashboard.toast.reviewAnswered'))
+      } else {
+        setReviews(prev => prev.filter(r => r.id !== id))
+        showToast(t('adminDashboard.toast.reviewDeleted'))
+      }
+    } catch (err) {
+      showToast('Error: ' + err.message)
+    }
+  }
+
   const submitResponse = () => {
-    if (!response.trim()) return
-    setReviews(prev => prev.map(r => r.id === selected.id ? { ...r, status:'answered' } : r))
-    showToast(t('adminDashboard.toast.reviewAnswered'))
+    if (!response.trim() || !selected) return
+    handleReviewAction(selected.id, 'reply', { response })
     setSelected(null)
     setResponse('')
   }
 
   const deleteReview = id => {
     if (window.confirm(t('adminDashboard.reviews.confirmDelete'))) {
-      setReviews(prev => prev.filter(r => r.id !== id))
-      showToast(t('adminDashboard.toast.reviewDeleted'))
+      handleReviewAction(id, 'delete')
     }
   }
 
@@ -839,7 +909,7 @@ function ReviewsSection({ showToast, t }) {
           { label: t('adminDashboard.reviews.total'),    value: reviews.length,                                color: P        },
           { label: t('adminDashboard.reviews.pending'),  value: reviews.filter(r=>r.status==='pending').length,  color: P        },
           { label: t('adminDashboard.reviews.answered'), value: reviews.filter(r=>r.status==='answered').length, color:'#10b981' },
-          { label: t('adminDashboard.reviews.avgRating'),value: (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1), color:'#f59e0b' },
+          { label: t('adminDashboard.reviews.avgRating'),value: (reviews.length > 0 ? (reviews.reduce((s,r)=>s+r.rating,0)/reviews.length).toFixed(1) : 0), color:'#f59e0b' },
         ].map((s, i) => (
           <div key={i} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm text-center">
             <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
@@ -941,9 +1011,25 @@ function ReviewsSection({ showToast, t }) {
 // ─────────────────────────────────────────
 // NOTIFICATIONS SECTION
 // ─────────────────────────────────────────
-function NotificationsSection({ showToast, t }) {
-  const [history, setHistory] = useState(NOTIFICATIONS_HISTORY)
+function NotificationsSection({ showToast, token, t }) {
+  const [history, setHistory] = useState([])
+  const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({ subject:'', message:'', recipients: '' })
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        setLoading(true)
+        const res = await fetchJson('/api/admin/notifications', { headers: { 'Authorization': `Bearer ${token}` } })
+        setHistory(res.data || res || [])
+      } catch (err) {
+        console.error('Error loading notifications:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadHistory()
+  }, [token])
 
   const RECIPIENT_OPTIONS = [
     t('adminDashboard.notifications.allUsers'),
@@ -952,19 +1038,34 @@ function NotificationsSection({ showToast, t }) {
     t('adminDashboard.notifications.premiumUsers'),
   ]
 
-  const send = e => {
+  const send = async e => {
     e.preventDefault()
     if (!form.subject || !form.message) { showToast(t('adminDashboard.notifications.fillAll')); return }
-    const newNotif = {
-      id:      Date.now(),
-      date:    new Date().toLocaleDateString('es-CO') + ' - ' + new Date().toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' }),
-      subject: form.subject,
-      preview: form.message,
-      recipients: form.recipients || RECIPIENT_OPTIONS[0],
+    
+    try {
+      const response = await fetchJson('/api/admin/notifications/send', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          title: form.subject,
+          message: form.message,
+          recipients: form.recipients || RECIPIENT_OPTIONS[0]
+        })
+      })
+
+      const newNotif = {
+        id:      Date.now(),
+        date:    new Date().toLocaleDateString('es-CO') + ' - ' + new Date().toLocaleTimeString('es-CO', { hour:'2-digit', minute:'2-digit' }),
+        subject: form.subject,
+        preview: form.message,
+        recipients: form.recipients || RECIPIENT_OPTIONS[0],
+      }
+      setHistory(prev => [newNotif, ...prev])
+      setForm({ subject:'', message:'', recipients: '' })
+      showToast(t('adminDashboard.notifications.sent', { recipients: newNotif.recipients }))
+    } catch (err) {
+      showToast('Error: ' + err.message)
     }
-    setHistory(prev => [newNotif, ...prev])
-    setForm({ subject:'', message:'', recipients: '' })
-    showToast(t('adminDashboard.notifications.sent', { recipients: newNotif.recipients }))
   }
 
   return (
@@ -1309,14 +1410,103 @@ function SettingsSection({ showToast, onLogout, t }) {
 // ─────────────────────────────────────────
 // COMPONENTE PRINCIPAL
 // ─────────────────────────────────────────
-export default function AdminDashboard({ user, onLogout }) {
+export default function AdminDashboard({ user: initialUser, onLogout }) {
   const navigate = useNavigate()
-  const { t }    = useTranslation()
+  const { t } = useTranslation()
+  const { token } = useAuthStore()
+
   const [page,        setPage]        = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [restaurants, setRestaurants] = useState(RESTAURANTS)
-  const [users,       setUsers]       = useState(USERS)
   const [toast,       setToast]       = useState(null)
+  
+  const [restaurants, setRestaurants] = useState([])
+  const [users,       setUsers]       = useState([])
+  const [orders,      setOrders]      = useState([])
+  const [stats,       setStats]       = useState(null)
+  const [loading,     setLoading]     = useState(true)
+
+  useEffect(() => {
+    if (!token) return
+
+    const loadData = async () => {
+      try {
+        setLoading(true)
+        const [dashRes, usersRes, restRes, ordersRes] = await Promise.all([
+          fetchJson('/api/admin/dashboard', { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetchJson('/api/admin/users', { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetchJson('/api/admin/restaurants', { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetchJson('/api/admin/orders', { headers: { 'Authorization': `Bearer ${token}` } })
+        ])
+
+        setStats(dashRes.data)
+        
+        const usersList = usersRes.data || (Array.isArray(usersRes) ? usersRes : [])
+        setUsers(usersList.map(mapAdminUser))
+
+        const restList = restRes.data || (Array.isArray(restRes) ? restRes : [])
+        setRestaurants(restList.map(mapAdminRestaurant))
+
+        const ordersList = ordersRes.data || (Array.isArray(ordersRes) ? ordersRes : [])
+        setOrders(ordersList.map(mapAdminOrder))
+
+      } catch (err) {
+        console.error('Error loading admin data:', err)
+        showToast('Error al cargar datos: ' + err.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
+  }, [token])
+
+  const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 3000) }
+  const handleLogout = () => { onLogout?.(); navigate('/') }
+
+  const handleUpdateRestaurant = async (id, action) => {
+    try {
+      let endpoint = `/api/admin/restaurants/${id}/toggle-status`
+      if (action === 'approve' || action === 'reject') {
+        endpoint = `/api/admin/restaurants/${id}/verify`
+      }
+
+      await fetchJson(endpoint, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      const restRes = await fetchJson('/api/admin/restaurants', { headers: { 'Authorization': `Bearer ${token}` } })
+      const restList = restRes.data || (Array.isArray(restRes) ? restRes : [])
+      setRestaurants(restList.map(mapAdminRestaurant))
+      
+      const msgs = {
+        approve:    t('adminDashboard.toast.restApproved'),
+        suspend:    t('adminDashboard.toast.restSuspended'),
+        reactivate: t('adminDashboard.toast.restReactivated'),
+        reject:     t('adminDashboard.toast.restRejected'),
+      }
+      showToast(msgs[action] || 'Acción completada')
+    } catch (err) {
+      showToast('Error: ' + err.message)
+    }
+  }
+
+  const handleUpdateUser = async (id) => {
+    try {
+      await fetchJson(`/api/admin/users/${id}/toggle-status`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+
+      const usersRes = await fetchJson('/api/admin/users', { headers: { 'Authorization': `Bearer ${token}` } })
+      const usersList = usersRes.data || (Array.isArray(usersRes) ? usersRes : [])
+      setUsers(usersList.map(mapAdminUser))
+
+      showToast('Estado de usuario actualizado')
+    } catch (err) {
+      showToast('Error: ' + err.message)
+    }
+  }
 
   const PAGE_META = {
     dashboard:     { title: t('adminDashboard.nav.dashboard'),      breadcrumb: null                                         },
@@ -1329,26 +1519,39 @@ export default function AdminDashboard({ user, onLogout }) {
     settings:      { title: t('adminDashboard.nav.settings'),       breadcrumb: [t('adminDashboard.breadcrumb.system')]      },
   }
 
-  const showToast = msg => { setToast(msg); setTimeout(() => setToast(null), 3000) }
-  const handleLogout = () => { onLogout?.(); navigate('/') }
-
   const { title, breadcrumb } = PAGE_META[page]
-  const props = { restaurants, users, orders: ORDERS, onUpdate: setRestaurants, showToast, t }
+  const props = { 
+    restaurants, 
+    users, 
+    orders, 
+    onUpdate: handleUpdateRestaurant, 
+    onUpdateUser: handleUpdateUser,
+    showToast, 
+    stats,
+    loading,
+    t 
+  }
 
   return (
     <div className="page-admin-dashboard flex min-h-screen" style={{ background: BG }}>
-      <Sidebar active={page} onNav={setPage} open={sidebarOpen} onClose={() => setSidebarOpen(false)} user={user} onLogout={handleLogout} t={t} />
+      <Sidebar active={page} onNav={setPage} open={sidebarOpen} onClose={() => setSidebarOpen(false)} user={initialUser} onLogout={handleLogout} t={t} />
 
       <div className="flex-1 flex flex-col md:ml-[210px] min-w-0">
-        <TopBar title={title} breadcrumb={breadcrumb} onMenuOpen={() => setSidebarOpen(true)} user={user} t={t} />
+        <TopBar title={title} breadcrumb={breadcrumb} onMenuOpen={() => setSidebarOpen(true)} user={initialUser} t={t} />
 
         <main className="flex-1 p-5 sm:p-6">
+          {loading && (
+            <div className="mb-5 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm animate-pulse flex items-center gap-3">
+              <div className="w-5 h-5 rounded-full border-2 border-red-500 border-t-transparent animate-spin"></div>
+              <p className="text-sm text-gray-500 font-medium">Sincronizando datos reales de la plataforma...</p>
+            </div>
+          )}
           {page === 'dashboard'     && <DashboardSection     {...props} />}
           {page === 'restaurants'   && <RestaurantsSection   {...props} />}
-          {page === 'users'         && <UsersSection         restaurants={restaurants} users={users} onUpdate={setUsers} showToast={showToast} t={t} />}
-          {page === 'orders'        && <OrdersSection        orders={ORDERS} t={t} />}
-          {page === 'reviews'       && <ReviewsSection       showToast={showToast} t={t} />}
-          {page === 'notifications' && <NotificationsSection showToast={showToast} t={t} />}
+          {page === 'users'         && <UsersSection         {...props} users={users} onUpdate={handleUpdateUser} />}
+          {page === 'orders'        && <OrdersSection        orders={orders} t={t} />}
+          {page === 'reviews'       && <ReviewsSection       showToast={showToast} token={token} t={t} />}
+          {page === 'notifications' && <NotificationsSection showToast={showToast} token={token} t={t} />}
           {page === 'reports'       && <ReportsSection       {...props} />}
           {page === 'settings'      && <SettingsSection      showToast={showToast} onLogout={handleLogout} t={t} />}
         </main>

@@ -93,7 +93,7 @@ export default function Footer({ restaurants = [] }) {
         <div className="pt-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <span>© {new Date().getFullYear()} AppiFood — {t('footer.rights')}</span>
           <div className="flex items-center gap-2">
-            <span className="text-gray-400">Idioma:</span>
+            <span className="text-gray-400">{t('footer.language') || "Idioma:"}</span>
             <LanguageSwitcher />
           </div>
         </div>

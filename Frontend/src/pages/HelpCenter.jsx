@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supportFaqs, supportShortcuts } from '../utils/supportAssistant'
 
 const topicCards = [
@@ -30,6 +31,7 @@ const topicCards = [
 ]
 
 export default function HelpCenter() {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
 
   const flatFaqs = useMemo(() => (
@@ -58,13 +60,13 @@ export default function HelpCenter() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           <div className="max-w-4xl">
             <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-red-100 text-[#FF4B3E] font-bold text-sm shadow-sm">
-              <i className="fas fa-circle-info" /> Centro de ayuda
+              <i className="fas fa-circle-info" /> {t('help.center') || "Centro de ayuda"}
             </span>
             <h1 className="mt-5 text-4xl sm:text-5xl font-black text-gray-900 leading-tight">
-              Encuentra respuestas rápidas y sigue comprando sin perder tiempo.
+              {t('help.title') || "Encuentra respuestas rápidas y sigue comprando sin perder tiempo."}
             </h1>
             <p className="mt-4 text-lg text-gray-600 max-w-3xl">
-              Aquí agrupamos las preguntas frecuentes por tema para que el usuario encuentre solución por su cuenta o salte al chat cuando necesite una respuesta inmediata.
+              {t('help.subtitle') || "Aquí agrupamos las preguntas frecuentes por tema para que el usuario encuentre solución por su cuenta o salte al chat cuando necesite una respuesta inmediata."}
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3 max-w-2xl">
@@ -73,7 +75,7 @@ export default function HelpCenter() {
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Buscar por pedido, pago, dirección, restaurante..."
+                  placeholder={t('help.search_placeholder') || "Buscar por pedido, pago, dirección, restaurante..."}
                   className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-white shadow-sm outline-none focus:ring-2 focus:ring-[#FF4B3E]/15 focus:border-[#FF4B3E] text-sm"
                 />
               </div>
@@ -81,7 +83,7 @@ export default function HelpCenter() {
                 to="/support"
                 className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-[#FF4B3E] text-white font-bold hover:bg-[#e03a2d] transition"
               >
-                <i className="fas fa-comments" /> Abrir chat
+                <i className="fas fa-comments" /> {t('help.open_chat') || "Abrir chat"}
               </Link>
             </div>
           </div>
@@ -109,11 +111,11 @@ export default function HelpCenter() {
           <div className="bg-white rounded-3xl border border-gray-100 shadow-xl p-6 sm:p-8">
             <div className="flex items-center justify-between gap-3 mb-5">
               <div>
-                <h2 className="text-2xl font-black text-gray-900">Preguntas frecuentes</h2>
-                <p className="text-sm text-gray-500 mt-1">Resultados filtrados según tu búsqueda.</p>
+                <h2 className="text-2xl font-black text-gray-900">{t('help.faqs') || "Preguntas frecuentes"}</h2>
+                <p className="text-sm text-gray-500 mt-1">{t('help.filtered_results') || "Resultados filtrados según tu búsqueda."}</p>
               </div>
               <span className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
-                {filteredFaqs.length} resultados
+                {filteredFaqs.length} {t('help.results_count') || "resultados"}
               </span>
             </div>
 
@@ -132,7 +134,7 @@ export default function HelpCenter() {
                 ))
               ) : (
                 <div className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
-                  No encontramos resultados con ese término. Prueba con “pedido”, “pago”, “dirección” o “restaurante”.
+                  {t('help.no_results') || "No encontramos resultados con ese término. Prueba con “pedido”, “pago”, “dirección” o “restaurante”."}
                 </div>
               )}
             </div>
@@ -140,22 +142,22 @@ export default function HelpCenter() {
 
           <aside className="space-y-6 sticky top-6">
             <div className="bg-gradient-to-br from-[#FF4B3E] to-[#FF7A59] rounded-3xl p-6 text-white shadow-xl">
-              <h2 className="text-2xl font-black">Atención rápida</h2>
+              <h2 className="text-2xl font-black">{t('help.quick_support') || "Atención rápida"}</h2>
               <p className="mt-2 text-white/90 leading-relaxed">
-                Si la respuesta que buscas no aparece aquí, abre el chat inteligente o entra al módulo correspondiente.
+                {t('help.quick_support_desc') || "Si la respuesta que buscas no aparece aquí, abre el chat inteligente o entra al módulo correspondiente."}
               </p>
               <div className="mt-5 flex flex-col gap-3">
                 <Link to="/support" className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white text-[#FF4B3E] font-bold shadow-sm">
-                  <i className="fas fa-comments" /> Abrir chatbot
+                  <i className="fas fa-comments" /> {t('help.open_chatbot') || "Abrir chatbot"}
                 </Link>
                 <Link to="/user/orders" className="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-white/10 text-white font-bold border border-white/20">
-                  <i className="fas fa-box" /> Revisar pedidos
+                  <i className="fas fa-box" /> {t('help.review_orders') || "Revisar pedidos"}
                 </Link>
               </div>
             </div>
 
             <div className="bg-white rounded-3xl border border-gray-100 shadow-lg p-6">
-              <h3 className="text-xl font-black text-gray-900 mb-4">Accesos directos</h3>
+              <h3 className="text-xl font-black text-gray-900 mb-4">{t('help.shortcuts') || "Accesos directos"}</h3>
               <div className="space-y-3">
                 {supportShortcuts.map((item) => (
                   <Link

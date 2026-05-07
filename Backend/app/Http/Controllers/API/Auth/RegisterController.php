@@ -20,6 +20,8 @@ class RegisterController extends Controller
             'password' => $request->password,
             'phone'    => $request->phone,
             'id_number' => $request->id_number,
+            'birth_date'=> $request->birth_date,
+            'gender'    => $request->gender,
             'role'     => $request->role ?? UserRole::USER->value,
             'status'   => true,
         ]);
