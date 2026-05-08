@@ -29,4 +29,4 @@ cmds = [
 ]
 
 [start]
-cmd = "if [ -d Backend ]; then cd Backend && php artisan migrate --force && php -S 0.0.0.0:${PORT:-8080} -t public/ public/index.php; else echo 'Backend directory not found'; exit 1; fi"
+cmd = "if [ -d Backend ]; then cd Backend && (php artisan migrate --force || echo 'Migration failed, continuing...') && php -S 0.0.0.0:${PORT:-8080} -t public/; else echo 'Backend directory not found'; exit 1; fi"
