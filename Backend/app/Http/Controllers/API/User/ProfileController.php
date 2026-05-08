@@ -86,17 +86,15 @@ class ProfileController extends Controller
 
         $user = $request->user();
 
-        // Eliminar avatar anterior
-        if ($user->avatar) {
-            Storage::disk('public')->delete($user->avatar);
-        }
-
-        $path = $request->file('avatar')->store('avatars', 'public');
+        // Subir a la carpeta 'appifood/avatars'
+        $subida = $request->file('avatar')->storeOnCloudinary('appifood/avatars');
+        $path = $subida->getSecurePath();
+        
         $user->update(['avatar' => $path]);
 
         return response()->json([
             'message' => 'Avatar actualizado.',
-            'avatar'  => asset('storage/' . $path),
+            'avatar'  => $path,
         ]);
     }
 }

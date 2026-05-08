@@ -104,6 +104,14 @@ class ProductController extends Controller
                 'is_featured' => 'boolean',
             ]);
 
+            $imageUrl = $validated['image'] ?? null;
+
+            // Si suben una foto de verdad
+            if ($request->hasFile('image_file')) {
+                $subida = $request->file('image_file')->storeOnCloudinary('appifood/products');
+                $imageUrl = $subida->getSecurePath();
+            }
+
             $product = Product::create([
                 'restaurant_id' => $restaurant->id,
                 'name' => $validated['name'],
@@ -111,7 +119,7 @@ class ProductController extends Controller
                 'price' => $validated['price'],
                 'discount_price' => $validated['discount_price'] ?? null,
                 'category_id' => $validated['category_id'] ?? null,
-                'image' => $validated['image'] ?? null,
+                'image' => $imageUrl,
                 'is_available' => $validated['is_available'] ?? true,
                 'is_featured' => $validated['is_featured'] ?? false,
             ]);
@@ -215,7 +223,15 @@ class ProductController extends Controller
                 'is_featured' => 'boolean',
             ]);
 
-            $product->update($validated);
+            $dataToUpdate = $validated;
+
+            // Por si quieren cambiar la foto
+            if ($request->hasFile('image_file')) {
+                $subida = $request->file('image_file')->storeOnCloudinary('appifood/products');
+                $dataToUpdate['image'] = $subida->getSecurePath();
+            }
+
+            $product->update($dataToUpdate);
 
             return response()->json([
                 'success' => true,
