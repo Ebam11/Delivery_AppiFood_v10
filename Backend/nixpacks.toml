@@ -1,5 +1,8 @@
 # Nixpacks configuration for AppiFood Backend
-# This file is REQUIRED here because Railway is ignoring the root directory.
+# Disabling the default PHP provider to avoid the buggy auto-detection of 'composer'.
+
+[providers]
+php = { active = false }
 
 [phases.setup]
 nixPkgs = [
