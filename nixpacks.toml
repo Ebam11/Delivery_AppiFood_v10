@@ -25,8 +25,8 @@ cmds = ["if [ -d Backend ]; then cd Backend && composer install --no-dev --optim
 
 [phases.build]
 cmds = [
-  "if [ -d Backend ]; then cd Backend && php artisan config:cache && php artisan route:cache && php artisan storage:link; fi"
+  "if [ -d Backend ]; then cd Backend && php artisan route:cache && php artisan storage:link; fi"
 ]
 
 [start]
-cmd = "if [ -d Backend ]; then cd Backend && (php artisan migrate --force || echo 'Migration failed, continuing...') && php -S 0.0.0.0:${PORT:-8080} -t public/; else echo 'Backend directory not found'; exit 1; fi"
+cmd = "if [ -d Backend ]; then cd Backend && php artisan config:clear && (php artisan migrate --force || echo 'Migration failed') && php -S 0.0.0.0:${PORT:-8080} -t public/; else echo 'Backend directory not found'; exit 1; fi"
