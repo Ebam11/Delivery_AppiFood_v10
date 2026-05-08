@@ -1,12 +1,14 @@
 {
   "build": {
-    "builder": "NIXPACKS",
-    "buildCommand": "if [ -d Backend ]; then cd Backend; fi && composer install --no-dev --optimize-autoloader --no-interaction && php artisan config:cache && php artisan route:cache"
+    "builder": "NIXPACKS"
   },
   "deploy": {
     "startCommand": "if [ -d Backend ]; then cd Backend; fi && php artisan migrate --force && php -S 0.0.0.0:${PORT:-8080} -t public/ public/index.php",
     "healthcheck": {
-      "path": "/api/health"
+      "path": "/api/health",
+      "interval": 30,
+      "timeout": 5,
+      "restartLimit": 3
     }
   }
 }
