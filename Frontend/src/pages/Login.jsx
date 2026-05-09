@@ -1,138 +1,123 @@
-// Archivo: src/pages/Login.jsx | Comentario: logica principal del modulo.
-// src/pages/LoginPage.jsx
+/**
+ * Archivo: src/pages/Login.jsx
+ * Componente de inicio de sesión.
+ */
+
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
+import Footer from '../components/Footer'
 import './Auth.css'
 
 export default function LoginPage({ onLogin }) {
-  const [form, setForm]         = useState({ email: '', password: '', remember: false })
-  const [errors, setErrors]     = useState({})
-  const [showPass, setShowPass] = useState(false)
-  const [loading, setLoading]   = useState(false)
   const navigate = useNavigate()
   const { t } = useTranslation()
+  
+  const [formData, setFormData] = useState({ email: '', password: '', remember: false })
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
-  const change = e => {
+  const handleChange = (e) => {
     const { name, value, type, checked } = e.target
-    setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }))
-    if (errors[name]) {
-      setErrors(er => ({ ...er, [name]: null }))
-    }
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+    if (error) setError(null)
   }
 
-  const submit = async e => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setLoading(true)
-    setErrors({})
+    setError(null)
+
     try {
-      const data = await fetchJson('/api/auth/login', {
+      const data = await fetchJson('/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+        body: { email: formData.email, password: formData.password }
       })
+
+      // Guardar sesión y notificar a la app
       localStorage.setItem('token', data.token)
       onLogin?.(data.user)
-      const role = data.user?.role
-      if (role === 'admin')           navigate('/admin/dashboard')
+
+      // Redirección basada en rol
+      const role = data.user?.role || data.user?.rol
+      if (role === 'admin') navigate('/admin')
       else if (role === 'restaurant') navigate('/restaurant/dashboard')
-      else                            navigate('/')
-    } catch (error) {
-      if (error instanceof ApiError) {
-        setErrors({ email: error.message || (t('login.error_credentials') || 'Credenciales incorrectas.') })
-      } else {
-        setErrors({ email: t('login.error_connection') || 'Error de conexión. Intenta de nuevo.' })
-      }
+      else navigate('/')
+      
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t('login.error_connection'))
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="page-login min-h-screen flex flex-col">
-      <div className="flex-1 relative flex items-center auth-container">
-        <div className="absolute inset-0 auth-bg-login" />
-
-        <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center z-50">
-          <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
-        </div>
-
-        <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] pt-16 pb-12 flex items-center justify-between gap-10 flex-wrap">
-          {/* Texto izquierdo */}
-          <div className="text-white max-w-md hidden md:block">
-            <h1 className="text-5xl font-black leading-tight mb-4">{t('login.title')}</h1>
-            <p className="text-xl font-semibold opacity-90 leading-relaxed">
-              {t('login.subtitle')}
-            </p>
+    <div className="min-h-screen flex flex-col bg-slate-50">
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="w-full max-w-md bg-white rounded-[2.5rem] p-10 shadow-premium border border-slate-100">
+          <div className="text-center mb-10">
+            <Link to="/" className="logo-satisfy text-4xl mb-4 inline-block">AppiFood</Link>
+            <h1 className="text-2xl font-black text-slate-900 mt-2">{t('login.heading') || "¡Hola de nuevo!"}</h1>
+            <p className="text-slate-500 font-medium text-sm mt-1">{t('login.subtitle') || "Accede a tu cuenta para pedir."}</p>
           </div>
 
-          {/* Card */}
-          <div className="w-full max-w-[400px] bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
-            <div className="p-7">
-              <div className="text-center mb-5">
-                <span className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</span>
-                <p className="text-[#FF4B3E] font-bold text-lg mt-1">{t('login.heading')}</p>
-              </div>
-
-              {errors.email && (
-                <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl p-3 mb-4 text-red-600 text-sm">
-                  <i className="fas fa-exclamation-circle flex-shrink-0"></i>
-                  {errors.email}
-                </div>
-              )}
-
-              <form onSubmit={submit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('login.email')}</label>
-                  <input type="email" name="email" value={form.email} onChange={change}
-                    placeholder={t('login.placeholder_email') || "tucorreo@email.com"} required autoFocus
-                    className={`w-full border rounded-xl px-4 py-2.5 text-sm outline-none transition
-                      ${errors.email ? 'border-red-400 bg-red-50' : 'border-gray-300 focus:border-[#FF4B3E]'}
-                      focus:ring-2 focus:ring-[#FF4B3E]/20`} />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">{t('login.password')}</label>
-                  <div className="relative">
-                    <input type={showPass ? 'text' : 'password'} name="password" value={form.password} onChange={change}
-                      placeholder="••••••••" required
-                      className="w-full border border-gray-300 rounded-xl px-4 py-2.5 pr-11 text-sm outline-none transition focus:border-[#FF4B3E] focus:ring-2 focus:ring-[#FF4B3E]/20" />
-                    <button type="button" onClick={() => setShowPass(s => !s)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#FF4B3E] transition">
-                      <i className={`fas ${showPass ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                    </button>
-                  </div>
-                </div>
-
-                <button type="submit" disabled={loading}
-                  className="w-full py-3 bg-[#FF4B3E] text-white rounded-xl font-bold hover:bg-[#e03a2d] transition disabled:opacity-60 flex items-center justify-center gap-2">
-                  {loading
-                    ? <><i className="fas fa-spinner fa-spin"></i> {t('login.loading')}</>
-                    : <><i className="fas fa-sign-in-alt"></i> {t('login.submit')}</>}
-                </button>
-
-                <div className="flex items-center justify-between text-sm flex-wrap gap-2">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" name="remember" checked={form.remember} onChange={change}
-                      className="accent-[#FF4B3E] w-4 h-4" />
-                    <span className="text-gray-700">{t('login.remember')}</span>
-                  </label>
-                  <Link to="/forgot-password" className="text-[#FF4B3E] hover:underline">
-                    {t('login.forgot')}
-                  </Link>
-                </div>
-
-                <p className="text-center text-sm text-gray-500">
-                  {t('login.no_account')}{' '}
-                  <Link to="/register" className="text-[#FF4B3E] font-bold hover:underline">
-                    {t('login.register_link')}
-                  </Link>
-                </p>
-              </form>
+          {error && (
+            <div className="bg-red-50 text-red-600 p-4 rounded-2xl text-sm font-bold mb-6 flex items-center gap-3 border border-red-100 animate-fade-in">
+              <i className="fas fa-exclamation-circle" /> {error}
             </div>
-          </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{t('login.email')}</label>
+              <input 
+                type="email" name="email" value={formData.email} onChange={handleChange}
+                className="w-full bg-slate-50 border-2 border-transparent focus:border-red-500/30 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-medium"
+                placeholder="ejemplo@correo.com" required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{t('login.password')}</label>
+              <div className="relative">
+                <input 
+                  type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange}
+                  className="w-full bg-slate-50 border-2 border-transparent focus:border-red-500/30 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-medium"
+                  placeholder="••••••••" required
+                />
+                <button 
+                  type="button" onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between px-1">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input type="checkbox" name="remember" checked={formData.remember} onChange={handleChange} className="accent-red-500 w-4 h-4" />
+                <span className="text-sm font-bold text-slate-600 group-hover:text-red-500 transition-colors">{t('login.remember')}</span>
+              </label>
+              <Link to="/forgot-password" title={t('login.forgot')} className="text-sm font-bold text-red-500 hover:underline">
+                {t('login.forgot_short') || "¿Olvidaste tu clave?"}
+              </Link>
+            </div>
+
+            <button 
+              type="submit" disabled={loading}
+              className="w-full bg-red-500 hover:bg-red-600 text-white font-black py-4 rounded-2xl transition-all shadow-lg shadow-red-500/20 disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {loading ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-sign-in-alt" />}
+              {loading ? t('login.loading') : t('login.submit')}
+            </button>
+          </form>
+
+          <p className="text-center mt-10 text-slate-500 font-medium">
+            {t('login.no_account')} <Link to="/register" className="text-red-500 font-black hover:underline">{t('login.register_link')}</Link>
+          </p>
         </div>
       </div>
       <Footer />

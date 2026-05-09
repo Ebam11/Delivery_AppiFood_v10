@@ -1,6 +1,16 @@
-// Archivo: src/api/fetchJson.js | Comentario: logica principal del modulo.
+/**
+ * Archivo: src/api/fetchJson.js
+ * Utilidad principal para realizar peticiones HTTP a la API.
+ * Maneja automáticamente los encabezados JSON, el token de autenticación
+ * y la normalización de URLs.
+ */
+
 import { API_URL } from './config'
 
+/**
+ * Clase personalizada para errores de la API.
+ * Permite acceder al código de estado y a los datos devueltos por el servidor.
+ */
 export class ApiError extends Error {
   constructor(message, status, data = null) {
     super(message)
@@ -10,12 +20,13 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Intenta parsear el cuerpo de la respuesta como JSON.
+ * Si falla o está vacío, devuelve null o el texto plano.
+ */
 const parseResponseBody = async (response) => {
   const raw = await response.text()
-
-  if (!raw) {
-    return null
-  }
+  if (!raw) return null
 
   try {
     return JSON.parse(raw)
@@ -24,7 +35,13 @@ const parseResponseBody = async (response) => {
   }
 }
 
+/**
+ * Función principal para peticiones fetch.
+ * @param {string} url - Ruta relativa o absoluta de la API.
+ * @param {object} options - Opciones de fetch (method, body, headers, etc).
+ */
 export async function fetchJson(url, options = {}) {
+  // Normalización de la URL base y la ruta
   const normalizedBase = String(API_URL || '/api').replace(/\/+$/, '')
   const normalizedPath = String(url || '').replace(/^\/+/, '')
 
@@ -37,25 +54,50 @@ export async function fetchJson(url, options = {}) {
     resolvedUrl = `${normalizedBase}/${normalizedPath}`
   }
 
+  // Configuración de encabezados predeterminados
   const headers = {
     'Accept': 'application/json',
     ...options.headers,
   }
 
-  if (options.body && typeof options.body === 'string' && !headers['Content-Type']) {
+  // Obtener el token de localStorage si existe
+  const userStr = localStorage.getItem('user_session') || localStorage.getItem('user')
+  if (userStr) {
+    try {
+      const userData = JSON.parse(userStr)
+      const token = userData.token || userData.state?.token
+      if (token && !headers['Authorization']) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+    } catch (e) {
+      console.warn('No se pudo parsear el token de sesión')
+    }
+  }
+
+  // Si enviamos un objeto en el body, lo convertimos a string y ponemos Content-Type
+  let body = options.body
+  if (body && typeof body === 'object' && !(body instanceof FormData)) {
+    body = JSON.stringify(body)
     headers['Content-Type'] = 'application/json'
   }
 
-  const response = await fetch(resolvedUrl, { ...options, headers })
-  const data = await parseResponseBody(response)
+  try {
+    const response = await fetch(resolvedUrl, { 
+      ...options, 
+      body,
+      headers 
+    })
 
-  if (!response.ok) {
-    const message =
-      (data && typeof data === 'object' && (data.message || data.error)) ||
-      `Request failed with status ${response.status}`
+    const data = await parseResponseBody(response)
 
-    throw new ApiError(message, response.status, data)
+    if (!response.ok) {
+      const message = (data?.message || data?.error) || `Error en la petición: ${response.status}`
+      throw new ApiError(message, response.status, data)
+    }
+
+    return data
+  } catch (error) {
+    if (error instanceof ApiError) throw error
+    throw new ApiError(error.message || 'Error de conexión', 500)
   }
-
-  return data
 }

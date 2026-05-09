@@ -1,0 +1,50 @@
+/**
+ * Estilos específicos para el Panel de Control del Restaurante.
+ * Se utilizan variables de CSS para mantener la consistencia con el diseño global.
+ */
+
+:root {
+  --rd-primary: #FF4B3E;
+  --rd-primary-light: rgba(255, 75, 62, 0.1);
+  --rd-bg: #f8fafc;
+}
+
+/* Contenedor principal */
+.rd-container {
+  min-h-screen: 100vh;
+  background-color: var(--rd-bg);
+}
+
+/* Sidebar personalizado */
+.rd-sidebar {
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Transiciones suaves para botones */
+.rd-btn-nav {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Estilos para las tarjetas de estadísticas */
+.rd-stat-card {
+  @apply bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow;
+}
+
+/* Barra de progreso personalizada */
+.rd-progress-bar {
+  @apply h-1.5 bg-gray-100 rounded-full overflow-hidden;
+}
+
+/* Gráficos minimalistas */
+.rd-chart-bar {
+  @apply w-full rounded-xl transition-all hover:opacity-80;
+}
+
+/* Modal personalizado */
+.rd-modal-overlay {
+  @apply fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4;
+}
+
+.rd-modal-content {
+  @apply bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl;
+}

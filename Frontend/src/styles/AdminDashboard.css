@@ -1,0 +1,25 @@
+/**
+ * Estilos específicos para el Panel de Administración Global.
+ */
+
+:root {
+  --ad-primary: #e71d1d;
+  --ad-primary-light: rgba(231, 29, 29, 0.1);
+  --ad-bg: #FFF8F5;
+}
+
+.ad-container {
+  background-color: var(--ad-bg);
+}
+
+.ad-stat-card {
+  @apply bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow;
+}
+
+.ad-table-row:hover {
+  @apply bg-slate-50 transition-colors cursor-pointer;
+}
+
+.ad-badge {
+  @apply px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap;
+}

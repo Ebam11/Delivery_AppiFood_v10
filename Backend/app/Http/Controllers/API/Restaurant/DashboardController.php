@@ -8,18 +8,26 @@ use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * Controlador para obtener las estadísticas rápidas del Dashboard del restaurante.
+ */
 class DashboardController extends Controller
 {
+    /**
+     * Retorna un resumen de métricas clave (pedidos, ingresos, productos y rating).
+     */
     public function __invoke(Request $request): JsonResponse
     {
         $restaurant = $request->user()->restaurant;
 
+        // Verificamos que el usuario tenga un restaurante asociado
         if (!$restaurant) {
             return response()->json(['message' => 'No tienes un restaurante registrado.'], 404);
         }
 
         $restaurantId = $restaurant->id;
 
+        // Recopilamos las estadísticas de forma estructurada
         $stats = [
             'orders' => [
                 'total'    => Order::forRestaurant($restaurantId)->count(),

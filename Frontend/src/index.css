@@ -1,4 +1,9 @@
-/* Archivo: src/index.css | Comentario: estilos del modulo. */
+/**
+ * Archivo: src/index.css
+ * Sistema de Diseño Global de AppiFood.
+ * Organizado por capas (base, componentes, utilidades) siguiendo las mejores prácticas.
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&family=Satisfy&display=swap');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
 
@@ -6,30 +11,101 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Paleta de Colores Primaria */
+  --color-primary: #FF4B3E;
+  --color-primary-dark: #E03A2D;
+  --color-primary-light: rgba(255, 75, 62, 0.1);
+  
+  /* Escala de Grises y Fondos */
+  --color-bg: #f8fafc;
+  --color-surface: #ffffff;
+  --color-text-main: #1e293b;
+  --color-text-muted: #64748b;
+  --color-border: #e2e8f0;
+  
+  /* Sombras Premium */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-premium: 0 20px 25px -5px rgba(255, 75, 62, 0.1), 0 8px 10px -6px rgba(255, 75, 62, 0.05);
+  
+  /* Bordes y Radios */
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
+}
+
 @layer base {
-  html { scroll-behavior: smooth; }
+  html { 
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
   body { 
     font-family: 'Inter', sans-serif; 
     margin: 0; 
     padding: 0;
-    background-color: #f8fafc;
-    color: #1e293b;
+    background-color: var(--color-bg);
+    color: var(--color-text-main);
+    line-height: 1.5;
   }
+  
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Outfit', sans-serif;
+    font-weight: 700;
   }
-  * { box-sizing: border-box; }
-  a { text-decoration: none; }
+  
+  /* Scrollbar personalizado */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
 }
 
 @layer components {
-  /* Logo */
+  /* Logo Estilo Satisfy */
   .logo-satisfy {
     font-family: 'Satisfy', cursive;
-    color: #FF4B3E;
+    color: var(--color-primary);
     font-size: 1.75rem;
     line-height: 1;
-    text-decoration: none;
+    transition: transform 0.3s ease;
+  }
+  .logo-satisfy:hover {
+    transform: rotate(-3deg) scale(1.05);
   }
 
+  /* Botones Base */
+  .btn-premium {
+    @apply px-6 py-3 rounded-full font-bold transition-all duration-300 flex items-center justify-center gap-2;
+    box-shadow: var(--shadow-md);
+  }
+  .btn-premium:active {
+    @apply scale-95;
+  }
+
+  /* Efecto de Vidrio (Glassmorphism) */
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+}
+
+/* Animaciones Globales */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease forwards;
 }
