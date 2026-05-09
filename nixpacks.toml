@@ -1,0 +1,8 @@
+[phases.install]
+cmds = ["cd Backend && composer install --no-dev --optimize-autoloader --no-interaction"]
+
+[phases.build]
+cmds = ["cd Backend && php artisan config:cache && php artisan route:cache"]
+
+[start]
+cmd = "cd Backend && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
