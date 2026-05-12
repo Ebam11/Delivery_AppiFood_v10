@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react'
 import { fetchJson } from '../api/fetchJson'
 import { INITIAL_ORDERS, INITIAL_MENU } from '../data/restaurantDashboardData'
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  deleteNotification,
+} from '../api/notifications'
+
 
 export function useRestaurantDashboard(user) {
   const [activeTab, setActiveTab]         = useState('dashboard')
@@ -13,7 +20,8 @@ export function useRestaurantDashboard(user) {
   const [menuLoading, setMenuLoading]     = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [toast, setToast]                 = useState(null)
-
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount]     = useState(0)
   // ─── Mappers ────────────────────────────────────────────────────────────────
 
   const mapOrder = (order) => {
@@ -102,6 +110,7 @@ export function useRestaurantDashboard(user) {
 
     loadData()
     loadMenu()
+    loadNotifications() //nueva linea para cargar notificaciones al iniciar el dashboard
   }, [user])
 
   // ─── Toast helper ────────────────────────────────────────────────────────────
@@ -253,6 +262,50 @@ export function useRestaurantDashboard(user) {
     }
   }
 
+  // ─── Notificaciones ──────────────────────────────────────────────────────────
+
+const loadNotifications = useCallback(async () => {
+  try {
+    const data = await getNotifications()
+    const payload = data?.data?.data ?? data?.data ?? data
+    setNotifications(Array.isArray(payload) ? payload : [])
+    setUnreadCount(data?.unread_count ?? 0)
+  } catch (error) {
+    console.error('Error al cargar notificaciones:', error)
+  }
+}, [])
+
+const handleNotifRead = async (id) => {
+  try {
+    await markNotificationAsRead(id)
+    await loadNotifications()
+  } catch (error) {
+    console.error('Error al marcar notificación:', error)
+  }
+}
+
+const handleNotifDelete = async (id) => {
+  // Actualización optimista
+  setNotifications(prev => prev.filter(n => n.id !== id))
+  setUnreadCount(prev => Math.max(0, prev - 1))
+  try {
+    await deleteNotification(id)
+  } catch (error) {
+    console.error('Error al eliminar notificación:', error)
+    await loadNotifications() // revertir
+  }
+}
+
+const handleNotifMarkAll = async () => {
+  try {
+    await markAllNotificationsAsRead()
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })))
+    setUnreadCount(0)
+  } catch (error) {
+    console.error('Error al marcar todas:', error)
+  }
+}
+
   return {
     activeTab,        setActiveTab,
     isSidebarOpen,    setIsSidebarOpen,
@@ -269,5 +322,10 @@ export function useRestaurantDashboard(user) {
     handleEditProduct,
     handleDeleteProduct,
     handleToggleAvailability,
+    notifications,
+    unreadCount,
+    handleNotifRead,
+    handleNotifDelete,
+    handleNotifMarkAll,
   }
 }
