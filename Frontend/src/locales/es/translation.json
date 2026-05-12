@@ -360,6 +360,14 @@
     "error_loading": "Error al cargar el restaurante"
   },
   "rd": {
+    "edit_dish": "Editar plato",
+    "upload_image": "Subir imagen",
+    "dish_name": "Nombre del plato *",
+    "dish_description": "Descripción (opcional)",
+    "dish_price": "Precio *",
+    "select_category": "Seleccionar categoría",
+    "saving": "Guardando...",
+    "save_changes": "Guardar cambios",
     "opening_time": "Hora de apertura",
     "closing_time": "Hora de cierre",
     "logout": "Cerrar sesión",

@@ -24,12 +24,18 @@ export default function RestaurantDashboard({ user, onLogout }) {
     setIsSidebarOpen,
     orders,
     menu,
+    categories,       //nuevo
     stats,
     loading,
+    menuLoading,      //nuevo
     selectedOrder,
     setSelectedOrder,
     toast,
-    handleStatusChange
+    handleStatusChange,
+     handleAddProduct,       // ← nuevo
+    handleEditProduct,      // ← nuevo
+    handleDeleteProduct,    // ← nuevo
+    handleToggleAvailability // ← nuevo
   } = useRestaurantDashboard(user)
 
   // Función para renderizar la sección activa basada en la navegación
@@ -47,11 +53,14 @@ export default function RestaurantDashboard({ user, onLogout }) {
         )
       case 'menu':
         return (
-          <MenuSection 
-            menu={menu} 
-            categories={[]} // Debería cargarse del backend
-            onAdd={(item) => console.log('Add item', item)} 
-            onDelete={(id) => console.log('Delete item', id)} 
+          <MenuSection
+            menu={menu}
+            categories={categories}
+            loading={menuLoading}
+            onAdd={handleAddProduct}
+            onEdit={handleEditProduct}
+            onDelete={handleDeleteProduct}
+            onToggle={handleToggleAvailability}
           />
         )
       default:
