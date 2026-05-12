@@ -25,33 +25,37 @@ export default function LoginPage({ onLogin }) {
     if (error) setError(null)
   }
 
-  const handleLogin = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+const handleLogin = async (e) => {
+  e.preventDefault()
+  setLoading(true)
+  setError(null)
 
-    try {
-      const data = await fetchJson('/auth/login', {
-        method: 'POST',
-        body: { email: formData.email, password: formData.password }
-      })
+  try {
+    const data = await fetchJson('/auth/login', {
+      method: 'POST',
+      body: { email: formData.email, password: formData.password }
+    })
 
-      // Guardar sesión y notificar a la app
-      localStorage.setItem('token', data.token)
-      onLogin?.(data.user)
+    // Guardar token Y usuario juntos para que useAppInit
+    // pueda restaurar el rol aunque /api/me falle al recargar
+    localStorage.setItem('token', data.token)
+    localStorage.setItem('user', JSON.stringify(data.user))
 
-      // Redirección basada en rol
-      const role = data.user?.role || data.user?.rol
-      if (role === 'admin') navigate('/admin')
-      else if (role === 'restaurant') navigate('/restaurant/dashboard')
-      else navigate('/')
-      
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('login.error_connection'))
-    } finally {
-      setLoading(false)
-    }
+    // Notificar a la app con el objeto usuario completo
+    onLogin?.(data.user)
+
+    // Redirección basada en rol
+    const role = data.user?.role || data.user?.rol
+    if (role === 'admin') navigate('/admin')
+    else if (role === 'restaurant') navigate('/restaurant/dashboard')
+    else navigate('/')
+
+  } catch (err) {
+    setError(err instanceof ApiError ? err.message : t('login.error_connection'))
+  } finally {
+    setLoading(false)
   }
+}
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
