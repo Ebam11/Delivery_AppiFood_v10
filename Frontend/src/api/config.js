@@ -1,10 +1,12 @@
 const getDefaultApiUrl = () => {
-  // En entorno local con XAMPP, Laravel suele estar servido por Apache en /Backend/public.
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost/delivery-appifood/Backend/public/api';
   }
-
   return '/api';
 };
 
-export const API_URL = import.meta.env.VITE_API_URL || getDefaultApiUrl();
+/* VITE_API_URL siempre tiene prioridad
+export const API_URL = import.meta.env.VITE_API_URL || getDefaultApiUrl();*/
+
+//temporal
+export const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';

@@ -360,6 +360,14 @@
     "error_loading": "Error loading restaurant"
   },
   "rd": {
+    "edit_dish": "Edit dish",
+    "upload_image": "Upload image",
+    "dish_name": "Dish name *",
+    "dish_description": "Description (optional)",
+    "dish_price": "Price *",
+    "select_category": "Select category",
+    "saving": "Saving...",
+    "save_changes": "Save changes",
     "logout": "Log out",
     "search": "Search...",
     "restaurant_label": "Restaurant",
