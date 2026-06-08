@@ -9,6 +9,8 @@ use App\Http\Resources\UserResource;
 use App\Models\Restaurant;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
@@ -40,10 +42,23 @@ class RegisterController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
+        // Generar refresh token
+        $refreshToken = Str::random(128);
+        $user->update([
+            'refresh_token_hash' => Hash::make($refreshToken),
+            'refresh_token_expires_at' => now()->addDays(30),
+            'last_login_at' => now(),
+        ]);
+
         return response()->json([
             'message' => '¡Registro exitoso!',
-            'token'   => $token,
-            'user'    => new UserResource($user),
+            'data' => [
+                'access_token' => $token,
+                'refresh_token' => $refreshToken,
+                'expires_in' => 3600,
+                'type' => 'Bearer',
+                'user' => new UserResource($user),
+            ]
         ], 201);
     }
 }

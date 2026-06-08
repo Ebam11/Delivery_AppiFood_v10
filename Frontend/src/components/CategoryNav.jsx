@@ -1,6 +1,6 @@
 // Archivo: src/components/CategoryNav.jsx | Comentario: logica principal del modulo.
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
 export default function CategoryNav({ onCategoryChange }) {
   const [activeCategory, setActiveCategory] = useState('all');

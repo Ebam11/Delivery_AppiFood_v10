@@ -2,7 +2,7 @@
 import { useProductImage } from '../hooks/useImages'
 import { useLazyLoad } from '../hooks/useLazyLoad'
 import { blurhash } from '../utils/blurhash'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
 /**
  * Tarjeta de producto con imagen dinámica de Unsplash + lazy loading

@@ -1,15 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useLocation } from 'react-router-dom'
 import { useRestaurantStore } from '../store/restaurantStore'
-import { MOCK_RESTAURANTS } from '../data/mockRestaurants'
+import { getRestaurantReviews } from '../api/restaurants'
 
-/**
- * Hook para manejar la lógica de la página de detalle del restaurante.
- */
 export function useRestaurantDetail() {
   const { id } = useParams()
   const location = useLocation()
   const [selectedProduct, setSelectedProduct] = useState(null)
+  const [reviews, setReviews] = useState([])
+  const [isReviewsLoading, setIsReviewsLoading] = useState(false)
   
   const {
     selectedRestaurant,
@@ -19,12 +18,12 @@ export function useRestaurantDetail() {
     clearError,
   } = useRestaurantStore()
 
-  // Intentar obtener restaurante desde el estado de navegación o mocks
+  // Intentar obtener restaurante desde el estado de navegación
   const fallbackRestaurant = useMemo(() => {
     const fromState = location.state?.restaurant
     if (fromState?.id && String(fromState.id) === String(id)) return fromState
 
-    return MOCK_RESTAURANTS.find(r => String(r.id) === String(id)) || null
+    return null
   }, [id, location.state])
 
   useEffect(() => {
@@ -32,6 +31,19 @@ export function useRestaurantDetail() {
       fetchRestaurantById(id).catch(() => {})
     }
   }, [id, fallbackRestaurant, fetchRestaurantById])
+
+  useEffect(() => {
+    if (id) {
+      setIsReviewsLoading(true)
+      getRestaurantReviews(id)
+        .then(res => {
+          const list = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : [])
+          setReviews(list)
+        })
+        .catch(() => {})
+        .finally(() => setIsReviewsLoading(false))
+    }
+  }, [id])
 
   const restaurant = selectedRestaurant?.data || selectedRestaurant || fallbackRestaurant
 
@@ -51,6 +63,8 @@ export function useRestaurantDetail() {
     clearError,
     selectedProduct,
     setSelectedProduct,
-    isCurrentlyOpen
+    isCurrentlyOpen,
+    reviews,
+    isReviewsLoading
   }
 }

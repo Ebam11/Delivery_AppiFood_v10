@@ -1,13 +1,12 @@
 // Archivo: src/pages/Favorites.jsx | Comentario: logica principal del modulo.
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useAuthStore } from '../store/authStore';
 import { useFavoritesStore } from '../store/favoritesStore';
 import Loading from '../components/Loading';
 import ErrorMessage from '../components/ErrorMessage';
 import { fetchJson } from '../api/fetchJson';
-import { MOCK_RESTAURANTS } from '../data/mockRestaurants';
 import './Favorites.css';
 import '../components/SharedUI.css';
 
@@ -24,7 +23,7 @@ export default function Favorites() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { token } = useAuthStore();
-  const [restaurants, setRestaurants] = useState(MOCK_RESTAURANTS.map(normalizeRestaurant));
+  const [restaurants, setRestaurants] = useState([]);
   const {
     favorites,
     loading,
@@ -45,9 +44,7 @@ export default function Favorites() {
       try {
         const data = await fetchJson('/restaurants?paginate=false')
         const restaurantsArray = Array.isArray(data) ? data : data.data || data.restaurants || []
-        const normalized = restaurantsArray.length > 0
-          ? restaurantsArray.map(normalizeRestaurant)
-          : MOCK_RESTAURANTS.map(normalizeRestaurant)
+        const normalized = restaurantsArray.map(normalizeRestaurant)
 
         if (active) {
           setRestaurants(normalized)
@@ -55,7 +52,7 @@ export default function Favorites() {
       } catch (error) {
         console.error('Error cargando restaurantes para favoritos:', error)
         if (active) {
-          setRestaurants(MOCK_RESTAURANTS.map(normalizeRestaurant))
+          setRestaurants([])
         }
       }
     }
@@ -82,11 +79,8 @@ export default function Favorites() {
 
   if (loading) return <Loading />;
 
-  // Map favorite ids to restaurant objects using mocks as fallback
   const favoriteRestaurants = (favorites || []).map(id => {
-    return restaurants.find(r => Number(r.id) === Number(id))
-      || MOCK_RESTAURANTS.find(r => Number(r.id) === Number(id))
-      || null
+    return restaurants.find(r => Number(r.id) === Number(id)) || null
   }).filter(Boolean)
 
   return (

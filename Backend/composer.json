@@ -6,9 +6,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "ext-pdo_mysql": "*",
         "ext-bcmath": "*",
         "ext-gd": "*",
+        "ext-pdo_mysql": "*",
         "ext-zip": "*",
         "barryvdh/laravel-dompdf": "^2.0|^3.0",
         "cloudinary-labs/cloudinary-laravel": "^2.3",
@@ -16,10 +16,12 @@
         "intervention/image": "^3.0",
         "laravel/framework": "^10.48",
         "laravel/sanctum": "^3.3",
+        "laravel/socialite": "^5.27",
         "laravel/tinker": "^2.9",
         "spatie/laravel-permission": "^6.0"
     },
     "require-dev": {
+        "doctrine/dbal": "^3.10",
         "fakerphp/faker": "^1.23",
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.25",

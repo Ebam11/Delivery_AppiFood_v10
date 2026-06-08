@@ -1,7 +1,7 @@
 // Archivo: src/pages/PaymentConfirmation.jsx | Comentario: logica principal del modulo.
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { usePaymentStore } from '../store/paymentStore';
 import { useOrderStore } from '../store/orderStore';
 import { Loading } from '../components/Loading';

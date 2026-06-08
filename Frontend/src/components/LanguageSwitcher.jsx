@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
 const languages = [
   { code: 'es', label: 'Español', flag: '🇪🇸' },
@@ -7,13 +7,10 @@ const languages = [
 ];
 
 export default function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { currentLang: currentLangCode, changeLang } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   
-  // Normaliza el idioma activo: 'es-CO', 'es_CO', 'co' → 'es'
-  const raw = i18n.language ?? 'es';
-  const currentLangCode = raw.split('-')[0].split('_')[0].toLowerCase();
   const currentLang = languages.find(l => l.code === currentLangCode) || languages[0];
 
   useEffect(() => {
@@ -30,7 +27,7 @@ export default function LanguageSwitcher() {
     <div className="relative inline-block text-left" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 hover:border-[#FF4B3E] hover:shadow-sm transition-all duration-300 text-sm font-medium text-gray-700"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 hover:border-[#FF4B3E] hover:shadow-sm transition-all duration-300 text-sm font-medium text-gray-700 dark:text-slate-200"
       >
         <span className="text-base">{currentLang.flag}</span>
         <span className="uppercase">{currentLang.code}</span>
@@ -38,19 +35,19 @@ export default function LanguageSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-36 origin-top-right rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden transform opacity-100 scale-100 transition-all duration-200">
+        <div className="absolute right-0 mt-2 w-36 origin-top-right rounded-xl bg-white dark:bg-slate-900 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden transform opacity-100 scale-100 transition-all duration-200 border dark:border-slate-800">
           <div className="py-1">
             {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => {
-                  i18n.changeLanguage(lang.code);
+                  changeLang(lang.code);
                   setIsOpen(false);
                 }}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
                   currentLangCode === lang.code
-                    ? 'bg-red-50 text-[#FF4B3E] font-bold'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-[#FF4B3E]'
+                    ? 'bg-red-50 dark:bg-red-950/20 text-[#FF4B3E] font-bold'
+                    : 'text-gray-700 dark:text-slate-350 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-[#FF4B3E]'
                 }`}
               >
                 <span className="text-lg">{lang.flag}</span>

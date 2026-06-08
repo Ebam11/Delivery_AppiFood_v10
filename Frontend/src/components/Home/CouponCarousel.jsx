@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../../hooks/useTranslate';
 import { Link } from 'react-router-dom'
 
 /**

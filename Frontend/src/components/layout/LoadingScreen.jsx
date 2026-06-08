@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../../hooks/useTranslate';
 
 /**
  * Pantalla de carga universal para la aplicación.

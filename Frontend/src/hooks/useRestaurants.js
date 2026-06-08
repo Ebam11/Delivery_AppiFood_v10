@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { fetchJson } from '../api/fetchJson'
 import { useAuthStore } from '../store/authStore'
 import { useFavoritesStore } from '../store/favoritesStore'
-import { MOCK_RESTAURANTS } from '../data/mockRestaurants'
 import { isRestaurantOpenNow } from '../components/ScheduleDisplay'
 
 /**
@@ -20,6 +19,9 @@ export function useRestaurants() {
   const [filter, setFilter] = useState('all')
   const [selectedCategory, setSelectedCategory] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [deliveryFilter, setDeliveryFilter] = useState('all') // 'all', 'free', 'cheap'
+  const [timeFilter, setTimeFilter] = useState('all') // 'all', 'fast' (<= 30 min), 'under45' (<= 45 min)
+  const [ratingFilter, setRatingFilter] = useState('all') // 'all', '4plus', '45plus'
 
   // Normalización
   const normalizeRestaurant = (r) => {
@@ -44,10 +46,10 @@ export function useRestaurants() {
       try {
         const data = await fetchJson('/restaurants?paginate=false')
         const items = Array.isArray(data) ? data : data.data || []
-        const source = items.length > 0 ? items : MOCK_RESTAURANTS
-        setRestaurants(source.map(normalizeRestaurant).sort((a, b) => Number(b.isOpen) - Number(a.isOpen) || b.rating - a.rating))
+        setRestaurants(items.map(normalizeRestaurant).sort((a, b) => Number(b.isOpen) - Number(a.isOpen) || b.rating - a.rating))
       } catch (err) {
-        setRestaurants(MOCK_RESTAURANTS.map(normalizeRestaurant))
+        console.error('Error fetching restaurants:', err)
+        setRestaurants([])
       } finally {
         setLoading(false)
       }
@@ -64,23 +66,44 @@ export function useRestaurants() {
   // Filtrado
   const filteredRestaurants = useMemo(() => {
     return restaurants.filter(r => {
-      if (filter === 'promo' && r.delivery > 4000) return false
+      // Filtros rápidos superiores
+      if (filter === 'promo' && r.delivery > 0) return false // Envio gratis para promo
       if (filter === 'rating' && r.rating < 4.5) return false
       if (filter === 'favorites' && !favorites.includes(r.id)) return false
       
+      // Filtro de Categoría
       if (selectedCategory) {
         const sel = selectedCategory.toLowerCase()
         if (!r.categories.some(c => c.toLowerCase().includes(sel))) return false
       }
       
+      // Búsqueda de Texto
       if (searchQuery) {
         const q = searchQuery.toLowerCase()
         if (!r.name.toLowerCase().includes(q) && !r.description?.toLowerCase().includes(q)) return false
       }
+
+      // Filtro Avanzado de Costo de Envío
+      if (deliveryFilter === 'free' && r.delivery > 0) return false
+      if (deliveryFilter === 'cheap' && r.delivery > 3000) return false
+
+      // Filtro Avanzado de Tiempo de Entrega
+      if (timeFilter === 'fast') {
+        const maxTime = r.delivery_time_max || (r.delivery_time_min ? r.delivery_time_min + 10 : 30)
+        if (maxTime > 30) return false
+      }
+      if (timeFilter === 'under45') {
+        const maxTime = r.delivery_time_max || (r.delivery_time_min ? r.delivery_time_min + 10 : 45)
+        if (maxTime > 45) return false
+      }
+
+      // Filtro Avanzado de Calificación
+      if (ratingFilter === '4plus' && r.rating < 4.0) return false
+      if (ratingFilter === '45plus' && r.rating < 4.5) return false
       
       return true
     })
-  }, [restaurants, filter, selectedCategory, searchQuery, favorites])
+  }, [restaurants, filter, selectedCategory, searchQuery, favorites, deliveryFilter, timeFilter, ratingFilter])
 
   const handleFavoriteToggle = async (id) => {
     if (!token) return navigate('/login')
@@ -99,6 +122,12 @@ export function useRestaurants() {
     setSearchQuery,
     handleFavoriteToggle,
     isFavorite,
-    navigate
+    navigate,
+    deliveryFilter,
+    setDeliveryFilter,
+    timeFilter,
+    setTimeFilter,
+    ratingFilter,
+    setRatingFilter
   }
 }

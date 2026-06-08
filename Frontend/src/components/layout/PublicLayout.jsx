@@ -1,4 +1,4 @@
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../../hooks/useTranslate';
 import Header from '../Header'
 import CartSidebar from '../CartSidebar'
 import SupportChatbot from '../SupportChatbot'

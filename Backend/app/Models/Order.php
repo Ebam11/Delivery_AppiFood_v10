@@ -18,6 +18,7 @@ class Order extends Model
         'delivery_address', 'delivery_lat', 'delivery_lng',
         'subtotal', 'delivery_cost', 'discount', 'total',
         'status', 'notes',
+        'driver_id', 'driver_lat', 'driver_lng',
     ];
 
     protected $casts = [
@@ -27,6 +28,8 @@ class Order extends Model
         'total'         => 'decimal:2',
         'delivery_lat'  => 'decimal:8',
         'delivery_lng'  => 'decimal:8',
+        'driver_lat'    => 'decimal:8',
+        'driver_lng'    => 'decimal:8',
         'status'        => OrderStatus::class,
     ];
 
@@ -62,6 +65,11 @@ class Order extends Model
     public function coupon(): BelongsTo
     {
         return $this->belongsTo(Coupon::class);
+    }
+
+    public function driver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'driver_id');
     }
 
     public function items(): HasMany

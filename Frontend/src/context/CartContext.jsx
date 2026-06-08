@@ -97,10 +97,6 @@ export function CartProvider({ children }) {
     const productId = product?.id ?? product?.product_id
     const restaurantId = product?.restaurant_id ?? product?.restaurantId ?? serverCart?.restaurant_id
 
-    if (product?.isMock) {
-      return
-    }
-
     if (!productId) {
       return
     }

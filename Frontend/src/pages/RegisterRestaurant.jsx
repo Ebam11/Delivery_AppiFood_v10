@@ -1,7 +1,7 @@
 // Archivo: src/pages/RegisterRestaurant.jsx | Comentario: logica principal del modulo.
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
 
@@ -85,10 +85,18 @@ export default function RegisterRestaurant({ onLogin }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      console.log('respuesta completa del backend', JSON.stringify(data))
+      try {
+        if (!import.meta.env.PROD) console.log('respuesta completa del backend', JSON.stringify(data))
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') console.log('respuesta completa del backend', JSON.stringify(data))
+      }
 
       localStorage.setItem('token', data.token)
-      console.log('data.user:', data.user)
+      try {
+        if (!import.meta.env.PROD) console.log('data.user:', data.user)
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') console.log('data.user:', data.user)
+      }
       localStorage.setItem('user', JSON.stringify(data.user))
       onLogin?.(data.user)
       navigate('/restaurant/dashboard')
@@ -121,7 +129,7 @@ export default function RegisterRestaurant({ onLogin }) {
             background: 'linear-gradient(135deg,rgba(0,0,0,0.6),rgba(20,20,20,0.55)), url(https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600&h=900&fit=crop) center/cover no-repeat',
           }}
         />
-        <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center px-8 z-50">
+        <header className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center px-8 z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
           <Link
             to="/restaurant/login"
@@ -129,7 +137,7 @@ export default function RegisterRestaurant({ onLogin }) {
           >
             {t('register_restaurant.login_button')}
           </Link>
-        </div>
+        </header>
 
         <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] py-24 flex items-center justify-between gap-10 flex-wrap min-h-screen">
           <div className="text-white max-w-md hidden md:block">
@@ -142,7 +150,6 @@ export default function RegisterRestaurant({ onLogin }) {
           <div className="w-full max-w-[420px] bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
             <div className="p-7">
               <div className="text-center mb-5">
-                <span className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</span>
                 <p className="text-[#FF4B3E] font-bold text-lg mt-1">{t('register_restaurant.register_title')}</p>
               </div>
 

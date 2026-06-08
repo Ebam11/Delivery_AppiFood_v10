@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Schema;
 
 class UserResource extends JsonResource
 {
@@ -23,6 +24,9 @@ class UserResource extends JsonResource
                 ? asset('storage/' . $this->avatar)
                 : null,
             'is_premium' => $this->isPremium(),
+            'points'     => (int) ($this->points ?? 0),
+            'email_verified' => $this->email_verified_at !== null,
+            'phone_verified' => (Schema::hasColumn('users', 'phone_verified_at') ? ($this->phone_verified_at !== null) : false),
             'restaurant' => $this->whenLoaded('restaurant', fn () => new RestaurantResource($this->restaurant)),
             'status'     => $this->status,
             'created_at' => $this->created_at->toDateString(),

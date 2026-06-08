@@ -1,13 +1,13 @@
 // Archivo: src/pages/Checkout.jsx | Comentario: logica principal del modulo.
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useCartStore } from '../store/cartStore';
 import { useOrderStore } from '../store/orderStore';
 import { usePaymentStore } from '../store/paymentStore';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { Loading } from '../components/Loading';
-import PayUCheckout from '../components/PayUCheckout';
+import WompiCheckout from '../components/WompiCheckout';
 import '../components/SharedUI.css';
 
 export const Checkout = () => {
@@ -212,7 +212,7 @@ export const Checkout = () => {
                 </div>
               </div>
 
-              <PayUCheckout orderId={orderId} />
+              <WompiCheckout orderId={orderId} />
 
               <button
                 onClick={() => {

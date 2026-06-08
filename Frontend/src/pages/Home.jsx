@@ -4,7 +4,7 @@
  * Organizada en componentes modulares para mejorar la legibilidad y el rendimiento.
  */
 
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useHomeData } from '../hooks/useHomeData'
 import HeroCarousel from '../components/Home/HeroCarousel'
 import PopularRestaurants from '../components/Home/PopularRestaurants'
@@ -34,22 +34,22 @@ export default function Home({ isAuth }) {
   // Datos para el carrusel de bienvenida
   const heroSlides = [
     {
-      title: t('home.hero1_title') || 'HOT SPICY\nCHICKEN BURGER',
-      subtitle: t('home.hero1_subtitle') || 'Crujiente, cada bocado sabe',
+      title: t('hero.slide1.title') || 'HOT SPICY\nCHICKEN BURGER',
+      subtitle: t('hero.slide1.subtitle') || 'Crujiente, cada bocado sabe',
       price: 30000,
       discount: 25,
       image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=1200&h=800&fit=crop',
     },
     {
-      title: t('home.hero2_title') || 'CHICAGO DEEP\nPIZZA',
-      subtitle: t('home.hero2_subtitle') || 'Clásica y deliciosa',
+      title: t('hero.slide2.title') || 'CHICAGO DEEP\nPIZZA',
+      subtitle: t('hero.slide2.subtitle') || 'Clásica y deliciosa',
       price: 22000,
       discount: 20,
       image: 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=1200&h=800&fit=crop',
     },
     {
-      title: t('home.hero3_title') || 'SUSHI PREMIUM\nSET',
-      subtitle: t('home.hero3_subtitle') || 'Fresco del día',
+      title: t('hero.slide3.title') || 'SUSHI PREMIUM\nSET',
+      subtitle: t('hero.slide3.subtitle') || 'Fresco del día',
       price: 45000,
       discount: 15,
       image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200&h=800&fit=crop',

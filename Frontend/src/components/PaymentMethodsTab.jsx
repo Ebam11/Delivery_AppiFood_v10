@@ -1,6 +1,6 @@
 // Archivo: src/components/PaymentMethodsTab.jsx | Comentario: logica principal del modulo.
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import {
   getUserPaymentMethods,
   createUserPaymentMethod,

@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { fetchJson } from '../api/fetchJson'
 import { useAuthStore } from '../store/authStore'
 import { useFavoritesStore } from '../store/favoritesStore'
-import { MOCK_RESTAURANTS } from '../data/mockRestaurants'
 
 /**
  * Hook para manejar la lógica y los datos de la página de inicio.
@@ -21,14 +20,13 @@ export function useHomeData() {
   const [modal, setModal] = useState(null)
 
   // Normalizar datos de restaurantes
-  const normalizeRestaurant = (restaurant, index = 0) => {
-    const fallback = MOCK_RESTAURANTS[index % MOCK_RESTAURANTS.length] || {}
+  const normalizeRestaurant = (restaurant) => {
     return {
       ...restaurant,
-      img: restaurant.banner || restaurant.logo || restaurant.image || fallback.img || '',
-      rating: Number((Number(restaurant.average_rating ?? restaurant.rating ?? fallback.rating ?? 4.5)).toFixed(1)),
-      time: restaurant.delivery_time_min ? `${restaurant.delivery_time_min}-${restaurant.delivery_time_max || 45} min` : (fallback.time || '20-30 min'),
-      delivery: Number(restaurant.delivery_cost ?? restaurant.delivery ?? fallback.delivery ?? 3500),
+      img: restaurant.banner || restaurant.logo || restaurant.image || '',
+      rating: Number((Number(restaurant.average_rating ?? restaurant.rating ?? 0)).toFixed(1)),
+      time: restaurant.delivery_time_min ? `${restaurant.delivery_time_min}-${restaurant.delivery_time_max || 45} min` : '20-30 min',
+      delivery: Number(restaurant.delivery_cost ?? restaurant.delivery ?? 0),
       products: Array.isArray(restaurant.products) ? restaurant.products : [],
     }
   }
@@ -42,13 +40,13 @@ export function useHomeData() {
         const items = Array.isArray(data) ? data : data.data || []
         
         if (items.length > 0) {
-          setPopularRestaurants(items.slice(0, 8).map((r, idx) => normalizeRestaurant(r, idx)))
+          setPopularRestaurants(items.slice(0, 8).map((r) => normalizeRestaurant(r)))
         } else {
-          setPopularRestaurants(MOCK_RESTAURANTS.slice(0, 8).map((r, idx) => normalizeRestaurant(r, idx)))
+          setPopularRestaurants([])
         }
       } catch (err) {
         console.error('Error fetching restaurants:', err)
-        setPopularRestaurants(MOCK_RESTAURANTS.slice(0, 8).map((r, idx) => normalizeRestaurant(r, idx)))
+        setPopularRestaurants([])
       } finally {
         setLoadingRestaurants(false)
       }

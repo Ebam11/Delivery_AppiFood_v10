@@ -74,6 +74,13 @@ class OrderResource extends JsonResource
                 'restaurant_reply' => $this->review->restaurant_reply,
                 'created_at' => $this->review->created_at?->toDateTimeString(),
             ] : null),
+            'driver_id'        => $this->driver_id,
+            'driver_lat'       => $this->driver_lat,
+            'driver_lng'       => $this->driver_lng,
+            'driver'           => $this->whenLoaded('driver', fn() => $this->driver ? [
+                'id'   => $this->driver->id,
+                'name' => $this->driver->name,
+            ] : null),
             'created_at'       => $this->created_at?->toDateTimeString(),
             'updated_at'       => $this->updated_at?->toDateTimeString(),
         ];

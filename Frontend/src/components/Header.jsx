@@ -1,23 +1,17 @@
 // Archivo: src/components/Header.jsx | Comentario: logica principal del modulo.
-// src/components/Header.jsx - Versión completa corregida
+// src/components/Header.jsx - Versión completa con Dark Mode y Responsive
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import LanguageSwitcher from './LanguageSwitcher'
+import ThemeToggle from './ThemeToggle'
 import { useCart } from '../context/useCart'
 import { api } from '../api/client'
 
-const RED = '#FF4B3E'
-const RED_DK = '#e03a2d'
 const DEFAULT_LOCATION = { lat: 2.4448, lng: -76.6147 }
 
 export default function Header({ isAuth, user, onLogout, isLoading }) {
   const { t } = useTranslation()
-  console.log('🎯 Header received:', { 
-    isAuth, 
-    isLoading,
-    user: user ? JSON.stringify(user) : 'null' 
-  })
   
   const [drawerOpen, setDrawerOpen]     = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -44,30 +38,15 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   })()
   const effectiveUser = user || storedUser
 
-  // FUNCIONES AUXILIARES - DEFINIDAS AL PRINCIPIO
+  // FUNCIONES AUXILIARES
   const getUserName = () => {
-    if (!effectiveUser) {
-      console.log('👤 getUserName: user is null/undefined')
-      return 'Usuario'
-    }
-    console.log('👤 getUserName: user object:', effectiveUser)
-    console.log('👤 getUserName: user.name =', effectiveUser.name)
-    console.log('👤 getUserName: user.nombre =', effectiveUser.nombre)
-    console.log('👤 getUserName: all keys =', Object.keys(effectiveUser))
-    const result = effectiveUser.name || effectiveUser.nombre || effectiveUser.displayName || effectiveUser.username || 'Usuario'
-    console.log('👤 getUserName returning:', result)
-    return result
+    if (!effectiveUser) return 'Usuario'
+    return effectiveUser.name || effectiveUser.nombre || effectiveUser.displayName || effectiveUser.username || 'Usuario'
   }
 
   const getUserEmail = () => {
-    if (!effectiveUser) {
-      console.log('📧 getUserEmail: user is null/undefined')
-      return ''
-    }
-    console.log('📧 getUserEmail: checking user.email =', effectiveUser.email)
-    const result = effectiveUser.email || effectiveUser.correo || effectiveUser.mail || ''
-    console.log('📧 getUserEmail returning:', result)
-    return result
+    if (!effectiveUser) return ''
+    return effectiveUser.email || effectiveUser.correo || effectiveUser.mail || ''
   }
 
   const getUserInitial = () => {
@@ -76,8 +55,8 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   }
 
   const isPremium = Boolean(effectiveUser?.is_premium)
-
-  const isAdmin = String(user?.role ?? user?.rol ?? 'customer').toLowerCase() === 'admin'
+  const userRole = String(effectiveUser?.role ?? 'customer').toLowerCase()
+  const isAdmin = userRole === 'admin'
 
   useEffect(() => {
     const fn = e => { if (e.key === 'Escape') { setDrawerOpen(false); setUserMenuOpen(false) } }
@@ -96,7 +75,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     return () => document.removeEventListener('mousedown', fn)
   }, [])
 
-  // Cerrar drawer al cambiar de ruta
   useEffect(() => { setDrawerOpen(false) }, [location.pathname])
 
   const doSearch = () => {
@@ -125,19 +103,17 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
   const fetchSavedAddresses = async () => {
     if (!isAuth) return
-
     try {
       setAddressesLoading(true)
       const response = await api.get('/addresses')
       const list = Array.isArray(response.data?.data) ? response.data.data : []
       setSavedAddresses(list)
-
       const selected = list.find((address) => address.is_default) || list[0] || null
       if (selected) {
         setSelectedAddressId(selected.id)
         setTempAddress(selected.address)
       }
-    } catch (error) {
+    } catch {
       setAddressesError(t('header.address.errorLoad') || 'No se pudieron cargar las direcciones')
     } finally {
       setAddressesLoading(false)
@@ -145,9 +121,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   }
 
   useEffect(() => {
-    if (addressModalOpen) {
-      fetchSavedAddresses()
-    }
+    if (addressModalOpen) fetchSavedAddresses()
   }, [addressModalOpen])
 
   const saveAddress = async () => {
@@ -170,14 +144,10 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         )
         const results = await response.json()
         const first = Array.isArray(results) ? results[0] : null
-
         if (first?.lat && first?.lon) {
           return { lat: Number(first.lat), lng: Number(first.lon) }
         }
-      } catch (error) {
-        // Fallback to default location if geocoding fails.
-      }
-
+      } catch { /* fallback */ }
       return DEFAULT_LOCATION
     }
 
@@ -187,35 +157,25 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
       if (isAuth) {
         let targetAddressId = selectedAddressId
-
         if (editingAddressId) {
           await api.put(`/addresses/${editingAddressId}`, {
-            name: 'Dirección',
-            address: nextAddress,
-            lat: null,
-            lng: null,
+            name: 'Dirección', address: nextAddress, lat: null, lng: null,
           })
           targetAddressId = editingAddressId
         } else {
-          const selected = savedAddresses.find((address) => address.id === selectedAddressId)
+          const selected = savedAddresses.find((a) => a.id === selectedAddressId)
           const isSameSelected = selected && selected.address === nextAddress
-
           if (!isSameSelected) {
             const created = await api.post('/addresses', {
-              name: 'Dirección',
-              address: nextAddress,
-              lat: null,
-              lng: null,
+              name: 'Dirección', address: nextAddress, lat: null, lng: null,
             })
             targetAddressId = created.data?.data?.id || null
           }
         }
-
         if (targetAddressId) {
           await api.patch(`/addresses/${targetAddressId}/default`)
           setSelectedAddressId(targetAddressId)
         }
-
         await fetchSavedAddresses()
       }
 
@@ -225,11 +185,8 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
       if (/ubicaci[oó]n actual/i.test(nextAddress)) {
         const match = nextAddress.match(/\(([-\d.]+),\s*([-\d.]+)\)/)
-        if (match) {
-          storeLocation({ lat: match[1], lng: match[2] }, nextAddress)
-        } else {
-          storeLocation(DEFAULT_LOCATION, nextAddress)
-        }
+        if (match) storeLocation({ lat: match[1], lng: match[2] }, nextAddress)
+        else storeLocation(DEFAULT_LOCATION, nextAddress)
       } else {
         const coords = await geocodeAddress(nextAddress)
         storeLocation(coords, nextAddress)
@@ -237,7 +194,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
       window.dispatchEvent(new Event('delivery-address-updated'))
       setAddressModalOpen(false)
-    } catch (error) {
+    } catch {
       setAddressesError(t('header.address.errorSave') || 'No se pudo guardar la dirección')
     } finally {
       setAddressSaving(false)
@@ -271,21 +228,20 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     try {
       setAddressesError('')
       await api.delete(`/addresses/${addressId}`)
-      const nextList = savedAddresses.filter((address) => address.id !== addressId)
+      const nextList = savedAddresses.filter((a) => a.id !== addressId)
       setSavedAddresses(nextList)
-
       if (selectedAddressId === addressId) {
         const fallback = nextList[0] || null
         setSelectedAddressId(fallback?.id || null)
         setTempAddress(fallback?.address || '')
       }
-    } catch (error) {
+    } catch {
       setAddressesError(t('header.address.errorDelete') || 'No se pudo eliminar la dirección')
     }
   }
 
   const NAV_LINKS = [
-    { section: t('header.nav.sectionDiscover') || 'DESCUBRIR' },
+    { section: isAuth ? (t('header.nav.sectionDiscover') || 'DESCUBRIR') : 'DESCUBRE EL SABOR' },
     { to:'/',            icon:'fa-home',          label: t('header.nav.home') || 'Inicio' },
     { to:'/restaurants', icon:'fa-store',         label: t('header.nav.restaurants') || 'Restaurantes' },
     ...(isAuth ? [
@@ -294,49 +250,38 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
       { to:'/user/orders',    icon:'fa-box',            label: t('header.nav.myOrders') || 'Mis pedidos' },
       { to:'/user/favorites', icon:'fa-heart',          label: t('header.nav.myFavorites') || 'Mis favoritos' },
       { to:'/user/profile',   icon:'fa-user-cog',       label: t('header.nav.myProfile') || 'Mi perfil' },
+      { to:'/user/gamification', icon:'fa-trophy',      label: t('header.nav.clubLoyalty') || 'Club de Fidelidad', promo:true },
     ] : []),
-    { section: t('header.nav.sectionSubscriptions') || 'SUSCRIPCIONES' },
+    { section: isAuth ? (t('header.nav.sectionSubscriptions') || 'SUSCRIPCIONES') : 'MÁS BENEFICIOS' },
     { to:'/subscription', icon:'fa-crown',        label: t('header.nav.subscriptionPlans') || 'Planes de Suscripción', promo:true },
     { section: t('header.nav.sectionOffers') || 'OFERTAS' },
     { to:'/coupons', icon:'fa-tag',           label: t('header.nav.coupons') || 'Cupones disponibles', promo:true },
-    { section: t('header.nav.sectionHelp') || 'AYUDA' },
+    { section: isAuth ? (t('header.nav.sectionHelp') || 'AYUDA') : 'MÁS INFORMACIÓN' },
     { to:'/help-center', icon:'fa-question-circle', label: t('header.nav.howItWorks') || 'Centro de ayuda', promo:true },
     { to:'/support', icon:'fa-headset',         label: t('header.nav.supportChat') || 'Chat de soporte', promo:true },
     { href:'#',      icon:'fa-mobile-alt',      label: t('header.nav.downloadApp') || 'Descarga la app' },
     { to:'/register-restaurant',icon:'fa-utensils',        label: t('header.nav.registerRestaurant') || 'Registra tu restaurante', promo:true },
   ]
 
-  const linkStyle = (promo) => ({
-    display:'flex', alignItems:'center', gap:12,
-    padding:'11px 20px', fontSize:14, fontWeight:500,
-    color: promo ? RED : '#333',
-    textDecoration:'none', cursor:'pointer',
-    border:'none', background:'none', width:'100%', textAlign:'left',
-    fontFamily:'inherit', transition:'padding-left 0.15s, background 0.15s',
-  })
+  const linkClasses = (promo) => 
+    `flex items-center gap-3 px-5 py-3 text-sm font-semibold transition-all duration-200 text-left w-full hover:bg-gray-50 dark:hover:bg-slate-700 hover:pl-6 ${promo ? 'text-[#FF4B3E]' : 'text-gray-700 dark:text-gray-300 hover:text-[#FF4B3E]'}`;
 
-  // Si está cargando, mostrar un header skeleton
+  // Skeleton loading
   if (isLoading) {
     return (
       <>
-        <header className="component-header fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-50 border-b border-gray-100">
+        <header className="component-header fixed top-0 left-0 right-0 h-16 bg-white dark:bg-slate-900 shadow-sm z-50 border-b border-gray-100 dark:border-slate-800">
           <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-            {/* IZQUIERDA: Hamburguesa + Logo skeleton */}
             <div className="flex items-center gap-4 flex-shrink-0">
-              <div className="w-10 h-10 rounded-lg bg-gray-200 animate-pulse" />
-              <div className="w-24 h-8 bg-gray-200 animate-pulse rounded" />
+              <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-slate-700 animate-pulse" />
+              <div className="w-24 h-8 bg-gray-200 dark:bg-slate-700 animate-pulse rounded" />
             </div>
-
-            {/* CENTRO: Buscador skeleton */}
             <div className="hidden sm:flex flex-1 max-w-lg">
-              <div className="w-full h-10 bg-gray-200 animate-pulse rounded-full" />
+              <div className="w-full h-10 bg-gray-200 dark:bg-slate-700 animate-pulse rounded-full" />
             </div>
-
-            {/* DERECHA: Usuario + Carrito skeleton */}
             <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="w-20 h-8 bg-gray-200 animate-pulse rounded-full" />
-              <div className="w-24 h-8 bg-gray-200 animate-pulse rounded-full" />
-              <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-lg" />
+              <div className="w-20 h-8 bg-gray-200 dark:bg-slate-700 animate-pulse rounded-full" />
+              <div className="w-10 h-10 bg-gray-200 dark:bg-slate-700 animate-pulse rounded-lg" />
             </div>
           </div>
         </header>
@@ -348,101 +293,97 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   return (
     <>
       {/* ── TOPBAR ── */}
-      <header className="component-header fixed top-0 left-0 right-0 h-16 bg-white shadow-sm z-50 border-b border-gray-100">
-        <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center gap-4">
+      <header className="component-header fixed top-0 left-0 right-0 h-16 bg-white dark:bg-slate-900 shadow-sm z-50 border-b border-gray-100 dark:border-slate-800 transition-colors duration-300">
+        <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center gap-2 sm:gap-4">
           
           {/* IZQUIERDA: Hamburguesa + Logo */}
-          <div className="flex items-center gap-4 flex-1 min-w-0 lg:max-w-[560px]">
-          {/* Hamburguesa */}
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+            {/* Hamburguesa */}
             <button onClick={() => setDrawerOpen(true)}
-              className="w-10 h-10 rounded-lg hover:bg-gray-100 flex items-center justify-center text-gray-700 hover:text-[#FF4B3E] transition flex-shrink-0">
+              className="w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-[#FF4B3E] transition flex-shrink-0"
+              aria-label="Abrir menú">
               <i className="fas fa-bars text-lg font-bold" />
             </button>
 
             {/* Logo */}
-            <Link to="/" onClick={goHomeTop} className="font-['Satisfy'] text-3xl font-bold text-[#FF4B3E] hover:text-[#e03a2d] transition whitespace-nowrap flex-shrink-0">
+            <Link to="/" onClick={goHomeTop} className="font-['Satisfy'] text-2xl sm:text-3xl font-bold text-[#FF4B3E] hover:text-[#e03a2d] transition whitespace-nowrap flex-shrink-0">
               AppiFood
             </Link>
 
-            {/* Dirección */}
+            {/* Dirección - solo desktop grande */}
             <button
               onClick={openAddressModal}
-              className="hidden sm:flex items-center gap-2 text-xs text-gray-600 whitespace-nowrap border border-gray-200 rounded-full px-3 py-1.5 hover:border-[#FF4B3E] hover:text-[#FF4B3E] transition ml-1"
+              className="hidden lg:flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap border border-gray-200 dark:border-slate-700 rounded-full px-3 py-1.5 hover:border-[#FF4B3E] hover:text-[#FF4B3E] transition ml-1"
             >
               <i className="fas fa-map-marker-alt text-[#FF4B3E] text-xs" />
-              <span className="max-w-[260px] truncate">{deliveryAddress}</span>
+              <span className="max-w-[200px] truncate">{deliveryAddress}</span>
               <i className="fas fa-caret-down text-[10px] text-[#FF4B3E]" />
             </button>
           </div>
 
-          {/* CENTRO: Buscador */}
-          <div className="hidden sm:flex flex-[2] justify-center min-w-0">
-            <div className="w-full max-w-3xl">
-              <div className="w-full flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 border-2 border-transparent hover:border-[#FF4B3E] transition">
-              <input
-                type="search"
-                placeholder={t('header.searchPlaceholder') || "¿Deseas algo en especial?"}
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key==='Enter' && doSearch()}
-                className="flex-1 bg-transparent outline-none text-sm text-gray-700 placeholder-gray-500"
-              />
-              <button onClick={doSearch}
-                className="w-8 h-8 rounded-full bg-[#FF4B3E] hover:bg-[#e03a2d] text-white flex items-center justify-center transition flex-shrink-0">
-                <i className="fas fa-search text-xs" />
-              </button>
-            </div>
+          {/* CENTRO: Buscador - solo tablet y superior */}
+          <div className="hidden md:flex flex-1 justify-center min-w-0 mx-2">
+            <div className="w-full max-w-xl">
+              <div className="w-full flex items-center gap-2 bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-2 border-2 border-transparent hover:border-[#FF4B3E] transition">
+                <input
+                  type="search"
+                  placeholder={t('header.searchPlaceholder') || "¿Deseas algo en especial?"}
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  onKeyDown={e => e.key==='Enter' && doSearch()}
+                  className="flex-1 bg-transparent outline-none text-sm text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-500"
+                />
+                <button onClick={doSearch}
+                  className="w-8 h-8 rounded-full bg-[#FF4B3E] hover:bg-[#e03a2d] text-white flex items-center justify-center transition flex-shrink-0">
+                  <i className="fas fa-search text-xs" />
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* DERECHA: Usuario + Carrito */}
-          <div className="flex items-center justify-end gap-3 flex-1 min-w-0 lg:max-w-[420px]">
-            <div className="hidden md:block mr-2">
-              <LanguageSwitcher />
-            </div>
+          {/* DERECHA: Controles + Usuario + Carrito */}
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
+
+
             {!isAuth ? (
-              <>
-                <Link to="/login" className="hidden sm:inline-block px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition">
-                  {t('header.login') || "Iniciar Sesión"}
-                </Link>
-                <Link to="/register" className="px-4 py-2 rounded-full bg-[#FF4B3E] text-white font-bold text-xs hover:bg-[#e03a2d] transition">
-                  {t('header.register') || "Registrarse"}
-                </Link>
-              </>
+              <Link to="/login" className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-[#FF4B3E] text-white font-bold text-xs sm:text-sm shadow-md hover:bg-[#e03a2d] hover:shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap">
+                {t('header.login') || "Ingresar"}
+              </Link>
             ) : (
               <div className="relative" ref={userRef}>
                 <button onClick={() => setUserMenuOpen(o => !o)}
-                  className="flex items-center gap-2 px-3 py-1.5 hover:bg-gray-50 rounded-full transition">
+                  className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-slate-800 rounded-full transition">
                   <div className={`w-8 h-8 rounded-full font-bold text-xs flex items-center justify-center ${isPremium ? 'bg-yellow-400 text-gray-900 shadow-sm' : 'bg-[#FF4B3E] text-white'}`}>
                     {getUserInitial()}
                   </div>
-                  <i className={`fas fa-chevron-down text-xs text-gray-500 transition ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  <i className={`fas fa-chevron-down text-xs text-gray-500 dark:text-gray-400 transition hidden sm:block ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {userMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-100">
-                    <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="font-bold text-sm text-gray-800 flex items-center gap-1.5">
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-[100]">
+                    <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700">
+                      <p className="font-bold text-sm text-gray-800 dark:text-gray-200 flex items-center gap-1.5">
                         <span>{getUserName()}</span>
                         {isPremium && <i className="fas fa-crown text-yellow-500 text-xs" aria-hidden="true" />}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">{getUserEmail()}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{getUserEmail()}</p>
                     </div>
                     {[
                       ...(isAdmin ? [{ to:'/admin', icon:'fa-shield-alt', label: t('header.menu.adminPanel') || 'Panel Admin' }] : []),
                       { to:'/user/profile',   icon:'fa-user',           label: t('header.menu.profile') || 'Mi perfil' },
                       { to:'/user/orders',    icon:'fa-box',            label: t('header.menu.orders') || 'Mis pedidos' },
                       { to:'/user/favorites', icon:'fa-heart',          label: t('header.menu.favorites') || 'Favoritos' },
+                      { to:'/user/gamification', icon:'fa-trophy',      label: t('header.menu.clubLoyalty') || 'Club de Fidelidad' },
                     ].map(({ to, icon, label }) => (
                       <Link key={label} to={to}
                         onClick={() => setUserMenuOpen(false)}
-                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition">
-                        <i className={`fas ${icon} text-gray-400 w-4`} /> {label}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition">
+                        <i className={`fas ${icon} text-gray-400 dark:text-gray-500 w-4`} /> {label}
                       </Link>
                     ))}
-                    <div className="border-t border-gray-100 my-2" />
+                    <div className="border-t border-gray-100 dark:border-slate-700 my-2" />
                     <button onClick={onLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 hover:bg-red-50 hover:text-[#FF4B3E] transition text-left">
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-[#FF4B3E] transition text-left">
                       <i className="fas fa-sign-out-alt w-4" /> {t('header.logout') || "Cerrar sesión"}
                     </button>
                   </div>
@@ -452,10 +393,10 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
             {/* Carrito */}
             <button onClick={() => setIsOpen(true)}
-              className="relative w-10 h-10 rounded-lg bg-white text-gray-600 hover:text-[#FF4B3E] flex items-center justify-center transition">
+              className="relative w-10 h-10 rounded-lg bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-[#FF4B3E] flex items-center justify-center transition">
               <i className="fas fa-shopping-cart text-lg" />
               {count > 0 && (
-                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#FF4B3E] text-white text-xs font-bold flex items-center justify-center border-2 border-white">
+                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#FF4B3E] text-white text-xs font-bold flex items-center justify-center border-2 border-white dark:border-slate-900">
                   {count}
                 </span>
               )}
@@ -465,123 +406,96 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
       </header>
 
       {/* ── OVERLAY DRAWER ── */}
-      <div onClick={() => setDrawerOpen(false)}
-        style={{
-          position:'fixed', top:64, left:0, right:0, bottom:0,
-          background:'rgba(0,0,0,0.55)',
-          zIndex:60,
-          opacity: drawerOpen ? 1 : 0,
-          visibility: drawerOpen ? 'visible' : 'hidden',
-          transition:'opacity 0.3s, visibility 0.3s',
-        }} />
+      <div 
+        onClick={() => setDrawerOpen(false)}
+        className={`fixed inset-0 bg-black/55 z-[60] transition-all duration-300 ${drawerOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+      />
 
       {/* ── DRAWER ── */}
-      <nav style={{
-        position:'fixed', top:64, left:0,
-        width:300, height:'calc(100% - 64px)',
-        background:'white', zIndex:61,
-        display:'flex', flexDirection:'column',
-        boxShadow:'none',
-        overflowY:'auto',
-        transform: drawerOpen ? 'translateX(0)' : 'translateX(-100%)',
-        transition:'transform 0.32s cubic-bezier(0.4,0,0.2,1)',
-      }}>
-
+      <nav className={`fixed top-16 left-0 w-[300px] h-[calc(100vh-64px)] bg-white dark:bg-slate-900 z-[61] flex flex-col overflow-y-auto transform transition-transform duration-300 ease-out ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        
         {/* Header drawer */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px', borderBottom:'1px solid #f0f0f0', position:'sticky', top:0, background:'white', zIndex:1 }}>
-          <span style={{ fontFamily:'Satisfy, cursive', fontSize:24, color:RED }}>AppiFood</span>
-          <button onClick={() => setDrawerOpen(false)}
-            style={{ width:34, height:34, borderRadius:'50%', background:'#f5f5f5', border:'none', cursor:'pointer', fontSize:15, color:'#555', display:'flex', alignItems:'center', justifyContent:'center' }}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900 z-10">
+          <span className="font-satisfy text-2xl text-[#FF4B3E] font-bold">AppiFood</span>
+          <button 
+            onClick={() => setDrawerOpen(false)}
+            className="w-9 h-9 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-[#FF4B3E] transition"
+          >
             <i className="fas fa-times" />
           </button>
         </div>
 
-        {/* Perfil auth - SECCIÓN CORREGIDA */}
+        {/* Perfil auth */}
         {isAuth && effectiveUser && (
-          <div style={{ 
-            display:'flex', 
-            flexDirection:'column',
-            alignItems:'center', 
-            gap:8, 
-            padding:'24px 20px', 
-            background:'#fff5f4', 
-            borderBottom:'1px solid #f0f0f0'
-          }}>
-            {console.log('🎨 DRAWER: Rendering user profile section')}
-            {console.log('🎨 DRAWER: isAuth =', isAuth, ', user =', effectiveUser)}
-            <div style={{ 
-              width:64, 
-              height:64, 
-              borderRadius:'50%', 
-              background: RED,
-              color: 'white',
-              fontWeight:800, 
-              fontSize:24, 
-              display:'flex', 
-              alignItems:'center', 
-              justifyContent:'center', 
-              flexShrink:0,
-              marginBottom:8
-            }}>
+          <div className="flex flex-col items-center gap-2 p-6 bg-[#fff5f4] dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
+            <div className="w-16 h-16 rounded-full bg-[#FF4B3E] text-white font-black text-2xl flex items-center justify-center flex-shrink-0 mb-2">
               {getUserInitial()}
             </div>
-            <div style={{ textAlign:'center' }}>
-              <span style={{ 
-                display:'block', 
-                fontWeight:700, 
-                fontSize:16, 
-                color:'#111',
-                marginBottom:4
-              }}>
-                <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+            <div className="text-center">
+              <span className="block font-bold text-base text-gray-900 dark:text-gray-100 mb-1">
+                <span className="inline-flex items-center gap-1.5">
                   <span>{getUserName()}</span>
-                  {isPremium && <i className="fas fa-crown" style={{ color:'#f59e0b', fontSize:12 }} aria-hidden="true" />}
-                </span> {/* ← Esto debe mostrar "Camilo Acosta" */}
+                  {isPremium && <i className="fas fa-crown text-yellow-500 text-xs" aria-hidden="true" />}
+                </span>
               </span>
-              <span style={{ 
-                display:'block', 
-                fontSize:13, 
-                color:'#666'
-              }}>
-                {getUserEmail()} {/* ← Esto debe mostrar "ejemplo@gmail.com" */}
+              <span className="block text-xs text-gray-500 dark:text-gray-400">
+                {getUserEmail()}
               </span>
             </div>
           </div>
         )}
 
+        {/* Buscador y dirección para móviles */}
+        <div className="p-4 border-b border-gray-100 dark:border-slate-800 md:hidden space-y-3">
+          {/* Buscador */}
+          <div className="w-full flex items-center gap-2 bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-2 border border-transparent focus-within:border-[#FF4B3E] transition">
+            <input
+              type="search"
+              placeholder={t('header.searchPlaceholder') || "¿Deseas algo en especial?"}
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && doSearch()}
+              className="flex-1 bg-transparent outline-none text-xs text-gray-700 dark:text-gray-200 placeholder-gray-500"
+            />
+            <button onClick={doSearch}
+              className="w-7 h-7 rounded-full bg-[#FF4B3E] hover:bg-[#e03a2d] text-white flex items-center justify-center transition flex-shrink-0">
+              <i className="fas fa-search text-[10px]" />
+            </button>
+          </div>
+
+          {/* Dirección */}
+          <button
+            onClick={() => { setDrawerOpen(false); openAddressModal(); }}
+            className="w-full flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2 hover:border-[#FF4B3E] hover:text-[#FF4B3E] transition"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <i className="fas fa-map-marker-alt text-[#FF4B3E]" />
+              <span className="truncate max-w-[180px]">{deliveryAddress}</span>
+            </div>
+            <i className="fas fa-chevron-right text-[10px] text-gray-400" />
+          </button>
+        </div>
+
         {/* Links */}
-        <div style={{ flex:1 }}>
+        <div className="flex-1">
           {NAV_LINKS.map((item, i) => {
             if (item.section) return (
-              <div key={i} style={{ 
-                padding:'16px 20px 8px', 
-                fontSize:12, 
-                fontWeight:700, 
-                textTransform:'uppercase', 
-                letterSpacing:'0.05em', 
-                color:'#999',
-                borderTop: i > 0 ? '1px solid #f0f0f0' : 'none',
-                marginTop: i > 0 ? 8 : 0
-              }}>
+              <div key={i} className={`px-5 pt-4 pb-2 text-[10px] font-black uppercase tracking-wider text-gray-400 dark:text-gray-500 ${i > 0 ? 'border-t border-gray-100 dark:border-slate-800 mt-2' : ''}`}>
                 {item.section}
               </div>
             )
-            const style = linkStyle(item.promo)
+            const classes = linkClasses(item.promo)
             if (item.to) return (
-              <Link key={item.label} to={item.to} style={style}
-                onClick={item.to === '/' ? goHomeTop : () => setDrawerOpen(false)}
-                onMouseEnter={e => { e.currentTarget.style.background='#fafafa'; e.currentTarget.style.paddingLeft='24px'; if(!item.promo) e.currentTarget.style.color=RED }}
-                onMouseLeave={e => { e.currentTarget.style.background='none'; e.currentTarget.style.paddingLeft='20px'; if(!item.promo) e.currentTarget.style.color='#333' }}>
-                <i className={`fas ${item.icon}`} style={{ width:18, textAlign:'center', color:'#bbb', fontSize:14 }} />
+              <Link key={item.label} to={item.to} className={classes}
+                onClick={item.to === '/' ? goHomeTop : () => setDrawerOpen(false)}>
+                <i className={`fas ${item.icon} w-[18px] text-center text-gray-400 dark:text-gray-500 text-sm`} />
                 {item.label}
               </Link>
             )
             return (
-              <a key={item.label} href={item.href} style={style}
-                onClick={() => setDrawerOpen(false)}
-                onMouseEnter={e => { e.currentTarget.style.background='#fafafa'; e.currentTarget.style.paddingLeft='24px'; if(!item.promo) e.currentTarget.style.color=RED }}
-                onMouseLeave={e => { e.currentTarget.style.background='none'; e.currentTarget.style.paddingLeft='20px'; if(!item.promo) e.currentTarget.style.color='#333' }}>
-                <i className={`fas ${item.icon}`} style={{ width:18, textAlign:'center', color: item.promo ? RED : '#bbb', fontSize:14 }} />
+              <a key={item.label} href={item.href} className={classes}
+                onClick={() => setDrawerOpen(false)}>
+                <i className={`fas ${item.icon} w-[18px] text-center text-gray-400 dark:text-gray-500 text-sm`} />
                 {item.label}
               </a>
             )
@@ -589,35 +503,33 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         </div>
 
         {/* Footer drawer */}
-        <div style={{ padding:'16px 20px 24px', borderTop:'1px solid #f0f0f0', display:'flex', flexDirection:'column', gap:10 }}>
-          <div className="flex justify-center mb-2 md:hidden">
-            <LanguageSwitcher />
-          </div>
+        <div className="p-5 border-t border-gray-100 dark:border-slate-800 flex flex-col gap-2.5">
+
           {!isAuth ? (
-            <>
-              <Link to="/register" onClick={() => setDrawerOpen(false)}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, padding:'12px', background:RED, color:'white', borderRadius:999, fontWeight:700, fontSize:14, textDecoration:'none' }}>
-                <i className="fas fa-user-plus" /> {t('header.registerFree') || "Registrarse gratis"}
-              </Link>
-              <Link to="/login" onClick={() => setDrawerOpen(false)}
-                style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'12px', border:`2px solid ${RED}`, color:RED, borderRadius:999, fontWeight:700, fontSize:14, textDecoration:'none' }}>
-                {t('header.login') || "Iniciar sesión"}
-              </Link>
-            </>
+            <Link 
+              to="/login" 
+              onClick={() => setDrawerOpen(false)}
+              className="flex items-center justify-center gap-2 py-3 bg-[#FF4B3E] hover:bg-[#e03a2d] text-white rounded-full font-bold text-sm transition-all shadow-md"
+            >
+              <i className="fas fa-sign-in-alt" /> {t('header.login') || "Ingresar"}
+            </Link>
           ) : (
-            <button onClick={onLogout}
-              style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:8, width:'100%', padding:'12px', background:'none', border:'1.5px solid #e5e5e5', borderRadius:999, fontSize:14, fontWeight:600, color:'#888', cursor:'pointer', fontFamily:'inherit' }}>
+            <button 
+              onClick={onLogout}
+              className="flex items-center justify-center gap-2 w-full py-3 border border-gray-200 dark:border-slate-700 hover:border-red-100 dark:hover:border-red-800 hover:bg-red-50/50 dark:hover:bg-red-900/20 text-gray-500 dark:text-gray-400 hover:text-[#FF4B3E] rounded-full text-sm font-semibold transition"
+            >
               <i className="fas fa-sign-out-alt" /> {t('header.logout') || "Cerrar sesión"}
             </button>
           )}
         </div>
       </nav>
 
+      {/* ── ADDRESS MODAL ── */}
       {addressModalOpen && (
         <div className="fixed inset-0 z-[90] bg-black/35 flex items-start justify-center pt-10 px-4" onClick={closeAddressModal}>
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="px-4 py-3 border-b border-gray-100 flex items-center gap-3">
-              <button onClick={closeAddressModal} className="w-8 h-8 rounded-full hover:bg-gray-100 text-gray-600">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-800 flex items-center gap-3">
+              <button onClick={closeAddressModal} className="w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300">
                 <i className="fas fa-arrow-left" />
               </button>
               <input
@@ -625,44 +537,44 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
                 onChange={e => setTempAddress(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && saveAddress()}
                 placeholder={t('header.address.placeholder') || "Escribe la dirección de entrega"}
-                className="flex-1 border-2 border-blue-400 rounded-xl px-4 py-2.5 text-sm outline-none"
+                className="flex-1 border-2 border-blue-400 dark:border-blue-600 rounded-xl px-4 py-2.5 text-sm outline-none bg-white dark:bg-slate-800 text-gray-800 dark:text-gray-200"
               />
             </div>
 
-            <div className="max-h-[420px] overflow-y-auto bg-gray-50">
+            <div className="max-h-[420px] overflow-y-auto bg-gray-50 dark:bg-slate-800/50">
               {addressesLoading ? (
-                <div className="p-5 text-center text-sm text-gray-500">{t('header.address.loading') || "Cargando direcciones..."}</div>
+                <div className="p-5 text-center text-sm text-gray-500 dark:text-gray-400">{t('header.address.loading') || "Cargando direcciones..."}</div>
               ) : isAuth && savedAddresses.length > 0 ? (
                 savedAddresses.map((address) => (
-                  <div key={address.id} className="px-4 py-3 border-b border-gray-200 bg-white flex items-start gap-3">
+                  <div key={address.id} className="px-4 py-3 border-b border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex items-start gap-3">
                     <button
                       onClick={() => selectAddress(address)}
-                      className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedAddressId === address.id ? 'border-emerald-500 text-emerald-500' : 'border-gray-300 text-transparent'}`}
+                      className={`mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center ${selectedAddressId === address.id ? 'border-emerald-500 text-emerald-500' : 'border-gray-300 dark:border-slate-600 text-transparent'}`}
                     >
                       <i className="fas fa-check text-xs" />
                     </button>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-800 truncate">{address.address}</p>
-                      <p className="text-xs text-gray-500 truncate">{address.name || 'Popayán'}</p>
+                      <p className="font-bold text-gray-800 dark:text-gray-200 truncate">{address.address}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{address.name || 'Popayán'}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <button onClick={() => startEditAddress(address)} className="w-8 h-8 rounded-lg hover:bg-gray-100 text-gray-500">
+                      <button onClick={() => startEditAddress(address)} className="w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-gray-400">
                         <i className="fas fa-pen" />
                       </button>
-                      <button onClick={() => removeAddress(address.id)} className="w-8 h-8 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-500">
+                      <button onClick={() => removeAddress(address.id)} className="w-8 h-8 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-gray-500 hover:text-red-500">
                         <i className="fas fa-trash" />
                       </button>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="p-5 text-center text-sm text-gray-500">{t('header.address.empty') || "No tienes direcciones guardadas."}</div>
+                <div className="p-5 text-center text-sm text-gray-500 dark:text-gray-400">{t('header.address.empty') || "No tienes direcciones guardadas."}</div>
               )}
             </div>
 
-            <div className="border-t border-gray-200 p-4">
+            <div className="border-t border-gray-200 dark:border-slate-700 p-4">
               {addressesError && <p className="text-xs text-red-500 mb-2">{addressesError}</p>}
-              <button onClick={useCurrentLocation} className="w-full text-emerald-500 font-bold py-2.5 rounded-xl hover:bg-emerald-50 transition">
+              <button onClick={useCurrentLocation} className="w-full text-emerald-500 font-bold py-2.5 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition">
                 <i className="fas fa-location-arrow mr-2" /> {t('header.address.currentLocation') || "Usar mi ubicación actual"}
               </button>
               <button onClick={saveAddress} disabled={addressSaving} className="mt-2 w-full bg-[#FF4B3E] hover:bg-[#e03a2d] text-white font-bold py-2.5 rounded-xl transition disabled:opacity-60">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { fetchJson } from '../api/fetchJson'
-import { INITIAL_ORDERS, INITIAL_MENU } from '../data/restaurantDashboardData'
+
 
 /**
  * Hook personalizado para manejar la lógica del Panel del Restaurante.
@@ -8,8 +8,9 @@ import { INITIAL_ORDERS, INITIAL_MENU } from '../data/restaurantDashboardData'
 export function useRestaurantDashboard(user) {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [orders, setOrders] = useState(INITIAL_ORDERS)
-  const [menu, setMenu] = useState(INITIAL_MENU)
+  const [orders, setOrders] = useState([])
+  const [menu, setMenu] = useState([])
+  const [categories, setCategories] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
@@ -48,17 +49,40 @@ export function useRestaurantDashboard(user) {
     const loadData = async () => {
       setLoading(true)
       try {
-        const [ordersRes, statsRes] = await Promise.all([
+        const [ordersRes, statsRes, productsRes, categoriesRes] = await Promise.all([
           fetchJson('/api/restaurant/orders'),
-          fetchJson('/api/restaurant/dashboard/stats')
+          fetchJson('/api/restaurant/dashboard/stats'),
+          fetchJson('/api/restaurant/products?paginate=false'),
+          fetchJson('/api/restaurant/categories')
         ])
 
         if (ordersRes?.data) {
           const mapped = ordersRes.data.map(mapOrder)
-          setOrders(mapped.length > 0 ? mapped : INITIAL_ORDERS)
+          setOrders(mapped)
         }
         
         if (statsRes) setStats(statsRes)
+
+        if (productsRes) {
+          const items = Array.isArray(productsRes) ? productsRes : productsRes.data || []
+          setMenu(items.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            price: Number(p.price),
+            img: p.image || '',
+            category: p.category?.name || 'Otro',
+            category_id: p.category_id,
+            active: p.is_available ?? true,
+            rating: p.rating ?? 0,
+            orders: p.sales_count ?? 0,
+          })))
+        }
+
+        if (categoriesRes) {
+          const cats = Array.isArray(categoriesRes) ? categoriesRes : categoriesRes.data || []
+          setCategories(cats)
+        }
       } catch (error) {
         console.error('Error al cargar datos del restaurante:', error)
       } finally {
@@ -91,6 +115,86 @@ export function useRestaurantDashboard(user) {
     }
   }
 
+  const handleAddProduct = async (formData) => {
+    try {
+      if (formData.file) {
+        const body = new FormData()
+        body.append('name', formData.name)
+        body.append('price', formData.price)
+        if (formData.description) body.append('description', formData.description)
+        if (formData.category_id) body.append('category_id', formData.category_id)
+        body.append('image', formData.file)
+        
+        const token = localStorage.getItem('token') || (JSON.parse(localStorage.getItem('user_session')||'{}')).token
+        const response = await fetch('http://localhost:8000/api/v1/restaurant/products', {
+          method: 'POST',
+          body,
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        })
+        const resData = await response.json()
+        if(response.ok && resData.data) {
+           const p = resData.data
+           setMenu(prev => [...prev, {
+              id: p.id,
+              name: p.name,
+              price: Number(p.price),
+              img: p.image || '',
+              category: p.category?.name || 'Otro',
+              category_id: p.category_id,
+              active: p.is_available ?? true,
+              rating: 0,
+              orders: 0
+           }])
+           setToast('Producto añadido con éxito')
+           setTimeout(() => setToast(null), 3000)
+        }
+      } else {
+        const p = await fetchJson('/api/restaurant/products', {
+          method: 'POST',
+          body: {
+            name: formData.name,
+            price: formData.price,
+            description: formData.description,
+            category_id: formData.category_id
+          }
+        })
+        if(p.data) {
+           setMenu(prev => [...prev, {
+              id: p.data.id,
+              name: p.data.name,
+              price: Number(p.data.price),
+              img: p.data.image || '',
+              category: p.data.category?.name || 'Otro',
+              category_id: p.data.category_id,
+              active: p.data.is_available ?? true,
+              rating: 0,
+              orders: 0
+           }])
+           setToast('Producto añadido con éxito')
+           setTimeout(() => setToast(null), 3000)
+        }
+      }
+    } catch (error) {
+      console.error('Error al añadir producto', error)
+      setToast('Error al añadir producto')
+      setTimeout(() => setToast(null), 3000)
+    }
+  }
+
+  const handleDeleteProduct = async (id) => {
+    try {
+      await fetchJson(`/api/restaurant/products/${id}`, { method: 'DELETE' })
+      setMenu(prev => prev.filter(p => p.id !== id))
+      setToast('Producto eliminado')
+      setTimeout(() => setToast(null), 3000)
+    } catch (error) {
+      console.error('Error al eliminar producto', error)
+    }
+  }
+
   return {
     activeTab,
     setActiveTab,
@@ -103,6 +207,9 @@ export function useRestaurantDashboard(user) {
     selectedOrder,
     setSelectedOrder,
     toast,
-    handleStatusChange
+    categories,
+    handleStatusChange,
+    handleAddProduct,
+    handleDeleteProduct
   }
 }

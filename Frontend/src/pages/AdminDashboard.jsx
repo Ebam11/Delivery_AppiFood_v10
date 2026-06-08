@@ -2,10 +2,18 @@
  * Archivo: src/pages/AdminDashboard.jsx
  * Panel de administración global para AppiFood.
  */
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useAdminDashboard } from '../hooks/useAdminDashboard'
 import Sidebar from '../components/RestaurantDashboard/Sidebar' // Reusamos el sidebar con flags
 import TopBar from '../components/RestaurantDashboard/TopBar'
+import DashboardSection from '../components/AdminDashboard/DashboardSection'
+import RestaurantsSection from '../components/AdminDashboard/RestaurantsSection'
+import UsersSection from '../components/AdminDashboard/UsersSection'
+import OrdersSection from '../components/AdminDashboard/OrdersSection'
+import ReviewsSection from '../components/AdminDashboard/ReviewsSection'
+import NotificationsSection from '../components/AdminDashboard/NotificationsSection'
+import ReportsSection from '../components/AdminDashboard/ReportsSection'
+import SettingsSection from '../components/AdminDashboard/SettingsSection'
 import '../styles/AdminDashboard.css'
 
 export default function AdminDashboard({ user, onLogout }) {
@@ -22,8 +30,30 @@ export default function AdminDashboard({ user, onLogout }) {
     showToast
   } = useAdminDashboard()
 
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'dashboard': return <DashboardSection stats={{}} restaurants={restaurants} users={users} orders={orders} />
+      case 'restaurants': return <RestaurantsSection restaurants={restaurants} />
+      case 'users': return <UsersSection users={users} />
+      case 'orders': return <OrdersSection orders={orders} />
+      case 'reviews': return <ReviewsSection />
+      case 'notifications': return <NotificationsSection showToast={showToast} />
+      case 'analytics': // Redirigir a reports si se usa analytics
+      case 'reports': return <ReportsSection />
+      case 'settings': return <SettingsSection showToast={showToast} />
+      default:
+        return (
+          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+            <span className="text-6xl mb-4">🚧</span>
+            <p className="text-xl font-bold">Próximamente</p>
+            <p className="text-sm">Sección en desarrollo.</p>
+          </div>
+        )
+    }
+  }
+
   return (
-    <div className="ad-container flex min-h-screen bg-orange-50/30">
+    <div className="ad-container flex min-h-screen bg-orange-50/30 dark:bg-slate-950 text-gray-800 dark:text-slate-100 transition-colors duration-250">
       <Sidebar 
         active={activeTab} 
         onNav={setActiveTab} 
@@ -34,33 +64,16 @@ export default function AdminDashboard({ user, onLogout }) {
         isAdmin={true}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:pl-[220px]">
         <TopBar 
-          title={t(`adminDashboard.nav.${activeTab}`)} 
+          title={t(`adminDashboard.nav.${activeTab}`, { defaultValue: activeTab })} 
           onMenuOpen={() => setIsSidebarOpen(true)} 
           user={user}
           isAdmin={true}
         />
 
         <main className="flex-1 p-6 overflow-y-auto">
-           <div className="bg-white rounded-3xl p-10 border border-orange-100 shadow-sm text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Panel de Administración</h2>
-              <p className="text-gray-500">Sección {activeTab} en proceso de optimización modular.</p>
-              <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                 <div className="p-4 bg-orange-50 rounded-2xl">
-                    <p className="text-3xl font-bold text-red-500">{restaurants.length}</p>
-                    <p className="text-sm text-gray-600">Restaurantes</p>
-                 </div>
-                 <div className="p-4 bg-orange-50 rounded-2xl">
-                    <p className="text-3xl font-bold text-red-500">{users.length}</p>
-                    <p className="text-sm text-gray-600">Usuarios</p>
-                 </div>
-                 <div className="p-4 bg-orange-50 rounded-2xl">
-                    <p className="text-3xl font-bold text-red-500">{orders.length}</p>
-                    <p className="text-sm text-gray-600">Pedidos</p>
-                 </div>
-              </div>
-           </div>
+           {renderContent()}
         </main>
       </div>
 

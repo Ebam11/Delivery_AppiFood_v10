@@ -6,7 +6,7 @@ import { blurhash } from '../utils/blurhash'
 import { useFavoritesStore } from '../store/favoritesStore'
 import ScheduleDisplay, { isRestaurantOpenNow } from './ScheduleDisplay'
 import heroImage from '../assets/hero.png'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
 /**
  * Tarjeta de restaurante con imagen dinámica de Unsplash + lazy loading + favoritos
@@ -84,11 +84,18 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle,
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/5 to-transparent" />
 
-        {restaurant.promo && (
-          <span className="absolute left-3 top-3 rounded-full bg-[#FF4B3E] px-2 py-0.5 text-[9px] font-black text-white shadow-md">
-            {restaurant.promo}
-          </span>
-        )}
+        <div className="absolute left-3 top-3 flex flex-col gap-1 z-10">
+          {restaurant.promo && (
+            <span className="rounded-full bg-[#FF4B3E] px-2 py-0.5 text-[9px] font-black text-white shadow-md w-fit">
+              {restaurant.promo}
+            </span>
+          )}
+          {(restaurant.is_new || restaurant.isNew) && (
+            <span className="rounded-full bg-yellow-400 px-2 py-0.5 text-[9px] font-black text-black shadow-md flex items-center gap-1 w-fit">
+              <i className="fas fa-star text-[8px]" /> {t('restaurantCard.new', { defaultValue: 'NUEVO' })}
+            </span>
+          )}
+        </div>
 
         {/* Badge de estado abierto/cerrado */}
         {showSchedule && (

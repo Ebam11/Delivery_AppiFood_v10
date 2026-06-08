@@ -3,7 +3,7 @@
  * Punto de entrada principal para el panel de administración del restaurante.
  * Organizado de forma modular para facilitar su mantenimiento.
  */
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useRestaurantDashboard } from '../hooks/useRestaurantDashboard'
 import Sidebar from '../components/RestaurantDashboard/Sidebar'
 import TopBar from '../components/RestaurantDashboard/TopBar'
@@ -11,6 +11,13 @@ import DashboardSection from '../components/RestaurantDashboard/DashboardSection
 import OrdersSection from '../components/RestaurantDashboard/OrdersSection'
 import MenuSection from '../components/RestaurantDashboard/MenuSection'
 import OrderDetailModal from '../components/RestaurantDashboard/OrderDetailModal'
+import AnalyticsSection from '../components/RestaurantDashboard/AnalyticsSection'
+import PromotionsSection from '../components/RestaurantDashboard/PromotionsSection'
+import InventorySection from '../components/RestaurantDashboard/InventorySection'
+import CalendarSection from '../components/RestaurantDashboard/CalendarSection'
+import MessagesSection from '../components/RestaurantDashboard/MessagesSection'
+import ReviewsSection from '../components/RestaurantDashboard/ReviewsSection'
+import RestaurantInfoSection from '../components/RestaurantDashboard/RestaurantInfoSection'
 import '../styles/RestaurantDashboard.css'
 
 export default function RestaurantDashboard({ user, onLogout }) {
@@ -29,44 +36,48 @@ export default function RestaurantDashboard({ user, onLogout }) {
     selectedOrder,
     setSelectedOrder,
     toast,
-    handleStatusChange
+    categories,
+    handleStatusChange,
+    handleAddProduct,
+    handleDeleteProduct
   } = useRestaurantDashboard(user)
 
   // Función para renderizar la sección activa basada en la navegación
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <DashboardSection orders={orders} menu={menu} stats={stats} loading={loading} />
+        return <DashboardSection stats={stats} orders={orders} menu={menu} />
       case 'orders':
         return (
           <OrdersSection 
             orders={orders} 
-            onStatusChange={handleStatusChange} 
-            onSelectOrder={setSelectedOrder} 
+            onViewDetails={setSelectedOrder} 
+            onUpdateStatus={handleStatusChange} 
           />
         )
       case 'menu':
         return (
           <MenuSection 
             menu={menu} 
-            categories={[]} // Debería cargarse del backend
-            onAdd={(item) => console.log('Add item', item)} 
-            onDelete={(id) => console.log('Delete item', id)} 
+            categories={categories}
+            onAdd={handleAddProduct}
+            onDelete={handleDeleteProduct}
           />
         )
+      case 'analytics': return <AnalyticsSection stats={stats} />
+      case 'promotions': return <PromotionsSection />
+      case 'inventory': return <InventorySection />
+      case 'calendar': return <CalendarSection />
+      case 'messages': return <MessagesSection />
+      case 'reviews': return <ReviewsSection />
+      case 'restaurant-info': return <RestaurantInfoSection restaurant={user?.restaurant || user} />
       default:
-        return (
-          <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-            <span className="text-6xl mb-4">🚧</span>
-            <p className="text-xl font-bold">{t('rd.coming_soon') || "Próximamente"}</p>
-            <p className="text-sm">{t('rd.section_under_construction') || "Esta sección está en desarrollo."}</p>
-          </div>
-        )
+        return <DashboardSection stats={stats} orders={orders} menu={menu} />
     }
   }
 
   return (
-    <div className="rd-container flex min-h-screen bg-slate-50">
+    <div className="rd-container flex min-h-screen bg-slate-50 dark:bg-slate-950 text-gray-800 dark:text-slate-100 transition-colors duration-250">
       {/* Navegación Lateral */}
       <Sidebar 
         active={activeTab} 
@@ -77,7 +88,7 @@ export default function RestaurantDashboard({ user, onLogout }) {
         onLogout={onLogout}
       />
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:pl-[220px]">
         {/* Barra Superior */}
         <TopBar 
           title={t(`rd.${activeTab}`)} 

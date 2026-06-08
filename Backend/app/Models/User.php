@@ -20,17 +20,23 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'role',
         'phone', 'id_number', 'birth_date', 'gender', 'avatar', 'status', 'is_premium',
+        'google_id', 'google_avatar',
+        'refresh_token_hash', 'refresh_token_expires_at', 'last_login_at',
+        'phone_verified_at',
     ];
 
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'phone_verified_at' => 'datetime',
         'password'          => 'hashed',
         'role'              => UserRole::class,
         'status'            => 'boolean',
         'is_premium'        => 'boolean',
         'birth_date'        => 'date',
+        'refresh_token_expires_at' => 'datetime',
+        'last_login_at'     => 'datetime',
     ];
 
     // ─── Helpers de rol ────────────────────────────────────────
@@ -42,6 +48,7 @@ class User extends Authenticatable
     public function isAdmin(): bool      { return $this->role === UserRole::ADMIN; }
     public function isRestaurant(): bool { return $this->role === UserRole::RESTAURANT; }
     public function isUser(): bool       { return $this->role === UserRole::USER; }
+    public function isDriver(): bool     { return $this->role === UserRole::DRIVER; }
 
     // ─── Relaciones ────────────────────────────────────────────
     public function restaurant(): HasOne

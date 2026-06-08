@@ -36,6 +36,17 @@
   --radius-2xl: 2rem;
 }
 
+.dark {
+  /* Escala de Grises y Fondos en Modo Oscuro */
+  --color-bg: #0f0f16;
+  --color-surface: #1a1a2e;
+  --color-text-main: #e4e4e7;
+  --color-text-muted: #a1a1aa;
+  --color-border: #2e2e3e;
+  --color-primary-light: rgba(255, 75, 62, 0.15);
+}
+
+
 @layer base {
   html { 
     scroll-behavior: smooth;
@@ -49,6 +60,7 @@
     background-color: var(--color-bg);
     color: var(--color-text-main);
     line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
   }
   
   h1, h2, h3, h4, h5, h6 {

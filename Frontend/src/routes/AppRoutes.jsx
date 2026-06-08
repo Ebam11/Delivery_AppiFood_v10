@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import PublicLayout from '../components/layout/PublicLayout'
 import RestaurantLayout from '../components/layout/RestaurantLayout'
 import LoadingScreen from '../components/layout/LoadingScreen'
@@ -31,6 +31,8 @@ const AddressForm = lazy(() => import('../pages/AddressForm'))
 const AdminDashboard = lazy(() => import('../pages/AdminDashboard'))
 const RestaurantDashboard = lazy(() => import('../pages/RestaurantDashboard'))
 const RestaurantManagementPage = lazy(() => import('../pages/RestaurantManagementPage'))
+const DriverDashboard = lazy(() => import('../pages/DriverDashboard'))
+const Gamification = lazy(() => import('../pages/Gamification'))
 
 /**
  * Componente para proteger rutas según el rol del usuario.
@@ -130,6 +132,13 @@ export default function AppRoutes({ user, isAuth, loading, handleLogin, handleLo
           </RoleRoute>
         } />
 
+        {/* Panel de Repartidor */}
+        <Route path="/driver/dashboard" element={
+          <RoleRoute user={user} allow={['driver']}>
+            <DriverDashboard user={user} onLogout={handleLogout} />
+          </RoleRoute>
+        } />
+
         <Route path="/restaurant/profile" element={
           <RoleRoute user={user} allow={['restaurant']}>
             <RestaurantLayout user={user}>
@@ -153,6 +162,7 @@ export default function AppRoutes({ user, isAuth, loading, handleLogin, handleLo
         <Route path="/user/cart" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Cart /></UserPage>} />
         <Route path="/user/checkout" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Checkout /></UserPage>} />
         <Route path="/user/addresses" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Addresses /></UserPage>} />
+        <Route path="/user/gamification" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Gamification /></UserPage>} />
 
         {/* 404 - Not Found */}
         <Route path="*" element={

@@ -1,7 +1,7 @@
 // Archivo: src/pages/Subscription.jsx | Comentario: logica principal del modulo.
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { createSubscription, getCurrentSubscription, getSubscriptionPlans } from '../api/subscriptions'
 import SubscriptionPaymentGateway from '../components/SubscriptionPaymentGateway'
 

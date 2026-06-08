@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { getAssistantReply, supportShortcuts } from '../utils/supportAssistant'
 
 const AI_ENDPOINT = import.meta.env.VITE_AI_ASSISTANT_URL || '/api/support/chat'

@@ -33,7 +33,8 @@ export function normalizeUserRole(rawUser) {
 export function getHomePathByRole(rawUser) {
   if (!rawUser) return '/'
   const role = String(rawUser.role ?? rawUser.rol ?? 'user').toLowerCase()
-  if (role === 'admin') return '/admin/dashboard'
+  if (role === 'admin') return '/admin'
   if (role === 'restaurant') return '/restaurant/dashboard'
+  if (role === 'driver') return '/driver/dashboard'
   return '/'
 }

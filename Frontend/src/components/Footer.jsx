@@ -1,7 +1,7 @@
 // Archivo: src/components/Footer.jsx | Comentario: logica principal del modulo.
 // src/components/Footer.jsx
 import { Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import LanguageSwitcher from './LanguageSwitcher'
 import GooglePlay from '../assets/GooglePlay.svg'
 import AppStore from '../assets/AppStore.png'

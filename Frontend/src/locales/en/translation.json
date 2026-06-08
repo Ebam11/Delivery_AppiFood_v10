@@ -14,7 +14,29 @@
     "order_now": "Order now",
     "view_restaurants": "View restaurants",
     "popular_restaurants": "Popular Restaurants",
-    "how_it_works": "How does AppiFood work?"
+    "how_it_works": "How does AppiFood work?",
+    "saveMore": "Save more on your orders",
+    "featuredCoupons": "Featured coupons",
+    "viewDetail": "View detail",
+    "featured": "Featured",
+    "specialDiscounts": "Special discounts",
+    "offersTitle": "Daily Offers",
+    "offersSubtitle": "The best dishes with exclusive discounts for you.",
+    "continue_email": "Continue with my email"
+  },
+  "hero": {
+    "slide1": {
+      "title": "SPICY CHICKEN\nBURGER",
+      "subtitle": "Crispy and full of flavor"
+    },
+    "slide2": {
+      "title": "DEEP DISH\nPIZZA",
+      "subtitle": "Classic and delicious"
+    },
+    "slide3": {
+      "title": "PREMIUM SUSHI\nSET",
+      "subtitle": "Fresh and handcrafted"
+    }
   },
   "login": {
     "title": "Log in to AppiFood",
@@ -24,6 +46,9 @@
     "password": "Password",
     "remember": "Remember me",
     "forgot": "Forgot your password?",
+    "forgot_short": "Forgot password?",
+    "google_button": "Continue with Google",
+    "continue_email": "Continue with my email",
     "submit": "Log in",
     "loading": "Logging in...",
     "no_account": "Don't have an account?",
@@ -42,6 +67,8 @@
     "email": "Email address",
     "password": "Password",
     "confirm_password": "Confirm password",
+    "google_button": "Sign up with Google",
+    "continue_email": "Sign up with my email",
     "submit": "Create free account",
     "loading": "Creating account...",
     "admin_note": "The admin role is assigned by a super admin from the internal panel.",

@@ -11,6 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Avoid running change() on SQLite (requires doctrine/dbal). Skip on sqlite.
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('restaurants', function (Blueprint $table) {
             $table->string('address')->nullable()->change();
         });
@@ -21,6 +26,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('restaurants', function (Blueprint $table) {
             $table->string('address')->nullable(false)->change();
         });

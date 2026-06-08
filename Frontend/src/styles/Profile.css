@@ -1,33 +1,55 @@
 /**
  * Estilos para la página de Perfil de Usuario.
+ * Soporta modo oscuro via la clase .dark en el root.
  */
 
 .profile-container {
-  @apply max-w-6xl mx-auto py-12 px-6;
+  @apply max-w-6xl mx-auto py-12 px-4 sm:px-6;
 }
 
 .profile-card {
   @apply bg-white rounded-[2.5rem] shadow-premium border border-slate-100 overflow-hidden flex flex-col md:flex-row min-h-[600px];
 }
 
+.dark .profile-card {
+  @apply bg-slate-900 border-slate-800;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
 .profile-sidebar {
-  @apply w-full md:w-80 bg-slate-50 border-r border-slate-100 p-8 flex flex-col;
+  @apply w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-100 p-6 md:p-8 flex flex-col;
+}
+
+.dark .profile-sidebar {
+  @apply bg-slate-800/50 border-slate-800;
 }
 
 .profile-content {
-  @apply flex-1 p-8 md:p-12;
+  @apply flex-1 p-6 md:p-12;
 }
 
 .profile-nav-item {
   @apply flex items-center gap-3 px-6 py-4 rounded-2xl font-bold text-slate-600 transition-all mb-2 w-full text-left;
 }
 
+.dark .profile-nav-item {
+  @apply text-slate-400;
+}
+
 .profile-nav-item.active {
   @apply bg-white text-red-500 shadow-sm border border-slate-100;
 }
 
+.dark .profile-nav-item.active {
+  @apply bg-slate-700 text-red-400 border-slate-600;
+}
+
 .profile-nav-item:not(.active):hover {
   @apply bg-slate-100 text-slate-900;
+}
+
+.dark .profile-nav-item:not(.active):hover {
+  @apply bg-slate-700 text-slate-200;
 }
 
 .profile-input-group {
@@ -38,6 +60,14 @@
   @apply text-xs font-black uppercase tracking-widest text-slate-400 ml-1;
 }
 
+.dark .profile-label {
+  @apply text-slate-500;
+}
+
 .profile-input {
   @apply w-full bg-slate-50 border-2 border-transparent focus:border-red-500/30 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-medium;
+}
+
+.dark .profile-input {
+  @apply bg-slate-800 text-slate-200 focus:bg-slate-700;
 }

@@ -2,7 +2,7 @@
 // src/components/ProductModal.jsx
 import { useState } from 'react'
 import { useCart } from '../context/useCart'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
 export default function ProductModal({ product, onClose }) {
   const { t } = useTranslation()

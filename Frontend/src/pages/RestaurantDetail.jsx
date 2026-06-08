@@ -4,7 +4,7 @@
  */
 
 import { useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useAuthStore } from '../store/authStore'
 import { useRestaurantDetail } from '../hooks/useRestaurantDetail'
 import { Loading } from '../components/Loading'
@@ -23,7 +23,9 @@ export const RestaurantDetail = () => {
     clearError,
     selectedProduct,
     setSelectedProduct,
-    isCurrentlyOpen
+    isCurrentlyOpen,
+    reviews = [],
+    isReviewsLoading = false
   } = useRestaurantDetail()
 
   if (isLoading) return <Loading />
@@ -94,6 +96,53 @@ export const RestaurantDetail = () => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Reseñas Section */}
+            <div className="mt-16 pt-8 border-t border-gray-100">
+               <h2 className="text-3xl font-black text-gray-900 mb-2 dark:text-white">Opiniones de clientes</h2>
+               <div className="flex items-center gap-2 mb-6">
+                 <span className="text-xl font-bold text-gray-800 dark:text-gray-200">⭐ {restaurant.rating || '4.5'}</span>
+                 <span className="text-sm text-gray-400">({reviews.length} calificaciones)</span>
+               </div>
+               
+               {isReviewsLoading ? (
+                 <div className="py-10 text-center text-sm text-gray-400">Cargando opiniones...</div>
+               ) : reviews.length > 0 ? (
+                 <div className="space-y-6">
+                   {reviews.map(r => (
+                     <div key={r.id} className="bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-5 border border-slate-100 dark:border-slate-700/50">
+                       <div className="flex justify-between items-start gap-4 mb-3">
+                         <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-full bg-[#FF4B3E]/10 flex items-center justify-center font-bold text-[#FF4B3E] text-sm">
+                             {r.user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                           </div>
+                           <div>
+                             <p className="font-bold text-gray-800 dark:text-white text-sm">{r.user?.name || 'Usuario'}</p>
+                             <p className="text-[10px] text-gray-400">{new Date(r.created_at).toLocaleDateString()}</p>
+                           </div>
+                         </div>
+                         <div className="flex gap-0.5 text-yellow-400 text-xs">
+                           {Array.from({ length: 5 }).map((_, i) => (
+                             <i key={i} className={`${i < r.rating ? 'fas' : 'far'} fa-star`} />
+                           ))}
+                         </div>
+                       </div>
+                       <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">{r.comment || 'Sin comentario.'}</p>
+                       {r.reply && (
+                         <div className="mt-3 pl-4 border-l-2 border-[#FF4B3E]/30 bg-white dark:bg-slate-950 rounded-xl p-3">
+                           <p className="text-[10px] font-black text-[#FF4B3E] uppercase tracking-wider mb-1">Respuesta del restaurante</p>
+                           <p className="text-xs text-gray-600 dark:text-gray-300 italic">"{r.reply}"</p>
+                         </div>
+                       )}
+                     </div>
+                   ))}
+                 </div>
+               ) : (
+                 <div className="py-10 text-center text-sm text-gray-400 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-dashed border-gray-200 dark:border-slate-800">
+                   Aún no hay opiniones para este restaurante. ¡Sé el primero en pedir y dejar una reseña!
+                 </div>
+               )}
             </div>
           </div>
 

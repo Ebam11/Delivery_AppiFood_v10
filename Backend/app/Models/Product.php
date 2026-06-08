@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\Cacheable;
 
 class Product extends Model
 {
-    use HasFactory;
+    use HasFactory, Cacheable;
+
+    protected $cachePrefix = 'products';
+    protected $cacheTime = 60;
 
     protected array $allowedIncludes = ['category', 'restaurant'];
     protected array $allowedSorts = ['id', 'name', 'price', 'discount_price', 'is_available', 'is_featured', 'created_at'];

@@ -8,10 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Traits\Cacheable;
 
 class Restaurant extends Model
 {
-    use HasFactory;
+    use HasFactory, Cacheable;
+
+    protected $cachePrefix = 'restaurants';
+    protected $cacheTime = 60;
 
     protected static function booted()
     {
@@ -34,6 +38,8 @@ class Restaurant extends Model
         'categories.products',
         'reviews',
     ];
+
+    protected $appends = ['is_new'];
 
     protected array $allowedSorts = [
         'id',
@@ -69,6 +75,11 @@ class Restaurant extends Model
             'average_rating' => round($this->reviews()->avg('rating'), 2),
             'total_reviews'  => $this->reviews()->count(),
         ]);
+    }
+
+    public function getIsNewAttribute(): bool
+    {
+        return $this->created_at && $this->created_at->diffInDays(now()) <= 7;
     }
 
     // ─── Relaciones ────────────────────────────────────────────

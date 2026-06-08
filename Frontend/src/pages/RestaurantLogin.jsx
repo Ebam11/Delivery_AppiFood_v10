@@ -1,7 +1,7 @@
 // Archivo: src/pages/RestaurantLogin.jsx | Comentario: logica principal del modulo.
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
 
@@ -58,8 +58,10 @@ export default function RestaurantLogin({ onLogin }) {
         body: JSON.stringify({ email: form.email, password: form.password }),
         })
 
-        localStorage.setItem('token', data.token)
-        onLogin?.(data.user)
+        const token = data.data?.access_token || data.token
+        const user = data.data?.user || data.user
+        localStorage.setItem('token', token)
+        onLogin?.(user)
         navigate('/restaurant/dashboard')
     } catch (error) {
         if (error instanceof ApiError) {
@@ -82,9 +84,9 @@ export default function RestaurantLogin({ onLogin }) {
           }}
         />
 
-        <div className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center z-50">
+        <header className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
-        </div>
+        </header>
 
         <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] pt-16 pb-12 flex items-center justify-between gap-10 flex-wrap">
           <div className="text-white max-w-md hidden md:block">
@@ -97,7 +99,6 @@ export default function RestaurantLogin({ onLogin }) {
           <div className="w-full max-w-[420px] bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden">
             <div className="p-7">
               <div className="text-center mb-5">
-                <span className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</span>
                 <p className="text-[#FF4B3E] font-bold text-lg mt-1">{t('restaurant_login.login_title')}</p>
               </div>
 

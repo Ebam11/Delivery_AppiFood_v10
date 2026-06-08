@@ -31,6 +31,8 @@ use App\Http\Controllers\API\User\ProfileController;
 use App\Http\Controllers\API\User\UserPaymentMethodController;
 use App\Http\Controllers\API\User\RestaurantController;
 use App\Http\Controllers\API\User\ReviewController;
+use App\Http\Controllers\API\User\LoyaltyController;
+use App\Http\Controllers\API\Driver\DriverController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
@@ -38,8 +40,13 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')->group(function () {
     Route::post('/register', RegisterController::class);
     Route::post('/login', LoginController::class);
+    Route::post('/refresh', [\App\Http\Controllers\API\Auth\RefreshTokenController::class, 'refresh']);
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+
+    // Google Auth
+    Route::get('/google', [\App\Http\Controllers\API\Auth\GoogleAuthController::class, 'redirectToGoogle']);
+    Route::get('/google/callback', [\App\Http\Controllers\API\Auth\GoogleAuthController::class, 'handleGoogleCallback']);
 });
 
 Route::get('/health', static fn (): JsonResponse => response()->json([
@@ -56,6 +63,7 @@ Route::post('/support/chat', SupportAssistantController::class)->middleware('thr
 // Endpoints protegidos.
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/logout', LogoutController::class);
+    Route::post('/auth/revoke', [\App\Http\Controllers\API\Auth\RefreshTokenController::class, 'revoke']);
     Route::get('/me', [ProfileController::class, 'show']);
 
     // Funciones compartidas para usuarios autenticados.
@@ -122,6 +130,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::post('/reviews', [ReviewController::class, 'store']);
         Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
+        Route::post('/loyalty/redeem', [LoyaltyController::class, 'redeem']);
     });
 
     // Endpoints para rol:restaurant.
@@ -218,5 +227,18 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/users', [ReportController::class, 'users']);
         });
     });
+
+    // Endpoints para rol:driver (repartidor).
+    Route::middleware('role:driver')->prefix('driver')->group(function () {
+        Route::get('/stats', [DriverController::class, 'stats']);
+        Route::get('/orders/available', [DriverController::class, 'availableOrders']);
+        Route::get('/orders/active', [DriverController::class, 'myOrders']);
+        Route::get('/orders/history', [DriverController::class, 'history']);
+        Route::post('/orders/{order}/accept', [DriverController::class, 'acceptOrder']);
+        Route::post('/orders/{order}/location', [DriverController::class, 'updateLocation']);
+        Route::post('/orders/{order}/complete', [DriverController::class, 'completeOrder']);
+    });
 });
 
+// Endpoint público para tracking de ubicación del repartidor (lo consume el cliente).
+Route::middleware('auth:sanctum')->get('/orders/{order}/driver-location', [DriverController::class, 'getLocation']);

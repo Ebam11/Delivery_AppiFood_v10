@@ -1,0 +1,465 @@
+/* Archivo: src/styles/Gamification.css */
+
+:root {
+  --gf-primary: #FF4B3E;
+  --gf-primary-hover: #e03a2d;
+  --gf-bg-gradient: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  --gf-surface: rgba(255, 255, 255, 0.9);
+  --gf-border: rgba(226, 232, 240, 0.8);
+  --gf-text: #1e293b;
+  --gf-text-muted: #64748b;
+  --gf-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
+}
+
+.dark {
+  --gf-bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --gf-surface: rgba(30, 41, 59, 0.7);
+  --gf-border: rgba(255, 255, 255, 0.06);
+  --gf-text: #f8fafc;
+  --gf-text-muted: #94a3b8;
+  --gf-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+}
+
+.gf-container {
+  min-h: 90vh;
+  background: var(--gf-bg-gradient);
+  color: var(--gf-text);
+  padding: 2.5rem 1rem;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.gf-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* Header */
+.gf-header {
+  position: relative;
+  background: linear-gradient(135deg, var(--gf-primary) 0%, #ff7675 100%);
+  border-radius: 24px;
+  padding: 3rem 2.5rem;
+  overflow: hidden;
+  box-shadow: 0 15px 35px rgba(255, 75, 62, 0.25);
+}
+
+.gf-header-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: radial-gradient(circle at 10% 20%, rgba(255,255,255,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.gf-header-content {
+  position: relative;
+  z-index: 2;
+  color: white;
+}
+
+.gf-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.gf-subtitle {
+  font-size: 1.125rem;
+  opacity: 0.95;
+  max-width: 600px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* Nivel Card */
+.gf-level-card {
+  background: var(--gf-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--gf-border);
+  border-radius: 24px;
+  padding: 2rem;
+  box-shadow: var(--gf-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.gf-level-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.gf-level-badge-container {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.gf-level-icon {
+  font-size: 3.5rem;
+  line-height: 1;
+}
+
+.gf-level-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.gf-level-desc {
+  color: var(--gf-text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.gf-points-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.gf-points-value {
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: var(--gf-primary);
+  line-height: 1;
+}
+
+.gf-points-label {
+  font-size: 0.875rem;
+  color: var(--gf-text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-top: 0.25rem;
+}
+
+/* Progress bar */
+.gf-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.gf-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--gf-text-muted);
+}
+
+.gf-progress-bar-bg {
+  height: 14px;
+  background: var(--gf-border);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.gf-progress-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Coupon Alert Success */
+.gf-coupon-alert {
+  background: var(--gf-surface);
+  border: 2px solid #10b981;
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+}
+
+.gf-coupon-alert-inner {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+}
+
+.gf-coupon-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.gf-coupon-alert-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #10b981;
+  margin-bottom: 0.25rem;
+}
+
+.gf-coupon-alert-desc {
+  font-size: 0.95rem;
+  color: var(--gf-text-muted);
+  margin-bottom: 1rem;
+}
+
+.gf-coupon-code-box {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--gf-border);
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  max-width: max-content;
+  border: 1px solid var(--gf-border);
+}
+
+.gf-coupon-code {
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--gf-text);
+}
+
+.gf-copy-btn {
+  background: var(--gf-primary);
+  color: white;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.gf-copy-btn:hover {
+  background: var(--gf-primary-hover);
+}
+
+.gf-coupon-alert-expiry {
+  font-size: 0.8rem;
+  color: var(--gf-text-muted);
+  margin-top: 0.5rem;
+  font-weight: 600;
+}
+
+.gf-close-alert {
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  color: var(--gf-text-muted);
+  cursor: pointer;
+}
+
+/* Rewards Section */
+.gf-rewards-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.gf-section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+
+.gf-rewards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.gf-reward-card {
+  background: var(--gf-surface);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: var(--gf-shadow);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.gf-reward-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.08);
+}
+
+.gf-reward-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.gf-reward-badge {
+  background: var(--gf-border);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  color: var(--gf-text);
+}
+
+.gf-reward-points {
+  color: var(--gf-primary);
+}
+
+.gf-reward-body {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.gf-reward-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.gf-reward-value {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--gf-text);
+  letter-spacing: -0.5px;
+}
+
+.gf-reward-desc {
+  font-size: 0.85rem;
+  color: var(--gf-text-muted);
+  line-height: 1.4;
+}
+
+.gf-reward-footer {
+  margin-top: 0.5rem;
+}
+
+.gf-redeem-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.gf-redeem-btn.active {
+  background: var(--gf-primary);
+  color: white;
+}
+
+.gf-redeem-btn.active:hover {
+  background: var(--gf-primary-hover);
+  transform: scale(1.02);
+}
+
+.gf-redeem-btn.disabled {
+  background: var(--gf-border);
+  color: var(--gf-text-muted);
+  cursor: not-allowed;
+}
+
+/* Spinner */
+.gf-btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: gf-spin 0.6s linear infinite;
+}
+
+@keyframes gf-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Loading */
+.gf-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 5rem 0;
+}
+
+.gf-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--gf-primary);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: gf-spin 0.8s linear infinite;
+}
+
+/* Toast */
+.gf-toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--gf-surface);
+  border: 1px solid var(--gf-border);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  font-weight: 700;
+  z-index: 1000;
+  animation: gf-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gf-toast.error {
+  border-left: 4px solid #ef4444;
+}
+
+.gf-toast.success {
+  border-left: 4px solid #10b981;
+}
+
+.gf-toast.info {
+  border-left: 4px solid #3b82f6;
+}
+
+@keyframes gf-slide-up {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .gf-header {
+    padding: 2rem 1.5rem;
+  }
+  .gf-title {
+    font-size: 1.75rem;
+  }
+  .gf-level-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .gf-points-display {
+    align-items: flex-start;
+  }
+}

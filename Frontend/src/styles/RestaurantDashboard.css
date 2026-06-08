@@ -9,10 +9,15 @@
   --rd-bg: #f8fafc;
 }
 
+.dark {
+  --rd-bg: #0f172a;
+}
+
 /* Contenedor principal */
 .rd-container {
-  min-h-screen: 100vh;
+  min-height: 100vh;
   background-color: var(--rd-bg);
+  transition: background-color 0.3s ease;
 }
 
 /* Sidebar personalizado */
@@ -27,12 +32,12 @@
 
 /* Estilos para las tarjetas de estadísticas */
 .rd-stat-card {
-  @apply bg-white rounded-2xl border border-gray-100 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow;
+  @apply bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all;
 }
 
 /* Barra de progreso personalizada */
 .rd-progress-bar {
-  @apply h-1.5 bg-gray-100 rounded-full overflow-hidden;
+  @apply h-1.5 bg-gray-100 dark:bg-slate-800 rounded-full overflow-hidden;
 }
 
 /* Gráficos minimalistas */
@@ -42,9 +47,9 @@
 
 /* Modal personalizado */
 .rd-modal-overlay {
-  @apply fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4;
+  @apply fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm;
 }
 
 .rd-modal-content {
-  @apply bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl;
+  @apply bg-white dark:bg-slate-900 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border dark:border-slate-800 p-6;
 }

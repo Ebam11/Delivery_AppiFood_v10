@@ -1,7 +1,7 @@
 // Archivo: src/pages/Orders.jsx | Comentario: logica principal del modulo.
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useOrderStore } from '../store/orderStore';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { Loading } from '../components/Loading';
@@ -66,17 +66,19 @@ export const Orders = () => {
               <div
                 key={order.id}
                 onClick={() => navigate(`/orders/${order.id}`)}
-                className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-lg transition-shadow"
+                className="bg-white rounded-2xl shadow-soft border border-slate-100 p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
               >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-black text-lg text-gray-800 flex items-center gap-2">
+                      <i className="fas fa-receipt text-gray-400" />
                       {t('orders.order_number')}{order.id}
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-gray-600 font-bold mt-1">
                       {order.restaurant_name || t('orders.restaurant')}
                     </p>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs text-gray-400 mt-1 font-semibold flex items-center gap-1.5">
+                      <i className="far fa-clock" />
                       {new Date(order.created_at).toLocaleDateString('es-ES', {
                         year: 'numeric',
                         month: 'long',
@@ -87,12 +89,12 @@ export const Orders = () => {
                     </p>
                   </div>
 
-                  <div className="text-right">
-                    <p className={`px-4 py-2 rounded-full font-semibold ${getStatusColor(order.status)}`}>
+                  <div className="flex sm:flex-col justify-between sm:justify-center items-center sm:items-end gap-3 pt-3 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+                    <span className={`px-4 py-1.5 rounded-full text-xs font-bold ${getStatusColor(order.status)}`}>
                       {getStatusLabel(order.status)}
-                    </p>
-                    <p className="text-2xl font-bold text-blue-600 mt-2">
-                      ${Number(order.total || 0).toLocaleString('es-CO', { minimumFractionDigits: 2 })}
+                    </span>
+                    <p className="text-2xl font-black text-brand">
+                      ${Number(order.total || 0).toLocaleString('es-CO')}
                     </p>
                   </div>
                 </div>

@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('products', function (Blueprint $table) {
             $table->decimal('price', 16, 2)->change();
             $table->decimal('discount_price', 16, 2)->nullable()->change();
@@ -19,6 +23,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (Schema::getConnection()->getDriverName() === 'sqlite') {
+            return;
+        }
+
         Schema::table('products', function (Blueprint $table) {
             $table->decimal('price', 10, 2)->change();
             $table->decimal('discount_price', 10, 2)->nullable()->change();

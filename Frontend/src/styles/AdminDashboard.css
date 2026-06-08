@@ -8,16 +8,21 @@
   --ad-bg: #FFF8F5;
 }
 
+.dark {
+  --ad-bg: #0f172a;
+}
+
 .ad-container {
   background-color: var(--ad-bg);
+  transition: background-color 0.3s ease;
 }
 
 .ad-stat-card {
-  @apply bg-white border border-gray-100 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow;
+  @apply bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm hover:shadow-md transition-all;
 }
 
 .ad-table-row:hover {
-  @apply bg-slate-50 transition-colors cursor-pointer;
+  @apply bg-slate-50 dark:bg-slate-800 transition-colors cursor-pointer;
 }
 
 .ad-badge {

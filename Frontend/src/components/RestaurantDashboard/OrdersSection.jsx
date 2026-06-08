@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { COLORS } from '../../data/restaurantDashboardData'
+import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { COLORS } from './constants'
 import { Badge } from './Common'
 
 /**

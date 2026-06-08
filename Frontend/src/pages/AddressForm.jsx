@@ -1,7 +1,7 @@
 // Archivo: src/pages/AddressForm.jsx | Comentario: logica principal del modulo.
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../api/client';
 import Loading from '../components/Loading';
@@ -43,7 +43,7 @@ export default function AddressForm() {
       setError(null);
     } catch (err) {
       setError(t('address_form.error_load'));
-      console.error(err);
+      console.error('Error cargando dirección:', err?.message || err?.response?.data?.message || 'Error desconocido');
     } finally {
       setLoading(false);
     }
@@ -99,95 +99,129 @@ export default function AddressForm() {
   if (loading) return <Loading />;
 
   return (
-    <main className="page-address-form">
-      <div className="container">
-        <h1>{id ? t('address_form.title_edit') : t('address_form.title_new')}</h1>
+    <div className="page-address-form min-h-screen bg-gray-50 py-12 px-6">
+      <div className="max-w-2xl mx-auto">
+        <button
+          type="button"
+          onClick={() => navigate('/user/addresses')}
+          className="mb-6 text-[#FF4B3E] hover:text-[#e03a2d] font-bold flex items-center gap-2 transition"
+        >
+          <i className="fas fa-arrow-left" /> Volver a mis direcciones
+        </button>
 
-        {error && <ErrorMessage message={error} />}
+        <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-soft">
+          <h1 className="text-3xl font-black text-gray-900 mb-8">
+            {id ? t('address_form.title_edit') : t('address_form.title_new')}
+          </h1>
 
-        <form onSubmit={handleSubmit} className="form">
-          <div className="form-group">
-            <label htmlFor="name">{t('address_form.label')}</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder={t('address_form.label_placeholder')}
-              required
-              className="form-input"
-            />
-          </div>
+          {error && <div className="mb-6"><ErrorMessage message={error} /></div>}
 
-          <div className="form-group">
-            <label htmlFor="address">{t('address_form.address')}</label>
-            <input
-              type="text"
-              id="address"
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              placeholder={t('address_form.address_placeholder')}
-              required
-              className="form-input"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="name" className="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                {t('address_form.label')}
+              </label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder={t('address_form.label_placeholder')}
+                required
+                className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FF4B3E]/30 focus:bg-white rounded-2xl outline-none transition font-medium text-gray-700 placeholder-gray-400"
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="lat">Lat</label>
-            <input
-              type="number"
-              step="any"
-              id="lat"
-              name="lat"
-              value={form.lat}
-              onChange={handleChange}
-              placeholder="4.7110"
-              className="form-input"
-            />
-          </div>
+            <div className="space-y-2">
+              <label htmlFor="address" className="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                {t('address_form.address')}
+              </label>
+              <input
+                type="text"
+                id="address"
+                name="address"
+                value={form.address}
+                onChange={handleChange}
+                placeholder={t('address_form.address_placeholder')}
+                required
+                className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FF4B3E]/30 focus:bg-white rounded-2xl outline-none transition font-medium text-gray-700 placeholder-gray-400"
+              />
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="lng">Lng</label>
-            <input
-              type="number"
-              step="any"
-              id="lng"
-              name="lng"
-              value={form.lng}
-              onChange={handleChange}
-              placeholder="-74.0721"
-              className="form-input"
-            />
-          </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label htmlFor="lat" className="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                  Latitud (Opcional)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="lat"
+                  name="lat"
+                  value={form.lat}
+                  onChange={handleChange}
+                  placeholder="2.4448"
+                  className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FF4B3E]/30 focus:bg-white rounded-2xl outline-none transition font-medium text-gray-700 placeholder-gray-400"
+                />
+              </div>
 
-          <div className="form-group checkbox">
-            <input
-              type="checkbox"
-              id="is_default"
-              name="is_default"
-              checked={form.is_default}
-              onChange={handleChange}
-              className="form-checkbox"
-            />
-            <label htmlFor="is_default">{t('address_form.is_default')}</label>
-          </div>
+              <div className="space-y-2">
+                <label htmlFor="lng" className="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
+                  Longitud (Opcional)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  id="lng"
+                  name="lng"
+                  value={form.lng}
+                  onChange={handleChange}
+                  placeholder="-76.6147"
+                  className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FF4B3E]/30 focus:bg-white rounded-2xl outline-none transition font-medium text-gray-700 placeholder-gray-400"
+                />
+              </div>
+            </div>
 
-          <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? t('address_form.saving') : t('address_form.save')}
-            </button>
-            <button
-              type="button"
-              onClick={() => navigate('/user/addresses')}
-              className="btn btn-secondary"
-            >
-              {t('address_form.cancel')}
-            </button>
-          </div>
-        </form>
+            <div className="flex items-center gap-3 pt-2">
+              <label htmlFor="is_default" className="flex items-center gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  id="is_default"
+                  name="is_default"
+                  checked={form.is_default}
+                  onChange={handleChange}
+                  className="accent-[#FF4B3E] w-5 h-5 cursor-pointer rounded"
+                />
+                <span className="text-sm font-bold text-gray-600 group-hover:text-[#FF4B3E] transition-colors">
+                  {t('address_form.is_default')}
+                </span>
+              </label>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-100">
+              <button
+                type="submit"
+                className="w-full sm:flex-1 py-3.5 bg-[#FF4B3E] hover:bg-[#e03a2d] active:scale-95 text-white font-black rounded-2xl shadow-xl shadow-brand/20 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={loading}
+              >
+                {loading ? (
+                  <><i className="fas fa-spinner fa-spin" /> {t('address_form.saving')}</>
+                ) : (
+                  <><i className="fas fa-save" /> {t('address_form.save')}</>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/user/addresses')}
+                className="w-full sm:flex-1 py-3.5 bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-800 font-bold rounded-2xl transition flex items-center justify-center gap-2"
+              >
+                {t('address_form.cancel')}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </main>
+    </div>
   );
 }

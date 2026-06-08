@@ -4,7 +4,7 @@
  * Permite filtrar por categorías, buscar y ver restaurantes cercanos.
  */
 
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useRestaurants } from '../hooks/useRestaurants'
 import FoodCategoryCarousel from '../components/FoodCategoryCarousel'
 import RestaurantCard from '../components/RestaurantCard'
@@ -22,13 +22,22 @@ export default function RestaurantsPage() {
     setSelectedCategory,
     searchQuery,
     handleFavoriteToggle,
-    navigate
+    navigate,
+    deliveryFilter,
+    setDeliveryFilter,
+    timeFilter,
+    setTimeFilter,
+    ratingFilter,
+    setRatingFilter
   } = useRestaurants()
 
   // Tipos de comida disponibles
+  // Tipos de comida disponibles (Incluyendo categorías locales de Popayán)
   const foodTypes = [
-    "Hamburguesas", "Pizza", "Japonesa", "Italiana", "Mexicana", 
-    "Saludable", "Panadería y Postres", "Bebidas"
+    "Restaurantes Locales", "Comida Casera", "Sopas y Caldos", 
+    "Antojitos Payaneses", "Empanadas y Fritos", "Tamales",
+    "Hamburguesas", "Pizza", "Sushi", "Japonesa", "Italiana", 
+    "Mexicana", "Saludable", "Panadería y Postres", "Bebidas Tradicionales"
   ]
 
   return (
@@ -75,6 +84,54 @@ export default function RestaurantsPage() {
                 {f.label}
               </button>
             ))}
+          </div>
+
+          {/* Filtros Avanzados */}
+          <div className="flex flex-wrap gap-3 mb-8 items-center bg-gray-50 dark:bg-slate-800/40 p-4 rounded-3xl border border-gray-100 dark:border-slate-800">
+            <span className="text-xs font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest mr-2">Filtros:</span>
+            
+            {/* Selector de Envío */}
+            <select
+              value={deliveryFilter}
+              onChange={e => setDeliveryFilter(e.target.value)}
+              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-200 rounded-xl px-4 py-2 text-xs font-bold outline-none cursor-pointer hover:border-[#FF4B3E] dark:hover:border-[#FF4B3E] transition"
+            >
+              <option value="all">🛵 Envio: Cualquiera</option>
+              <option value="free">🛵 Envio: Gratis</option>
+              <option value="cheap">🛵 Envio: Menos de $3.000</option>
+            </select>
+
+            {/* Selector de Tiempo */}
+            <select
+              value={timeFilter}
+              onChange={e => setTimeFilter(e.target.value)}
+              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-200 rounded-xl px-4 py-2 text-xs font-bold outline-none cursor-pointer hover:border-[#FF4B3E] dark:hover:border-[#FF4B3E] transition"
+            >
+              <option value="all">⚡ Tiempo: Cualquiera</option>
+              <option value="fast">⚡ Tiempo: Fast (&lt;30 min)</option>
+              <option value="under45">⚡ Tiempo: Menos de 45 min</option>
+            </select>
+
+            {/* Selector de Calificación */}
+            <select
+              value={ratingFilter}
+              onChange={e => setRatingFilter(e.target.value)}
+              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-200 rounded-xl px-4 py-2 text-xs font-bold outline-none cursor-pointer hover:border-[#FF4B3E] dark:hover:border-[#FF4B3E] transition"
+            >
+              <option value="all">⭐ Calificación: Cualquiera</option>
+              <option value="4plus">⭐ Calificación: 4.0+</option>
+              <option value="45plus">⭐ Calificación: 4.5+</option>
+            </select>
+
+            {/* Botón de limpiar si hay filtros activos */}
+            {(deliveryFilter !== 'all' || timeFilter !== 'all' || ratingFilter !== 'all') && (
+              <button
+                onClick={() => { setDeliveryFilter('all'); setTimeFilter('all'); setRatingFilter('all'); }}
+                className="ml-auto text-xs font-black text-[#FF4B3E] hover:underline"
+              >
+                Limpiar
+              </button>
+            )}
           </div>
 
           {/* Carrusel de Categorías */}

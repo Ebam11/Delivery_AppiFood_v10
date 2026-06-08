@@ -1,6 +1,6 @@
 // Archivo: src/components/SubscriptionTab.jsx | Comentario: logica principal del modulo.
 import { useEffect, useState } from 'react'
-import { useTranslation } from 'react-i18next'
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import {
   cancelSubscription,
   createSubscription,
@@ -42,7 +42,11 @@ export default function SubscriptionTab({ user }) {
       setSubscription(subscriptionPayload?.current ?? null)
       setHistory(Array.isArray(subscriptionPayload?.history) ? subscriptionPayload.history : [])
     } catch (err) {
-      console.log('ℹ️ Suscripción no disponible:', err.message)
+      try {
+        if (!import.meta.env.PROD) console.log('ℹ️ Suscripción no disponible:', err.message)
+      } catch (e) {
+        if (process.env.NODE_ENV !== 'production') console.log('ℹ️ Suscripción no disponible:', err.message)
+      }
       setError(err.message)
       setSubscription(null)
       setHistory([])

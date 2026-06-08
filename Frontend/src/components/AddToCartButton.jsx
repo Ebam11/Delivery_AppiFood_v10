@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { ErrorMessage } from './ErrorMessage';
-import { useTranslation } from 'react-i18next';
+import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
 export const AddToCartButton = ({ restaurantId, product, compact = false }) => {
   const { addItemToCart, isLoading, error, clearError } = useCartStore();
@@ -18,7 +18,7 @@ export const AddToCartButton = ({ restaurantId, product, compact = false }) => {
       setQuantity(1);
       setTimeout(() => setShowSuccess(false), 2000);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error agregando producto al carrito:', error?.message || error?.response?.data?.message || 'Error desconocido');
     }
   };
 

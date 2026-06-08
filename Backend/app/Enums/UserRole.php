@@ -7,6 +7,7 @@ enum UserRole: string
     case ADMIN = 'admin';
     case RESTAURANT = 'restaurant';
     case USER = 'user';
+    case DRIVER = 'driver';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum UserRole: string
             self::ADMIN => 'Admin',
             self::RESTAURANT => 'Restaurant',
             self::USER => 'User',
+            self::DRIVER => 'Driver',
         };
     }
 
