@@ -60,18 +60,10 @@ export async function fetchJson(url, options = {}) {
     ...options.headers,
   }
 
-  // Obtener el token de localStorage si existe
-  const userStr = localStorage.getItem('user_session') || localStorage.getItem('user')
-  if (userStr) {
-    try {
-      const userData = JSON.parse(userStr)
-      const token = userData.token || userData.state?.token
-      if (token && !headers['Authorization']) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
-    } catch (e) {
-      console.warn('No se pudo parsear el token de sesión')
-    }
+  // Obtener token de localStorage
+  const token = localStorage.getItem('token')
+  if (token && !headers['Authorization']) {
+    headers['Authorization'] = `Bearer ${token}`
   }
 
   // Si enviamos un objeto en el body, lo convertimos a string y ponemos Content-Type
@@ -82,10 +74,10 @@ export async function fetchJson(url, options = {}) {
   }
 
   try {
-    const response = await fetch(resolvedUrl, { 
-      ...options, 
+    const response = await fetch(resolvedUrl, {
+      ...options,
       body,
-      headers 
+      headers,
     })
 
     const data = await parseResponseBody(response)
