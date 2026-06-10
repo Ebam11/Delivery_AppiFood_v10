@@ -16,15 +16,15 @@ Route::prefix('v1')->group(function () {
 
     // Public Auth Routes
     Route::prefix('auth')->group(function () {
-        Route::post('/login', [V1LoginController::class, 'login']);
-        Route::post('/register', [V1RegisterController::class, 'register']);
-        Route::post('/refresh', [V1RefreshTokenController::class, 'refresh']);
-        Route::post('/forgot-password', 'PasswordResetController@sendResetLink');
-        Route::post('/reset-password', 'PasswordResetController@resetPassword');
+        Route::post('/login', [V1LoginController::class, 'login'])->middleware('throttle:5,1');
+        Route::post('/register', [V1RegisterController::class, 'register'])->middleware('throttle:5,1');
+        Route::post('/refresh', [V1RefreshTokenController::class, 'refresh'])->middleware('throttle:10,1');
+        Route::post('/forgot-password', 'PasswordResetController@sendResetLink')->middleware('throttle:3,1');
+        Route::post('/reset-password', 'PasswordResetController@resetPassword')->middleware('throttle:3,1');
 
         Route::get('/google', 'GoogleAuthController@redirectToGoogle');
         Route::get('/google/callback', 'GoogleAuthController@handleGoogleCallback');
-    });
+});
 
     // Protected Routes
     Route::middleware('auth:sanctum')->group(function () {

@@ -38,11 +38,11 @@ use Illuminate\Support\Facades\Route;
 
 // Endpoints publicos.
 Route::prefix('auth')->group(function () {
-    Route::post('/register', RegisterController::class);
-    Route::post('/login', LoginController::class);
-    Route::post('/refresh', [\App\Http\Controllers\API\Auth\RefreshTokenController::class, 'refresh']);
-    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink']);
-    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+    Route::post('/register', RegisterController::class)->middleware('throttle:5,1');
+    Route::post('/login', LoginController::class)->middleware('throttle:5,1');
+    Route::post('/refresh', [\App\Http\Controllers\API\Auth\RefreshTokenController::class, 'refresh'])->middleware('throttle:10,1');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:3,1');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:3,1');
 
     // Google Auth
     Route::get('/google', [\App\Http\Controllers\API\Auth\GoogleAuthController::class, 'redirectToGoogle']);
