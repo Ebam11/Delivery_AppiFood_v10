@@ -23,14 +23,14 @@ export default function UsersSection({ users }) {
     <div className="space-y-6 animate-fade-in">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: t('adminDashboard.userStats.total', { defaultValue: 'Total usuarios' }), value: users.length, color: 'text-gray-800' },
+          { label: t('adminDashboard.userStats.total', { defaultValue: 'Total usuarios' }), value: users.length, color: 'text-gray-800 dark:text-slate-100' },
           { label: t('adminDashboard.userStats.active', { defaultValue: 'Activos' }), value: users.filter(u => u.status === 'active').length, color: 'text-green-500' },
           { label: t('adminDashboard.userStats.suspended', { defaultValue: 'Suspendidos' }), value: users.filter(u => u.status === 'suspended').length, color: 'text-orange-500' },
           { label: t('adminDashboard.userStats.premium', { defaultValue: 'Premium' }), value: users.filter(u => u.subscription === 'Premium').length, color: 'text-purple-500' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm text-center">
+          <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm text-center">
             <p className={`text-3xl font-black ${stat.color}`}>{stat.value}</p>
-            <p className="text-xs font-semibold text-gray-500 uppercase mt-1">{stat.label}</p>
+            <p className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase mt-1">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -42,7 +42,9 @@ export default function UsersSection({ users }) {
               key={f.key}
               onClick={() => setFilter(f.key)}
               className={`px-4 py-2 rounded-xl text-sm font-semibold transition ${
-                filter === f.key ? 'bg-red-500 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-red-50 border border-gray-200'
+                filter === f.key 
+                  ? 'bg-red-500 text-white shadow-md' 
+                  : 'bg-white dark:bg-slate-800 text-gray-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-950/20 border border-gray-200 dark:border-slate-700'
               }`}
             >
               {f.label}
@@ -50,48 +52,56 @@ export default function UsersSection({ users }) {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 w-full lg:w-auto bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
-          <span className="text-gray-400">🔍</span>
+        <div className="flex items-center gap-2 w-full lg:w-auto bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2 shadow-sm">
+          <span className="text-gray-400 dark:text-slate-500">🔍</span>
           <input
             placeholder={t('adminDashboard.userSearch', { defaultValue: 'Buscar usuario...' })}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="text-sm outline-none w-full lg:w-60 text-gray-700 placeholder-gray-400 bg-transparent"
+            className="text-sm outline-none w-full lg:w-60 text-gray-700 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 bg-transparent"
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-100">
+            <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
               <tr>
-                {[t('adminDashboard.userTable.user', { defaultValue: 'Usuario' }), t('adminDashboard.userTable.contact', { defaultValue: 'Contacto' }), t('adminDashboard.userTable.subscription', { defaultValue: 'Suscripción' }), t('adminDashboard.userTable.status', { defaultValue: 'Estado' }), t('adminDashboard.userTable.actions', { defaultValue: 'Acciones' })].map(h => (
-                  <th key={h} className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
+                {[
+                  t('adminDashboard.userTable.user', { defaultValue: 'Usuario' }),
+                  t('adminDashboard.userTable.contact', { defaultValue: 'Contacto' }),
+                  t('adminDashboard.userTable.subscription', { defaultValue: 'Suscripción' }),
+                  t('adminDashboard.userTable.status', { defaultValue: 'Estado' }),
+                  t('adminDashboard.userTable.actions', { defaultValue: 'Acciones' })
+                ].map(h => (
+                  <th key={h} className="text-left px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {visible.map(u => (
-                <tr key={u.id} className="ad-table-row group">
+                <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
                         {u.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900">{u.name}</p>
-                        <p className="text-xs text-gray-500">Unido: {u.joined}</p>
+                        <p className="font-bold text-gray-900 dark:text-slate-100">{u.name}</p>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Unido: {u.joined}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="font-medium text-gray-800">{u.email}</p>
-                    <p className="text-xs text-gray-500">{u.phone}</p>
+                    <p className="font-medium text-gray-800 dark:text-slate-200">{u.email}</p>
+                    <p className="text-xs text-gray-500 dark:text-slate-400">{u.phone}</p>
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      u.subscription === 'Premium' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'
+                      u.subscription === 'Premium' 
+                        ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400' 
+                        : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-slate-400'
                     }`}>
                       {u.subscription}
                     </span>
@@ -102,9 +112,13 @@ export default function UsersSection({ users }) {
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       {u.status === 'active' ? (
-                        <button className="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-xs font-bold hover:bg-orange-100 transition">{t('adminDashboard.actions.suspendAccount', { defaultValue: 'Suspender' })}</button>
+                        <button className="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg text-xs font-bold hover:bg-orange-100 dark:hover:bg-orange-900/40 transition">
+                          {t('adminDashboard.actions.suspendAccount', { defaultValue: 'Suspender' })}
+                        </button>
                       ) : (
-                        <button className="px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-xs font-bold hover:bg-green-100 transition">{t('adminDashboard.actions.reactivateAccount', { defaultValue: 'Reactivar' })}</button>
+                        <button className="px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg text-xs font-bold hover:bg-green-100 dark:hover:bg-green-900/40 transition">
+                          {t('adminDashboard.actions.reactivateAccount', { defaultValue: 'Reactivar' })}
+                        </button>
                       )}
                     </div>
                   </td>
@@ -112,8 +126,8 @@ export default function UsersSection({ users }) {
               ))}
               {visible.length === 0 && (
                 <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                    No se encontraron usuarios con los filtros actuales.
+                  <td colSpan="5" className="px-6 py-12 text-center text-gray-500 dark:text-slate-400">
+                    {t('adminDashboard.filter.all', { defaultValue: 'No se encontraron usuarios.' })}
                   </td>
                 </tr>
               )}

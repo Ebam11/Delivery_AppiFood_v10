@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslate as useTranslation } from '../../hooks/useTranslate';
 import { fetchJson } from '../../api/fetchJson';
 import CalendarSection from './CalendarSection';
+import ThemeToggle from '../ThemeToggle';
 
 export default function RestaurantInfoSection({ restaurant }) {
   const { t } = useTranslation();
@@ -74,27 +75,31 @@ export default function RestaurantInfoSection({ restaurant }) {
           <h3 className="font-bold text-gray-800 dark:text-white">{t('restaurantDashboard.info.basicTitle', { defaultValue: 'Información Básica del Restaurante' })}</h3>
         </div>
         <div className="p-6 space-y-5">
-          <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.restName', { defaultValue: 'Nombre del Restaurante' })}</label>
-            <input name="name" value={form.name} onChange={handleChange} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.description', { defaultValue: 'Descripción' })}</label>
-            <textarea name="desc" value={form.desc} onChange={handleChange} rows="3" className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 resize-none" />
-          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.restName', { defaultValue: 'Nombre del Restaurante' })}</label>
+              <input name="name" value={form.name} onChange={handleChange} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100" />
+            </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.email', { defaultValue: 'Correo de Contacto' })}</label>
               <input name="email" value={form.email} onChange={handleChange} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100" />
             </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.phone', { defaultValue: 'Teléfono' })}</label>
               <input name="phone" value={form.phone} onChange={handleChange} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100" />
             </div>
+            <div>
+              <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.address', { defaultValue: 'Dirección' })}</label>
+              <input name="address" value={form.address} onChange={handleChange} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100" />
+            </div>
           </div>
+
           <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.address', { defaultValue: 'Dirección' })}</label>
-            <input name="address" value={form.address} onChange={handleChange} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100" />
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.description', { defaultValue: 'Descripción' })}</label>
+            <textarea name="desc" value={form.desc} onChange={handleChange} rows="3" className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 resize-none" />
           </div>
         </div>
       </div>
@@ -125,6 +130,14 @@ export default function RestaurantInfoSection({ restaurant }) {
               <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.delivery ? 'translate-x-6' : 'translate-x-1'}`} />
             </div>
           </label>
+
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-800">
+            <div>
+              <p className="font-bold text-gray-800 dark:text-white">{t('restaurantDashboard.info.themeLabel', { defaultValue: 'Tema Visual' })}</p>
+              <p className="text-xs text-gray-500 dark:text-slate-400">{t('restaurantDashboard.info.themeDesc', { defaultValue: 'Activar modo claro o modo noche' })}</p>
+            </div>
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 

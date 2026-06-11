@@ -233,25 +233,25 @@ export const OrderDetail = () => {
             </div>
 
             {/* Detalles de entrega */}
-            <div className="bg-gray-50 border border-gray-200/50 p-4 rounded-xl">
-              <h3 className="font-bold text-gray-800 mb-1.5 flex items-center gap-2">
+            <div className="bg-gray-50 dark:bg-slate-800/50 border border-gray-200/50 dark:border-slate-700/50 p-4 rounded-xl">
+              <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1.5 flex items-center gap-2">
                 <i className="fas fa-map-marker-alt text-[#FF4B3E]" /> {t('order_detail.delivery')}
               </h3>
-              <p className="text-gray-600 text-sm font-medium">{order.delivery_address}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">{order.delivery_address}</p>
             </div>
 
-            {/* Tracking de pedido en tiempo real */}
-            {order.status === 'on_the_way' && (
+            {/* Tracking de pedido en tiempo real (Deshabilitado temporalmente - Sin repartidores) */}
+            {/* order.status === 'on_the_way' && (
               <OrderTrackingMap order={order} />
-            )}
+            ) */}
 
             {/* Notas */}
             {order.notes && (
-              <div className="bg-gray-50 border border-gray-200/50 p-4 rounded-xl">
-                <h3 className="font-bold text-gray-800 mb-1.5 flex items-center gap-2">
+              <div className="bg-gray-50 dark:bg-slate-800/50 border border-gray-200/50 dark:border-slate-700/50 p-4 rounded-xl">
+                <h3 className="font-bold text-gray-800 dark:text-gray-100 mb-1.5 flex items-center gap-2">
                   <i className="far fa-sticky-note text-[#FF4B3E]" /> {t('order_detail.notes')}
                 </h3>
-                <p className="text-gray-600 text-sm font-medium">{order.notes}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">{order.notes}</p>
               </div>
             )}
 

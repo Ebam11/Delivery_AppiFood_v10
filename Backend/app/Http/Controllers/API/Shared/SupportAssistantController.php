@@ -34,13 +34,13 @@ class SupportAssistantController extends Controller
             [
                 'role' => 'system',
                 'content' => implode("\n", [
-                    'Eres el asistente de soporte de AppiFood.',
-                    'Responde en español, con tono claro, breve y útil.',
-                    'Ayuda solo sobre pedidos, checkout, pagos, direcciones, favoritos, suscripcion, perfil, restaurantes y soporte.',
-                    'Si no sabes algo, dilo con transparencia y sugiere la ruta adecuada dentro de la app.',
-                    'Devuelve siempre un objeto JSON valido con estas claves: reply (string) y action (object|null).',
-                    'Si incluyes action, usa solo {"label": string, "path": string}.',
-                    'Paths utiles: /support, /user/orders, /user/orders/{id}, /user/addresses, /user/profile, /subscription, /restaurants, /checkout, /cart.',
+                    'Eres el asistente virtual de AppiFood. Tu misión es guiar al usuario para que tenga una experiencia de pedido de comida perfecta.',
+                    'Usa un tono cálido, empático, claro y muy conciso. Eres servicial y usas emojis ocasionalmente para ser más amigable.',
+                    'Tus áreas de especialidad: pedidos, checkout, métodos de pago, direcciones, suscripción VIP, perfil y restaurantes.',
+                    'Si el usuario tiene un problema grave o no sabes la respuesta, discúlpate amablemente y sugiérele ir al Centro de Soporte.',
+                    'IMPORTANTE: Debes responder EXCLUSIVAMENTE con un objeto JSON válido con estas claves: "reply" (string con tu respuesta) y "action" (objeto o null).',
+                    'Si decides incluir un botón de atajo, usa "action": {"label": "Texto corto", "path": "/ruta"}. Si no, envía "action": null.',
+                    'Rutas permitidas para "path": /support, /user/orders, /user/addresses, /user/profile, /subscription, /restaurants, /checkout, /cart.',
                 ]),
             ],
         ];
@@ -105,7 +105,7 @@ class SupportAssistantController extends Controller
                         'Accept' => 'application/json',
                     ],
                     'json' => [
-                        'model' => config('services.openai.model', 'gpt-4o-mini'),
+                        'model' => $provider === 'gemini' ? config('services.gemini.model', 'gemini-1.5-flash') : config('services.openai.model', 'gpt-4o-mini'),
                         'messages' => $messages,
                         'temperature' => $temperature,
                         'max_tokens' => $maxTokens,
@@ -163,6 +163,7 @@ class SupportAssistantController extends Controller
         return match ($provider) {
             'anthropic' => rtrim((string) config('services.anthropic.base_url', 'https://api.anthropic.com/v1'), '/'),
             'ollama' => rtrim((string) config('services.ollama.base_url', 'http://localhost:11434'), '/'),
+            'gemini' => 'https://generativelanguage.googleapis.com/v1beta/openai',
             default => rtrim((string) config('services.openai.base_url', 'https://api.openai.com/v1'), '/'),
         };
     }
@@ -172,6 +173,7 @@ class SupportAssistantController extends Controller
         return match ($provider) {
             'anthropic' => (string) config('services.anthropic.api_key'),
             'ollama' => '',
+            'gemini' => (string) config('services.gemini.api_key'),
             default => (string) config('services.openai.api_key'),
         };
     }

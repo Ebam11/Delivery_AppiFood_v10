@@ -19,7 +19,7 @@ export default function PopularRestaurants({ restaurants, loading, onSelect, onF
   }
 
   return (
-    <section id="popular" className="py-20 bg-white overflow-hidden">
+    <section id="popular" className="py-20 bg-white dark:bg-slate-950 overflow-hidden transition-colors duration-300">
       <div className="container mx-auto px-6">
         {/* Cabecera de Sección */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -27,7 +27,7 @@ export default function PopularRestaurants({ restaurants, loading, onSelect, onF
             <p className="text-red-500 font-bold text-xs uppercase tracking-widest mb-2">
               {t('home.featured') || "Destacados"}
             </p>
-            <h2 className="text-3xl md:text-4xl font-black text-gray-900">
+            <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white">
               {t('home.popular_restaurants') || "Restaurantes Populares"}
             </h2>
           </div>
@@ -36,7 +36,7 @@ export default function PopularRestaurants({ restaurants, loading, onSelect, onF
           <div className="flex gap-3">
             <button 
               onClick={() => slide(-1)}
-              className="w-12 h-12 rounded-full border-2 border-gray-100 flex items-center justify-center text-gray-400 hover:border-red-500 hover:text-red-500 transition-all shadow-sm"
+              className="w-12 h-12 rounded-full border-2 border-gray-100 dark:border-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500 hover:border-red-500 hover:text-red-500 transition-all shadow-sm"
             >
               <i className="fas fa-chevron-left" />
             </button>
@@ -54,7 +54,7 @@ export default function PopularRestaurants({ restaurants, loading, onSelect, onF
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-gray-500 font-medium italic">Cargando la mejor comida...</p>
+              <p className="text-gray-500 dark:text-slate-400 font-medium italic">Cargando la mejor comida...</p>
             </div>
           ) : (
             <div 
@@ -65,16 +65,16 @@ export default function PopularRestaurants({ restaurants, loading, onSelect, onF
               {restaurants.map((r, idx) => (
                 <div key={r.id} className="min-w-[280px] md:min-w-[320px] snap-start">
                   <RestaurantCard 
-                    restaurant={r}
-                    onSelect={onSelect}
-                    onFavoriteToggle={onFavoriteToggle}
+                     restaurant={r}
+                     onSelect={onSelect}
+                     onFavoriteToggle={onFavoriteToggle}
                   />
                 </div>
               ))}
               
               {restaurants.length === 0 && (
-                <div className="w-full text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                  <p className="text-gray-400">No se encontraron restaurantes cerca de ti.</p>
+                <div className="w-full text-center py-20 bg-gray-50 dark:bg-slate-900/40 rounded-3xl border-2 border-dashed border-gray-200 dark:border-slate-800">
+                  <p className="text-gray-400 dark:text-slate-500">No se encontraron restaurantes cerca de ti.</p>
                 </div>
               )}
             </div>

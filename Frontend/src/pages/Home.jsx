@@ -64,7 +64,7 @@ export default function Home({ isAuth }) {
   }
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-white dark:bg-slate-950 min-h-screen text-gray-900 dark:text-slate-100 transition-colors duration-300">
       {/* 1. Hero / Bienvenida */}
       <HeroCarousel 
         slides={heroSlides} 

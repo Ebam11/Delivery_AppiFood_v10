@@ -158,8 +158,8 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
               </div>
 
               <span
-                className="text-xs font-bold text-center leading-tight"
-                style={{ color: '#1f2937', transform: 'translateZ(14px)' }}
+                className="text-xs font-bold text-center leading-tight text-gray-800 dark:text-slate-200"
+                style={{ transform: 'translateZ(14px)' }}
               >
                 {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
               </span>

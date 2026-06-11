@@ -911,14 +911,16 @@
       "howItWorks": "¿Cómo funciona?",
       "supportChat": "Chat de soporte",
       "downloadApp": "Descarga la app",
-      "registerRestaurant": "Registra tu restaurante"
+      "registerRestaurant": "Registra tu restaurante",
+      "clubLoyalty": "Club de Fidelidad"
     },
     "menu": {
       "adminPanel": "Panel de Administración",
       "profile": "Mi Perfil",
       "orders": "Mis Pedidos",
       "favorites": "Favoritos",
-      "addresses": "Direcciones"
+      "addresses": "Direcciones",
+      "clubLoyalty": "Club de Fidelidad"
     },
     "address": {
       "placeholder": "Escribe la dirección de entrega",

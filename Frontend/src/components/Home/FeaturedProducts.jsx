@@ -10,16 +10,16 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
   const fmt = n => Number(n).toLocaleString('es-CO')
 
   return (
-    <section id="ofertas" className="py-20 bg-slate-50/50">
+    <section id="ofertas" className="py-20 bg-slate-50/50 dark:bg-slate-900/10 transition-colors duration-300">
       <div className="container mx-auto px-6">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <p className="text-red-500 font-bold text-xs uppercase tracking-widest mb-2">
             <i className="fas fa-tag" /> {t('home.specialDiscounts') || "Descuentos especiales"}
           </p>
-          <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
             {t('home.offersTitle') || "Ofertas del Día"}
           </h2>
-          <p className="text-gray-500 font-medium">
+          <p className="text-gray-500 dark:text-slate-400 font-medium">
             {t('home.offersSubtitle') || "Los mejores platos con descuentos exclusivos para ti."}
           </p>
         </div>
@@ -27,7 +27,7 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="bg-white rounded-3xl h-80 animate-pulse shadow-sm" />
+              <div key={i} className="bg-white dark:bg-slate-900 rounded-3xl h-80 animate-pulse shadow-sm" />
             ))}
           </div>
         ) : (
@@ -36,7 +36,7 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
               <div 
                 key={`${p.id}-${idx}`}
                 onClick={() => onSelectProduct(p)}
-                className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-transparent dark:border-slate-800"
               >
                 {/* Imagen del Producto */}
                 <div className="h-48 overflow-hidden relative">
@@ -57,7 +57,7 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
                   {/* Botón Favorito */}
                   <button 
                     onClick={(e) => { e.stopPropagation(); onFavoriteToggle(p.restaurantId) }}
-                    className={`absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-all bg-white/80 backdrop-blur-sm shadow-md
+                    className={`absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-all bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-md
                       ${isFavorite(p.restaurantId) ? 'text-red-500 scale-110' : 'text-gray-400 hover:text-red-500'}`}
                   >
                     <i className={`${isFavorite(p.restaurantId) ? 'fas' : 'far'} fa-heart`} />
@@ -69,19 +69,19 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
                   <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider mb-1">
                     {p.restaurantName}
                   </p>
-                  <h3 className="font-black text-gray-900 text-lg mb-2 truncate" title={p.name}>
+                  <h3 className="font-black text-gray-900 dark:text-white text-lg mb-2 truncate" title={p.name}>
                     {p.name}
                   </h3>
                   
                   <div className="flex items-center justify-between mt-4">
                     <div>
-                      <span className="block text-xl font-black text-gray-900">${fmt(p.price)}</span>
+                      <span className="block text-xl font-black text-gray-900 dark:text-white">${fmt(p.price)}</span>
                       {p.oldPrice && (
-                        <span className="text-gray-400 text-xs line-through">${fmt(p.oldPrice)}</span>
+                        <span className="text-gray-400 dark:text-slate-500 text-xs line-through">${fmt(p.oldPrice)}</span>
                       )}
                     </div>
                     
-                    <button className="w-10 h-10 rounded-2xl bg-gray-900 text-white flex items-center justify-center hover:bg-red-500 transition-colors shadow-lg">
+                    <button className="w-10 h-10 rounded-2xl bg-gray-900 dark:bg-slate-800 text-white flex items-center justify-center hover:bg-red-500 dark:hover:bg-red-500 transition-colors shadow-lg">
                       <i className="fas fa-plus" />
                     </button>
                   </div>
@@ -92,7 +92,7 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
         )}
 
         <div className="text-center mt-16">
-          <button className="bg-white border-2 border-gray-100 hover:border-red-500 text-gray-900 font-black px-10 py-4 rounded-full transition-all shadow-sm hover:shadow-lg">
+          <button className="bg-white dark:bg-slate-900 border-2 border-gray-100 dark:border-slate-800 hover:border-red-500 text-gray-900 dark:text-slate-200 font-black px-10 py-4 rounded-full transition-all shadow-sm hover:shadow-lg">
             Ver todas las ofertas
           </button>
         </div>

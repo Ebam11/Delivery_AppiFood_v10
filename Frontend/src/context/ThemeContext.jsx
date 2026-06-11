@@ -10,15 +10,8 @@ export const ThemeProvider = ({ children }) => {
     return systemPrefersDark ? 'dark' : 'light';
   });
 
+  // Solo guarda la preferencia en localStorage. El DOM se actualiza en App.jsx para respetar si está autenticado o no.
   useEffect(() => {
-    const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-      root.setAttribute('data-theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      root.setAttribute('data-theme', 'light');
-    }
     localStorage.setItem('theme', theme);
   }, [theme]);
 

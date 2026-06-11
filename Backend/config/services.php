@@ -53,6 +53,11 @@ return [
         'base_url' => env('OLLAMA_BASE_URL', 'http://localhost:11434'),
         'model' => env('OLLAMA_MODEL', 'llama3.1'),
     ],
+
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model' => env('GEMINI_MODEL', 'gemini-1.5-flash'),
+    ],
     
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),

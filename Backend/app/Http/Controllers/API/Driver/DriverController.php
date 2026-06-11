@@ -200,15 +200,11 @@ class DriverController extends Controller
             ], 422);
         }
 
-        // Transicionar a entregado
+        // Transicionar a entregado (y otorgar puntos automáticamente)
         $order->transitionTo(OrderStatus::DELIVERED);
 
-        // Calcular y otorgar puntos de fidelidad al cliente
+        // Calcular puntos para la notificación
         $pointsEarned = (int) floor($order->total / 1000);
-        if ($pointsEarned > 0) {
-            $customer = $order->user;
-            $customer->increment('points', $pointsEarned);
-        }
 
         // Notificar al cliente que su pedido fue entregado
         Notification::create([

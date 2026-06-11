@@ -54,18 +54,18 @@ export default function HelpCenter() {
   }, [flatFaqs, query])
 
   return (
-    <main className="page-help-center min-h-screen bg-[#fff8f6]">
+    <main className="page-help-center min-h-screen bg-[#fff8f6] dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-colors duration-300">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,75,62,0.14),_transparent_40%),radial-gradient(circle_at_bottom_left,_rgba(255,122,89,0.12),_transparent_35%)]" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           <div className="max-w-4xl">
-            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-red-100 text-[#FF4B3E] font-bold text-sm shadow-sm">
+            <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-slate-900 border border-red-100 dark:border-slate-800 text-[#FF4B3E] font-bold text-sm shadow-sm">
               <i className="fas fa-circle-info" /> {t('help.center') || "Centro de ayuda"}
             </span>
-            <h1 className="mt-5 text-4xl sm:text-5xl font-black text-gray-900 leading-tight">
+            <h1 className="mt-5 text-4xl sm:text-5xl font-black text-gray-900 dark:text-white leading-tight">
               {t('help.title') || "Encuentra respuestas rápidas y sigue comprando sin perder tiempo."}
             </h1>
-            <p className="mt-4 text-lg text-gray-600 max-w-3xl">
+            <p className="mt-4 text-lg text-gray-600 dark:text-slate-400 max-w-3xl">
               {t('help.subtitle') || "Aquí agrupamos las preguntas frecuentes por tema para que el usuario encuentre solución por su cuenta o salte al chat cuando necesite una respuesta inmediata."}
             </p>
 
@@ -76,7 +76,7 @@ export default function HelpCenter() {
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder={t('help.search_placeholder') || "Buscar por pedido, pago, dirección, restaurante..."}
-                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-white shadow-sm outline-none focus:ring-2 focus:ring-[#FF4B3E]/15 focus:border-[#FF4B3E] text-sm"
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-950 dark:text-slate-200 shadow-sm outline-none focus:ring-2 focus:ring-[#FF4B3E]/15 focus:border-[#FF4B3E] text-sm"
                 />
               </div>
               <Link
@@ -96,25 +96,25 @@ export default function HelpCenter() {
             <Link
               key={card.title}
               to={card.path}
-              className="group bg-white rounded-3xl border border-gray-100 shadow-sm p-5 hover:shadow-lg hover:-translate-y-0.5 transition"
+              className="group bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 hover:shadow-lg hover:-translate-y-0.5 transition"
             >
-              <div className="w-12 h-12 rounded-2xl bg-[#fff0ed] text-[#FF4B3E] flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-[#fff0ed] dark:bg-red-950/20 text-[#FF4B3E] flex items-center justify-center mb-4">
                 <i className={`fas ${card.icon}`} />
               </div>
-              <h2 className="font-black text-gray-900 text-lg">{card.title}</h2>
-              <p className="mt-2 text-sm text-gray-500 leading-relaxed">{card.description}</p>
+              <h2 className="font-black text-gray-900 dark:text-white text-lg">{card.title}</h2>
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400 leading-relaxed">{card.description}</p>
             </Link>
           ))}
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr] items-start">
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-xl p-6 sm:p-8">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl p-6 sm:p-8">
             <div className="flex items-center justify-between gap-3 mb-5">
               <div>
-                <h2 className="text-2xl font-black text-gray-900">{t('help.faqs') || "Preguntas frecuentes"}</h2>
+                <h2 className="text-2xl font-black text-gray-900 dark:text-white">{t('help.faqs') || "Preguntas frecuentes"}</h2>
                 <p className="text-sm text-gray-500 mt-1">{t('help.filtered_results') || "Resultados filtrados según tu búsqueda."}</p>
               </div>
-              <span className="px-3 py-1.5 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
+              <span className="px-3 py-1.5 rounded-full bg-gray-100 dark:bg-slate-850 text-gray-600 dark:text-slate-350 text-xs font-bold">
                 {filteredFaqs.length} {t('help.results_count') || "resultados"}
               </span>
             </div>
@@ -122,18 +122,18 @@ export default function HelpCenter() {
             <div className="space-y-4">
               {filteredFaqs.length > 0 ? (
                 filteredFaqs.map((faq) => (
-                  <article key={`${faq.category}-${faq.question}`} className="rounded-2xl border border-gray-100 bg-gray-50 p-4 sm:p-5">
+                  <article key={`${faq.category}-${faq.question}`} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/20 p-4 sm:p-5">
                     <div className="flex items-center gap-2 mb-3 flex-wrap">
-                      <span className="px-3 py-1 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-600">
+                      <span className="px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-bold text-gray-600 dark:text-slate-400">
                         {faq.category}
                       </span>
                     </div>
-                    <h3 className="font-bold text-gray-900 text-base sm:text-lg">{faq.question}</h3>
-                    <p className="mt-2 text-sm text-gray-600 leading-relaxed">{faq.answer}</p>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{faq.question}</h3>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 leading-relaxed">{faq.answer}</p>
                   </article>
                 ))
               ) : (
-                <div className="rounded-2xl border border-dashed border-gray-200 p-8 text-center text-gray-500">
+                <div className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 p-8 text-center text-gray-500 dark:text-slate-500">
                   {t('help.no_results') || "No encontramos resultados con ese término. Prueba con “pedido”, “pago”, “dirección” o “restaurante”."}
                 </div>
               )}
@@ -156,14 +156,14 @@ export default function HelpCenter() {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl border border-gray-100 shadow-lg p-6">
-              <h3 className="text-xl font-black text-gray-900 mb-4">{t('help.shortcuts') || "Accesos directos"}</h3>
+            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-lg p-6">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white mb-4">{t('help.shortcuts') || "Accesos directos"}</h3>
               <div className="space-y-3">
                 {supportShortcuts.map((item) => (
                   <Link
                     key={item.path}
                     to={item.path}
-                    className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-gray-50 hover:bg-[#fff0ed] hover:text-[#FF4B3E] transition"
+                    className="flex items-center gap-3 rounded-2xl px-4 py-3 bg-gray-50 dark:bg-slate-850 hover:bg-[#fff0ed] dark:hover:bg-red-950/20 text-gray-800 dark:text-slate-200 hover:text-[#FF4B3E] dark:hover:text-[#FF4B3E] transition"
                   >
                     <i className={`fas ${item.icon} text-gray-400 w-4`} />
                     <span className="font-semibold text-sm">{item.label}</span>

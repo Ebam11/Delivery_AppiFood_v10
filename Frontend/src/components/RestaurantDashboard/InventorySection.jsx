@@ -67,57 +67,57 @@ export default function InventorySection() {
       {/* Resumen de stock */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: t('restaurantDashboard.inventory.inStock', { defaultValue: 'Disponibles' }), value: available.length, color: 'text-green-500', bg: 'bg-green-50', icon: '✅' },
-          { label: t('restaurantDashboard.inventory.outOfStock', { defaultValue: 'No disponibles' }), value: unavailable.length, color: 'text-red-500', bg: 'bg-red-50', icon: '❌' },
-          { label: 'Total de Productos', value: products.length, color: 'text-blue-500', bg: 'bg-blue-50', icon: '📦' },
+          { label: t('restaurantDashboard.inventory.inStock', { defaultValue: 'Disponibles' }), value: available.length, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-950/30', icon: '✅' },
+          { label: t('restaurantDashboard.inventory.outOfStock', { defaultValue: 'No disponibles' }), value: unavailable.length, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-950/30', icon: '❌' },
+          { label: 'Total de Productos', value: products.length, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30', icon: '📦' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex items-center gap-4">
+          <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${stat.bg}`}>
               {stat.icon}
             </div>
             <div>
               <p className={`text-3xl font-black ${stat.color}`}>{stat.value}</p>
-              <p className="text-xs font-bold text-gray-400 uppercase mt-1">{stat.label}</p>
+              <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase mt-1">{stat.label}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* Tabla de inventario */}
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-          <h3 className="font-bold text-gray-800">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50 dark:bg-slate-800/50">
+          <h3 className="font-bold text-gray-800 dark:text-slate-200">
             {t('restaurantDashboard.inventory.title', { defaultValue: 'Control de Disponibilidad' })}
           </h3>
-          <span className="text-xs text-gray-400 font-medium">
+          <span className="text-xs text-gray-400 dark:text-slate-500 font-medium">
             Activa o desactiva productos de tu menú
           </span>
         </div>
 
         {loading ? (
-          <div className="py-16 text-center text-gray-400">
+          <div className="py-16 text-center text-gray-400 dark:text-slate-500">
             <div className="text-4xl mb-3">⏳</div>
             <p className="font-semibold">Cargando inventario...</p>
           </div>
         ) : products.length === 0 ? (
-          <div className="py-16 text-center text-gray-400">
+          <div className="py-16 text-center text-gray-400 dark:text-slate-500">
             <div className="text-5xl mb-3">📦</div>
-            <p className="font-semibold text-gray-600">No tienes productos registrados.</p>
+            <p className="font-semibold text-gray-600 dark:text-slate-300">No tienes productos registrados.</p>
             <p className="text-sm mt-1">Ve a la sección de Menú para añadir productos.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-white border-b border-gray-100">
+              <thead className="bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800">
                 <tr>
                   {['Producto', 'Categoría', 'Precio', 'Estado', 'Acción'].map(h => (
-                    <th key={h} className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">{h}</th>
+                    <th key={h} className="text-left px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
                 {products.map(product => (
-                  <tr key={product.id} className="hover:bg-gray-50 transition">
+                  <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/40 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {product.image ? (
@@ -128,17 +128,17 @@ export default function InventorySection() {
                             onError={e => { e.target.style.display = 'none'; }}
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-lg flex-shrink-0">🍽️</div>
+                          <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-lg flex-shrink-0">🍽️</div>
                         )}
-                        <span className="font-bold text-gray-800">{product.name}</span>
+                        <span className="font-bold text-gray-800 dark:text-slate-200">{product.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-500">{product.category?.name || 'Sin categoría'}</td>
-                    <td className="px-6 py-4 font-bold text-gray-800">
+                    <td className="px-6 py-4 text-gray-500 dark:text-slate-400">{product.category?.name || 'Sin categoría'}</td>
+                    <td className="px-6 py-4 font-bold text-gray-800 dark:text-slate-200">
                       ${Number(product.price).toLocaleString('es-CO')}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${product.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${product.is_available ? 'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400'}`}>
                         {product.is_available ? '✅ Disponible' : '❌ No disponible'}
                       </span>
                     </td>
@@ -148,8 +148,8 @@ export default function InventorySection() {
                         disabled={togglingId === product.id}
                         className={`px-4 py-1.5 rounded-lg text-xs font-bold transition disabled:opacity-50 ${
                           product.is_available
-                            ? 'bg-orange-50 text-orange-600 hover:bg-orange-100'
-                            : 'bg-green-50 text-green-600 hover:bg-green-100'
+                            ? 'bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-950/30 dark:text-orange-400 dark:hover:bg-orange-900/40'
+                            : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-950/30 dark:text-green-400 dark:hover:bg-green-950/30'
                         }`}
                       >
                         {togglingId === product.id ? '...' : (product.is_available ? 'Pausar' : 'Activar')}

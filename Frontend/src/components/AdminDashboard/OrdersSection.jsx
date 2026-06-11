@@ -7,23 +7,27 @@ export default function OrdersSection({ orders }) {
   const [search, setSearch] = useState('');
 
   const visible = orders.filter(o => {
-    return o.customer.toLowerCase().includes(search.toLowerCase()) || 
-           o.restaurant.toLowerCase().includes(search.toLowerCase()) || 
-           o.id.toLowerCase().includes(search.toLowerCase());
+    const customer = typeof o.customer === 'object' && o.customer !== null ? o.customer.name : (o.customer_name ?? o.customer ?? '');
+    const restaurant = typeof o.restaurant === 'object' && o.restaurant !== null ? o.restaurant.name : (o.restaurant_name ?? o.restaurant ?? '');
+    return customer.toLowerCase().includes(search.toLowerCase()) || 
+           restaurant.toLowerCase().includes(search.toLowerCase()) || 
+           String(o.id).toLowerCase().includes(search.toLowerCase());
   });
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
-        <h3 className="font-bold text-gray-800 text-lg">{t('adminDashboard.breadcrumb.globalOrders', { defaultValue: 'Pedidos Globales' })}</h3>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm">
+        <h3 className="font-bold text-gray-800 dark:text-slate-100 text-lg">
+          {t('adminDashboard.breadcrumb.globalOrders', { defaultValue: 'Pedidos Globales' })}
+        </h3>
         
-        <div className="flex items-center gap-2 w-full sm:w-auto bg-gray-50 border border-gray-200 rounded-xl px-4 py-2">
-          <span className="text-gray-400">🔍</span>
+        <div className="flex items-center gap-2 w-full sm:w-auto bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2">
+          <span className="text-gray-400 dark:text-slate-500">🔍</span>
           <input
             placeholder={t('adminDashboard.orderSearch', { defaultValue: 'Buscar pedido, cliente o restaurante...' })}
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="text-sm outline-none w-full sm:w-80 text-gray-700 bg-transparent placeholder-gray-400"
+            className="text-sm outline-none w-full sm:w-80 text-gray-700 dark:text-slate-200 bg-transparent placeholder-gray-400 dark:placeholder-slate-500"
           />
         </div>
       </div>
@@ -33,14 +37,20 @@ export default function OrdersSection({ orders }) {
           <table className="w-full text-sm">
             <thead className="bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
               <tr>
-                {[t('adminDashboard.orderTable.date', { defaultValue: 'Fecha' }), t('adminDashboard.orderTable.customer', { defaultValue: 'Cliente' }), t('adminDashboard.orderTable.restaurant', { defaultValue: 'Restaurante' }), t('adminDashboard.orderTable.amount', { defaultValue: 'Monto' }), t('adminDashboard.orderTable.status', { defaultValue: 'Estado' })].map(h => (
+                {[
+                  t('adminDashboard.orderTable.date', { defaultValue: 'Fecha' }),
+                  t('adminDashboard.orderTable.customer', { defaultValue: 'Cliente' }),
+                  t('adminDashboard.orderTable.restaurant', { defaultValue: 'Restaurante' }),
+                  t('adminDashboard.orderTable.amount', { defaultValue: 'Monto' }),
+                  t('adminDashboard.orderTable.status', { defaultValue: 'Estado' })
+                ].map(h => (
                   <th key={h} className="text-left px-6 py-4 text-xs font-bold text-gray-500 dark:text-slate-400 uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {visible.map(o => (
-                <tr key={o.id} className="ad-table-row">
+                <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition">
                   <td className="px-6 py-4">
                     <p className="font-mono text-xs font-bold text-red-500">{o.id}</p>
                     <p className="text-xs text-gray-500 dark:text-slate-400">{o.date} - {o.time}</p>

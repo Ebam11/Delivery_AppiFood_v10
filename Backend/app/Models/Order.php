@@ -41,6 +41,8 @@ class Order extends Model
     public function transitionTo(OrderStatus $newStatus): bool
     {
         if (!$this->canTransitionTo($newStatus)) return false;
+        
+        $oldStatus = $this->status;
         $this->update(['status' => $newStatus]);
 
         // Guarda el historial en order_tracking
@@ -48,6 +50,14 @@ class Order extends Model
             'status'     => $newStatus->value,
             'changed_at' => now(),
         ]);
+
+        // Calcular y otorgar puntos de fidelidad al cliente si cambia a DELIVERED
+        if ($newStatus === OrderStatus::DELIVERED && $oldStatus !== OrderStatus::DELIVERED) {
+            $pointsEarned = (int) floor($this->total / 1000);
+            if ($pointsEarned > 0 && $this->user) {
+                $this->user->increment('points', $pointsEarned);
+            }
+        }
 
         return true;
     }

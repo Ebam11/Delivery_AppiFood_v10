@@ -47,18 +47,18 @@ export const translateService = {
     const esText = getNestedValue(esTranslations, key);
     
     if (targetLang === 'es') {
-      text = typeof esText === 'string' ? esText : key;
+      text = typeof esText === 'string' ? esText : (params?.defaultValue ?? '');
     } else if (targetLang === 'en') {
       // Intentar obtener del JSON local de inglés
       const enText = getNestedValue(enTranslations, key);
       if (typeof enText === 'string') {
         text = enText;
       } else {
-        text = typeof esText === 'string' ? esText : key;
+        text = typeof esText === 'string' ? esText : (params?.defaultValue ?? '');
       }
     } else {
       // 2. Si el target no es español ni inglés, buscar en caché
-      text = typeof esText === 'string' ? esText : key;
+      text = typeof esText === 'string' ? esText : (params?.defaultValue ?? '');
       const cacheKey = `${targetLang}_${key}`;
       if (translationCache[cacheKey]) {
         text = translationCache[cacheKey];

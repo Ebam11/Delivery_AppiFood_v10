@@ -8,6 +8,7 @@ import { useProfile } from '../hooks/useProfile'
 import SubscriptionTab from '../components/SubscriptionTab'
 import NotificationsTab from '../components/NotificationsTab'
 import PaymentMethodsTab from '../components/PaymentMethodsTab'
+import ThemeToggle from '../components/ThemeToggle'
 import '../styles/Profile.css'
 
 export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
@@ -89,7 +90,13 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
           <main className="profile-content">
             {activeTab === 'info' && (
               <div className="animate-fade-in">
-                <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100 mb-8">{t('profile.account_info') || 'Información de cuenta'}</h3>
+                <div className="flex items-center justify-between mb-8">
+                  <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100">{t('profile.account_info') || 'Información de cuenta'}</h3>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-gray-500 dark:text-gray-400">Modo Noche:</span>
+                    <ThemeToggle />
+                  </div>
+                </div>
                 
                 {success && (
                   <div className="bg-green-50 dark:bg-green-900/20 text-green-600 p-4 rounded-2xl text-sm font-bold mb-6 flex items-center gap-3 border border-green-100 dark:border-green-800">

@@ -905,14 +905,16 @@
       "howItWorks": "How does it work?",
       "supportChat": "Support Chat",
       "downloadApp": "Download the app",
-      "registerRestaurant": "Register your restaurant"
+      "registerRestaurant": "Register your restaurant",
+      "clubLoyalty": "Loyalty Club"
     },
     "menu": {
       "adminPanel": "Admin Panel",
       "profile": "My Profile",
       "orders": "My Orders",
       "favorites": "Favorites",
-      "addresses": "Addresses"
+      "addresses": "Addresses",
+      "clubLoyalty": "Loyalty Club"
     },
     "address": {
       "placeholder": "Enter delivery address",

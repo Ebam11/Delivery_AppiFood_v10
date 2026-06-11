@@ -41,17 +41,17 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-400 dark:text-slate-500">
           {menu.filter(m => m.active).length} {t('rd.active_dishes')} / {menu.length} {t('rd.total_dishes')}
         </p>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm">
-            <span className="text-gray-400 text-sm">🔍</span>
+          <div className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 shadow-sm">
+            <span className="text-gray-400 dark:text-slate-500 text-sm">🔍</span>
             <input 
               placeholder={t('rd.search_dish')} 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
-              className="text-sm outline-none w-32 text-gray-600 placeholder-gray-400" 
+              className="text-sm outline-none w-32 text-gray-600 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 bg-transparent" 
             />
           </div>
           <button 
@@ -70,7 +70,10 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
             key={c} 
             onClick={() => setCatFilter(c)}
             className="px-4 py-1.5 rounded-full text-xs font-semibold border transition"
-            style={catFilter === c ? { background: COLORS.primary, color:'white', borderColor: COLORS.primary } : { background:'white', color:'#6b7280', borderColor:'#e5e7eb' }}
+            style={catFilter === c 
+              ? { background: COLORS.primary, color:'white', borderColor: COLORS.primary } 
+              : { background:'transparent', color:'#6b7280', borderColor:'#e5e7eb' }
+            }
           >
             {c}
           </button>
@@ -79,7 +82,7 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {visible.map(item => (
-          <div key={item.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all">
+          <div key={item.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 overflow-hidden shadow-sm hover:shadow-md transition-all">
             <div className="relative">
               <img 
                 src={item.img} 
@@ -92,43 +95,65 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
               </span>
             </div>
             <div className="p-4">
-              <p className="text-xs text-gray-400 mb-0.5">{item.category?.name || item.category}</p>
-              <p className="font-bold text-gray-800 text-sm truncate">{item.name}</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mb-0.5">{item.category?.name || item.category}</p>
+              <p className="font-bold text-gray-800 dark:text-slate-100 text-sm truncate">{item.name}</p>
               <div className="flex items-center justify-between mt-2 mb-3">
-                <span className="text-xs text-gray-400">⭐ {item.rating} · {item.orders} {t('rd.orders_label')}</span>
+                <span className="text-xs text-gray-400 dark:text-slate-500">⭐ {item.rating} · {item.orders} {t('rd.orders_label')}</span>
                 <span className="font-bold" style={{ color: COLORS.primary }}>${item.price}.00</span>
               </div>
               <div className="flex gap-2">
-                <button className="flex-1 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition">{t('rd.edit')}</button>
-                <button onClick={() => onDelete(item.id)} className="flex-1 py-1.5 rounded-lg text-xs font-semibold border border-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-50 transition">{t('rd.delete')}</button>
+                <button className="flex-1 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                  {t('rd.edit')}
+                </button>
+                <button 
+                  onClick={() => onDelete(item.id)} 
+                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold border border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition"
+                >
+                  {t('rd.delete')}
+                </button>
               </div>
             </div>
           </div>
         ))}
+        {visible.length === 0 && (
+          <div className="col-span-full py-16 text-center text-gray-400 dark:text-slate-500">
+            <p className="text-4xl mb-2">🍽️</p>
+            <p className="font-medium">{t('rd.no_dishes')}</p>
+          </div>
+        )}
       </div>
 
       {/* Modal para añadir plato */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h2 className="text-base font-bold text-gray-800 mb-4">{t('rd.new_dish')}</h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-100 dark:border-slate-800">
+            <h2 className="text-base font-bold text-gray-800 dark:text-slate-100 mb-4">{t('rd.new_dish')}</h2>
             <div className="space-y-4">
-               {/* Formulario simplificado para el ejemplo */}
-               <input 
-                placeholder="Nombre del plato" 
-                className="w-full border p-2 rounded-xl text-sm" 
+              <input 
+                placeholder={t('rd.name')}
+                className="w-full border border-gray-200 dark:border-slate-700 p-3 rounded-xl text-sm bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 outline-none focus:border-red-500 placeholder-gray-400 dark:placeholder-slate-500" 
                 onChange={e => setForm({...form, name: e.target.value})}
-               />
-               <input 
-                placeholder="Precio" 
+              />
+              <input 
+                placeholder={t('rd.price_label')}
                 type="number"
-                className="w-full border p-2 rounded-xl text-sm" 
+                className="w-full border border-gray-200 dark:border-slate-700 p-3 rounded-xl text-sm bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 outline-none focus:border-red-500 placeholder-gray-400 dark:placeholder-slate-500" 
                 onChange={e => setForm({...form, price: e.target.value})}
-               />
-               <div className="flex gap-2">
-                <button onClick={() => setShowModal(false)} className="flex-1 py-2 text-sm">Cancelar</button>
-                <button onClick={submit} className="flex-1 py-2 text-sm bg-red-500 text-white rounded-xl">Guardar</button>
-               </div>
+              />
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setShowModal(false)} 
+                  className="flex-1 py-2 text-sm border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+                >
+                  {t('rd.cancel')}
+                </button>
+                <button 
+                  onClick={submit} 
+                  className="flex-1 py-2 text-sm bg-red-500 text-white rounded-xl hover:bg-red-600 transition"
+                >
+                  {t('rd.add_btn')}
+                </button>
+              </div>
             </div>
           </div>
         </div>

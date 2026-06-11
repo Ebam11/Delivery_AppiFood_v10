@@ -178,7 +178,7 @@ export default function SupportChatbot({ embedded = false, startOpen = false }) 
   if (embedded) return panel
 
   return (
-    <div className="component-support-chatbot-float fixed bottom-20 right-4 sm:bottom-24 sm:right-6 z-40 flex flex-col items-end gap-3">
+    <div className="component-support-chatbot-float fixed bottom-20 right-5 sm:bottom-22 sm:right-8 z-[9998] flex flex-col items-end gap-3">
       {open ? (
         panel
       ) : (

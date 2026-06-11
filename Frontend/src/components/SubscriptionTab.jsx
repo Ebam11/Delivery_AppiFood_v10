@@ -1,5 +1,6 @@
 // Archivo: src/components/SubscriptionTab.jsx | Comentario: logica principal del modulo.
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import {
   cancelSubscription,
@@ -9,6 +10,7 @@ import {
 } from '../api/subscriptions'
 
 export default function SubscriptionTab({ user }) {
+  const navigate = useNavigate()
   const { t } = useTranslation()
   const [subscription, setSubscription] = useState(null)
   const [history, setHistory] = useState([])
@@ -55,16 +57,11 @@ export default function SubscriptionTab({ user }) {
     }
   }
 
-  const handleUpgrade = async (planId) => {
-    setUpgrading(planId)
-    try {
-      const data = await createSubscription(planId)
-      setSubscription(data?.data ?? data)
-      setError(null)
-    } catch (err) {
-      alert(`${t('subscriptionTab.errorUpgrade')}: ${err.message}`)
-    } finally {
-      setUpgrading(null)
+  const handleUpgrade = (planId) => {
+    if (planId === 'free') {
+      handleCancel()
+    } else {
+      navigate('/subscription')
     }
   }
 
