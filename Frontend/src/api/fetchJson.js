@@ -74,10 +74,10 @@ export async function fetchJson(url, options = {}) {
   }
 
   try {
-    const response = await fetch(resolvedUrl, { 
-      ...options, 
+    const response = await fetch(resolvedUrl, {
+      ...options,
       body,
-      headers 
+      headers,
     })
 
     const data = await parseResponseBody(response)
