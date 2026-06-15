@@ -34,14 +34,16 @@ class ProductController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'category_id'    => ['required', 'exists:categories,id'],
-            'name'           => ['required', 'string', 'max:150'],
-            'description'    => ['nullable', 'string', 'max:500'],
-            'image'          => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'price'          => ['required', 'numeric', 'min:0', 'max:9999999999'],
-            'discount_price' => ['nullable', 'numeric', 'min:0', 'lt:price'],
-            'is_available'   => ['boolean'],
-            'is_featured'    => ['boolean'],
+            'category_id'       => ['required', 'exists:categories,id'],
+            'name'              => ['required', 'string', 'max:150'],
+            'description'       => ['nullable', 'string', 'max:500'],
+            'image'             => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'price'             => ['required', 'numeric', 'min:0', 'max:9999999999'],
+            'discount_price'    => ['nullable', 'numeric', 'min:0', 'lt:price'],
+            'is_available'      => ['boolean'],
+            'is_featured'       => ['boolean'],
+            'stock'             => ['nullable', 'integer', 'min:0'],
+            'prep_time_minutes' => ['nullable', 'integer', 'min:0', 'max:1440'],
         ]);
 
         $data = $request->except('image');
@@ -62,14 +64,16 @@ class ProductController extends Controller
     public function update(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'category_id'    => ['sometimes', 'exists:categories,id'],
-            'name'           => ['sometimes', 'string', 'max:150'],
-            'description'    => ['nullable', 'string', 'max:500'],
-            'image'          => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-            'price'          => ['sometimes', 'numeric', 'min:0'],
-            'discount_price' => ['nullable', 'numeric', 'min:0'],
-            'is_available'   => ['sometimes', 'boolean'],
-            'is_featured'    => ['sometimes', 'boolean'],
+            'category_id'       => ['sometimes', 'exists:categories,id'],
+            'name'              => ['sometimes', 'string', 'max:150'],
+            'description'       => ['nullable', 'string', 'max:500'],
+            'image'             => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'price'             => ['sometimes', 'numeric', 'min:0'],
+            'discount_price'    => ['nullable', 'numeric', 'min:0'],
+            'is_available'      => ['sometimes', 'boolean'],
+            'is_featured'       => ['sometimes', 'boolean'],
+            'stock'             => ['nullable', 'integer', 'min:0'],
+            'prep_time_minutes' => ['nullable', 'integer', 'min:0', 'max:1440'],
         ]);
 
         $product = Product::where('restaurant_id', $request->user()->restaurant->id)

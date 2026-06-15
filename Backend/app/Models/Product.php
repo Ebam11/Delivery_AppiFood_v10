@@ -17,18 +17,19 @@ class Product extends Model
 
     protected array $allowedIncludes = ['category', 'restaurant'];
     protected array $allowedSorts = ['id', 'name', 'price', 'discount_price', 'is_available', 'is_featured', 'created_at'];
-
-    protected $fillable = [
+protected $fillable = [
         'restaurant_id', 'category_id', 'name', 'description',
         'image', 'price', 'discount_price',
-        'is_available', 'is_featured',
+        'is_available', 'is_featured', 'stock', 'prep_time_minutes',
     ];
 
     protected $casts = [
-        'price'          => 'decimal:2',
-        'discount_price' => 'decimal:2',
-        'is_available'   => 'boolean',
-        'is_featured'    => 'boolean',
+        'price'             => 'decimal:2',
+        'discount_price'    => 'decimal:2',
+        'is_available'      => 'boolean',
+        'is_featured'       => 'boolean',
+        'stock'             => 'integer',
+        'prep_time_minutes' => 'integer',
     ];
 
     // ─── Helpers ───────────────────────────────────────────────
