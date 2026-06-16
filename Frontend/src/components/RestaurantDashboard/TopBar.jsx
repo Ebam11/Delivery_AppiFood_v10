@@ -1,21 +1,34 @@
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useState, useRef, useEffect } from 'react'
+import { useTranslate as useTranslation } from '../../hooks/useTranslate'
 import LanguageSwitcher from '../LanguageSwitcher'
 import ThemeToggle from '../ThemeToggle'
 import { COLORS } from './constants'
 
-/**
- * Barra superior del panel del restaurante.
- * Contiene el título, buscador y perfil de usuario.
- */
-export default function TopBar({ title, breadcrumb, onMenuOpen, user, isAdmin }) {
+export default function TopBar({
+  title, breadcrumb, onMenuOpen, user, isAdmin,
+  notifications = [], unreadCount = 0,
+  onNotifRead, onNotifDelete, onNotifMarkAll
+}) {
   const { t } = useTranslation()
   const primaryColor = isAdmin ? '#e71d1d' : COLORS.primary
-  
+  const [showNotifs, setShowNotifs] = useState(false)
+  const dropdownRef = useRef(null)
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowNotifs(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   return (
     <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-30">
       <div className="flex items-center gap-4">
-        <button 
-          onClick={onMenuOpen} 
+        <button
+          onClick={onMenuOpen}
           className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400"
         >
           ☰
@@ -38,15 +51,92 @@ export default function TopBar({ title, breadcrumb, onMenuOpen, user, isAdmin })
       <div className="flex items-center gap-4">
         <div className="hidden sm:flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2">
           <span className="text-gray-400 dark:text-slate-500 text-sm">🔍</span>
-          <input 
-            placeholder={t('rd.search')} 
-            className="bg-transparent text-sm outline-none w-32 text-gray-600 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500" 
+          <input
+            placeholder={t('rd.search')}
+            className="bg-transparent text-sm outline-none w-32 text-gray-600 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500"
           />
         </div>
-        
-        <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400">
-          🔔
-        </button>
+
+        {/* Bell con dropdown */}
+        <div className="relative" ref={dropdownRef}>
+          <button
+            onClick={() => setShowNotifs(v => !v)}
+            className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
+          >
+            🔔
+            {unreadCount > 0 && (
+              <span
+                className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-white text-xs flex items-center justify-center font-bold"
+                style={{ background: primaryColor, fontSize: '10px' }}
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {showNotifs && (
+            <div className="absolute right-0 top-11 w-80 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-800">
+                <span className="text-sm font-semibold text-gray-800 dark:text-slate-100">
+                  Notificaciones
+                </span>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => onNotifMarkAll?.()}
+                    className="text-xs hover:underline"
+                    style={{ color: primaryColor }}
+                  >
+                    Marcar todas como leídas
+                  </button>
+                )}
+              </div>
+
+              {/* Lista */}
+              <div className="max-h-80 overflow-y-auto divide-y divide-gray-50 dark:divide-slate-800">
+                {notifications.length === 0 ? (
+                  <div className="py-10 text-center text-gray-400 dark:text-slate-500 text-sm">
+                    Sin notificaciones
+                  </div>
+                ) : (
+                  notifications.map(n => (
+                    <div
+                      key={n.id}
+                      className={`flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition ${!n.is_read ? 'bg-red-50/40 dark:bg-red-950/10' : ''}`}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <p className={`text-xs leading-relaxed ${!n.is_read ? 'font-semibold text-gray-800 dark:text-slate-100' : 'text-gray-600 dark:text-slate-400'}`}>
+                          {n.message || n.data?.message || 'Nueva notificación'}
+                        </p>
+                        <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
+                          {n.created_at ? new Date(n.created_at).toLocaleDateString() : ''}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {!n.is_read && (
+                          <button
+                            onClick={() => onNotifRead?.(n.id)}
+                            className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 text-xs"
+                            title="Marcar como leída"
+                          >
+                            ✓
+                          </button>
+                        )}
+                        <button
+                          onClick={() => onNotifDelete?.(n.id)}
+                          className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 text-gray-300 hover:text-red-400 text-xs"
+                          title="Eliminar"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-2 border-l border-gray-100 dark:border-slate-800 pl-4 ml-2">
           <div className="text-right hidden sm:block">

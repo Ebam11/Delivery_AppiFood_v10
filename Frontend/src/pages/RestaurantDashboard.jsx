@@ -39,7 +39,12 @@ export default function RestaurantDashboard({ user, onLogout }) {
     categories,
     handleStatusChange,
     handleAddProduct,
-    handleDeleteProduct
+    handleDeleteProduct,
+    notifications,
+    unreadCount,
+    handleNotifRead,
+    handleNotifDelete,
+    handleNotifMarkAll,
   } = useRestaurantDashboard(user)
 
   // Función para renderizar la sección activa basada en la navegación
@@ -90,10 +95,15 @@ export default function RestaurantDashboard({ user, onLogout }) {
 
       <div className="flex-1 flex flex-col min-w-0 md:pl-[220px]">
         {/* Barra Superior */}
-        <TopBar 
-          title={t(`rd.${activeTab.replace('-', '_')}`)} 
-          onMenuOpen={() => setIsSidebarOpen(true)} 
-          user={user} 
+        <TopBar
+          title={t(`rd.${activeTab.replace('-', '_')}`)}
+          onMenuOpen={() => setIsSidebarOpen(true)}
+          user={user}
+          notifications={notifications}
+          unreadCount={unreadCount}
+          onNotifRead={handleNotifRead}
+          onNotifDelete={handleNotifDelete}
+          onNotifMarkAll={handleNotifMarkAll}
         />
 
         {/* Contenido Principal */}
