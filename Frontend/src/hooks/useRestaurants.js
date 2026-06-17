@@ -13,6 +13,7 @@ export function useRestaurants() {
   const location = useLocation()
   const { token } = useAuthStore()
   const { favorites, fetchFavorites, isFavorite, toggleFavorite } = useFavoritesStore()
+  const [budgetInput, setBudgetInput] = useState('')
   
   const [restaurants, setRestaurants] = useState([])
   const [loading, setLoading] = useState(true)
@@ -103,7 +104,15 @@ export function useRestaurants() {
       
       return true
     })
-  }, [restaurants, filter, selectedCategory, searchQuery, favorites, deliveryFilter, timeFilter, ratingFilter])
+
+      // Filtro de presupuesto por minimum_order
+// Filtro de presupuesto manual
+      if (budgetInput && !isNaN(Number(budgetInput))) {
+        const budget = Number(budgetInput)
+        const minOrder = r.minimum_order ?? 0
+        if (minOrder > budget) return false
+      }
+      }, [restaurants, filter, selectedCategory, searchQuery, favorites, deliveryFilter, timeFilter, ratingFilter, budgetInput])
 
   const handleFavoriteToggle = async (id) => {
     if (!token) return navigate('/login')
@@ -128,6 +137,8 @@ export function useRestaurants() {
     timeFilter,
     setTimeFilter,
     ratingFilter,
-    setRatingFilter
+    setRatingFilter,
+    budgetInput,
+    setBudgetInput
   }
 }

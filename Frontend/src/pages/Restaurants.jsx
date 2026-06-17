@@ -28,7 +28,9 @@ export default function RestaurantsPage() {
     timeFilter,
     setTimeFilter,
     ratingFilter,
-    setRatingFilter
+    setRatingFilter,
+    budgetInput,
+    setBudgetInput
   } = useRestaurants()
 
   // Tipos de comida disponibles
@@ -105,15 +107,37 @@ export default function RestaurantsPage() {
               <option value="45plus">⭐ Calificación: 4.5+</option>
             </select>
 
+            {/* Input de presupuesto manual */}
+            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 hover:border-[#FF4B3E] transition">
+              <span className="text-xs font-bold text-gray-400">💰</span>
+              <input
+                type="number"
+                min="0"
+                placeholder="Tu presupuesto ($)"
+                value={budgetInput}
+                onChange={e => setBudgetInput(e.target.value)}
+                onKeyDown={e => e.key === 'Escape' && setBudgetInput('')}
+                className="bg-transparent text-xs font-bold text-gray-700 dark:text-gray-200 outline-none w-36 placeholder-gray-400"
+              />
+              {budgetInput && (
+                <button onClick={() => setBudgetInput('')} className="text-gray-300 hover:text-red-400 text-xs">✕</button>
+              )}
+            </div>
+
             {/* Botón de limpiar si hay filtros activos */}
-            {(deliveryFilter !== 'all' || timeFilter !== 'all' || ratingFilter !== 'all') && (
-              <button
-                onClick={() => { setDeliveryFilter('all'); setTimeFilter('all'); setRatingFilter('all'); }}
-                className="ml-auto text-xs font-black text-[#FF4B3E] hover:underline"
-              >
-                Limpiar
-              </button>
-            )}
+          {(deliveryFilter !== 'all' || timeFilter !== 'all' || ratingFilter !== 'all' || budgetInput !== 'all') && (
+            <button
+              onClick={() => { 
+                setDeliveryFilter('all')
+                setTimeFilter('all')
+                setRatingFilter('all')
+                setBudgetInput('all')
+              }}
+              className="ml-auto text-xs font-black text-[#FF4B3E] hover:underline"
+            >
+              Limpiar
+            </button>
+          )}
           </div>
 
           {/* Carrusel de Categorías */}
