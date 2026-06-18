@@ -99,4 +99,25 @@ class ProfileRestaurantController extends Controller
             'logo'    => asset('storage/' . $path),
         ]);
     }
+
+        public function banner(Request $request): JsonResponse
+    {
+        $request->validate([
+            'banner' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
+        ]);
+    
+        $restaurant = $request->user()->restaurant;
+    
+        if ($restaurant->banner) {
+            Storage::disk('public')->delete($restaurant->banner);
+        }
+    
+        $path = $request->file('banner')->store('restaurants/banners', 'public');
+        $restaurant->update(['banner' => $path]);
+    
+        return response()->json([
+            'message' => 'Portada actualizada.',
+            'banner'  => asset('storage/' . $path),
+        ]);
+    }
 }

@@ -134,14 +134,15 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // Endpoints para rol:restaurant.
-    Route::middleware('role:restaurant')->prefix('restaurant')->group(function () {
-        Route::get('/dashboard', RestaurantDashboard::class);
+        Route::middleware('role:restaurant')->prefix('restaurant')->group(function () {
+            Route::get('/dashboard', RestaurantDashboard::class);
 
-        Route::prefix('profile')->group(function () {
-            Route::get('/', [ProfileRestaurantController::class, 'show']);
-            Route::put('/', [ProfileRestaurantController::class, 'update']);
-            Route::post('/logo', [ProfileRestaurantController::class, 'logo']);
-        });
+            Route::prefix('profile')->group(function () {
+                Route::get('/', [ProfileRestaurantController::class, 'show']);
+                Route::put('/', [ProfileRestaurantController::class, 'update']);
+                Route::post('/logo', [ProfileRestaurantController::class, 'logo']);
+                Route::post('/banner', [ProfileRestaurantController::class, 'banner']); // ← agregar aquí
+            });
 
         Route::prefix('categories')->group(function () {
             Route::get('/', [CategoryController::class, 'index']);
@@ -179,6 +180,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{id}/confirm', [SubscriptionController::class, 'confirm']);
         Route::patch('/{id}/cancel', [SubscriptionController::class, 'cancel']);
     });
+
 
     // Endpoints para rol:admin.
     Route::middleware('role:admin')->prefix('admin')->group(function () {

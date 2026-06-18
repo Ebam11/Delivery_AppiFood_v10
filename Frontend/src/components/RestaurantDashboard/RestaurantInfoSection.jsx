@@ -4,8 +4,9 @@ import { fetchJson } from '../../api/fetchJson';
 import CalendarSection from './CalendarSection';
 import ThemeToggle from '../ThemeToggle';
 
-export default function RestaurantInfoSection({ restaurant }) {
+export default function RestaurantInfoSection({ restaurant, restaurantId }) {
   const { t } = useTranslation();
+
   const [form, setForm] = useState({
     name: restaurant?.name || '',
     desc: restaurant?.description || '',
@@ -17,6 +18,10 @@ export default function RestaurantInfoSection({ restaurant }) {
   });
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState(null);
+  const [logoPreview, setLogoPreview] = useState(restaurant?.logo || null);
+  const [bannerPreview, setBannerPreview] = useState(restaurant?.banner || null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   useEffect(() => {
     if (restaurant) {
@@ -28,13 +33,15 @@ export default function RestaurantInfoSection({ restaurant }) {
         address: restaurant.address || '',
         status: restaurant.is_active ?? true,
         delivery: restaurant.delivery_available ?? true
-      })
+      });
+      setLogoPreview(restaurant.logo || null);
+      setBannerPreview(restaurant.banner || null);
     }
   }, [restaurant]);
 
   const handleChange = (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setForm({...form, [e.target.name]: value});
+    setForm({ ...form, [e.target.name]: value });
   };
 
   const handleSave = async () => {
@@ -62,17 +69,72 @@ export default function RestaurantInfoSection({ restaurant }) {
     }
   };
 
+  // Subir logo al endpoint POST /api/restaurant/profile/logo
+  const handleLogoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setLogoPreview(URL.createObjectURL(file));
+    setUploadingLogo(true);
+    try {
+      const body = new FormData();
+      body.append('logo', file);
+      await fetchJson('/api/restaurant/profile/logo', { method: 'POST', body });
+      setMsg({ type: 'success', text: 'Logo actualizado correctamente.' });
+    } catch {
+      setMsg({ type: 'error', text: 'Error al subir el logo.' });
+    } finally {
+      setUploadingLogo(false);
+      setTimeout(() => setMsg(null), 3000);
+    }
+  };
+
+  // Subir banner al endpoint POST /api/restaurant/profile/banner (pendiente en backend)
+  const handleBannerUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setBannerPreview(URL.createObjectURL(file));
+    setUploadingBanner(true);
+    try {
+      const body = new FormData();
+      body.append('banner', file);
+      await fetchJson('/api/restaurant/profile/banner', { method: 'POST', body });
+      setMsg({ type: 'success', text: 'Imagen de portada actualizada.' });
+    } catch {
+      setMsg({ type: 'error', text: 'Error al subir la portada. El endpoint aún no está disponible.' });
+    } finally {
+      setUploadingBanner(false);
+      setTimeout(() => setMsg(null), 3000);
+    }
+  };
+
   return (
     <div className="max-w-4xl space-y-8 animate-fade-in pb-10">
+
+      {/* Mensaje de éxito o error al guardar */}
       {msg && (
         <div className={`p-4 rounded-xl text-sm font-bold ${msg.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
           {msg.text}
         </div>
       )}
-      
+
+      {/* SECCIÓN 1: Información básica - nombre, email, teléfono, dirección, descripción */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="bg-gray-50 dark:bg-slate-800/40 border-b border-gray-100 dark:border-slate-800 px-6 py-4">
-          <h3 className="font-bold text-gray-800 dark:text-white">{t('restaurantDashboard.info.basicTitle', { defaultValue: 'Información Básica del Restaurante' })}</h3>
+        <div className="bg-gray-50 dark:bg-slate-800/40 border-b border-gray-100 dark:border-slate-800 px-6 py-4 flex items-center justify-between">
+          <h3 className="font-bold text-gray-800 dark:text-white">
+            {t('restaurantDashboard.info.basicTitle', { defaultValue: 'Información Básica del Restaurante' })}
+          </h3>
+          {/* Botón para ver el restaurante como cliente - abre en nueva pestaña */}
+          {restaurant?.id && (
+            <a
+              href={`/restaurants/${restaurantId || restaurant?.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white hover:opacity-90 transition"
+              style={{ background: '#FF4B3E' }}
+            >
+              👁️ Ver como cliente
+            </a>
+          )}
         </div>
         <div className="p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -85,7 +147,7 @@ export default function RestaurantInfoSection({ restaurant }) {
               <input name="email" value={form.email} onChange={handleChange} className="w-full border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 outline-none focus:border-red-500 bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100" />
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
               <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-2">{t('restaurantDashboard.info.phone', { defaultValue: 'Teléfono' })}</label>
@@ -103,7 +165,74 @@ export default function RestaurantInfoSection({ restaurant }) {
           </div>
         </div>
       </div>
+      
 
+      {/* SECCIÓN 2: Identidad visual - subida de logo y banner del restaurante */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="bg-gray-50 dark:bg-slate-800/40 border-b border-gray-100 dark:border-slate-800 px-6 py-4">
+          <h3 className="font-bold text-gray-800 dark:text-white">Identidad Visual</h3>
+          <p className="text-xs text-gray-400 mt-0.5">Logo y portada que verán tus clientes</p>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          {/* Logo - cuadrado, object-contain */}
+          <div>
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-3">Logo del restaurante</label>
+            <div
+              className="relative w-full h-40 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-800 flex items-center justify-center cursor-pointer hover:border-red-400 transition group"
+              onClick={() => document.getElementById('logo-input').click()}
+            >
+              {logoPreview
+                ? <img src={logoPreview} className="w-full h-full object-contain p-4" alt="Logo" />
+                : <div className="text-center text-gray-400">
+                    <p className="text-3xl mb-1">🏪</p>
+                    <p className="text-xs font-medium">Subir logo</p>
+                    <p className="text-xs text-gray-300">JPG, PNG, WEBP · máx 2MB</p>
+                  </div>
+              }
+              {uploadingLogo && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <p className="text-white text-xs font-bold">Subiendo...</p>
+                </div>
+              )}
+              <div className="absolute bottom-2 right-2 bg-white dark:bg-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-gray-500 opacity-0 group-hover:opacity-100 transition">
+                Cambiar
+              </div>
+            </div>
+            <input id="logo-input" type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} />
+          </div>
+
+          {/* Banner - rectangular, object-cover */}
+          <div>
+            <label className="block text-xs font-bold text-gray-500 dark:text-slate-400 uppercase mb-3">Imagen de portada</label>
+            <div
+              className="relative w-full h-40 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-700 overflow-hidden bg-gray-50 dark:bg-slate-800 flex items-center justify-center cursor-pointer hover:border-red-400 transition group"
+              onClick={() => document.getElementById('banner-input').click()}
+            >
+              {bannerPreview
+                ? <img src={bannerPreview} className="w-full h-full object-cover" alt="Banner" />
+                : <div className="text-center text-gray-400">
+                    <p className="text-3xl mb-1">🖼️</p>
+                    <p className="text-xs font-medium">Subir portada</p>
+                    <p className="text-xs text-gray-300">JPG, PNG, WEBP · máx 2MB</p>
+                  </div>
+              }
+              {uploadingBanner && (
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <p className="text-white text-xs font-bold">Subiendo...</p>
+                </div>
+              )}
+              <div className="absolute bottom-2 right-2 bg-white dark:bg-slate-700 rounded-lg px-2 py-1 text-xs font-bold text-gray-500 opacity-0 group-hover:opacity-100 transition">
+                Cambiar
+              </div>
+            </div>
+            <input id="banner-input" type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
+          </div>
+
+        </div>
+      </div>
+
+      {/* SECCIÓN 3: Configuración operativa - estado, delivery y tema visual */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="bg-gray-50 dark:bg-slate-800/40 border-b border-gray-100 dark:border-slate-800 px-6 py-4">
           <h3 className="font-bold text-gray-800 dark:text-white">{t('restaurantDashboard.info.settingsTitle', { defaultValue: 'Configuración Operativa' })}</h3>
@@ -141,14 +270,16 @@ export default function RestaurantInfoSection({ restaurant }) {
         </div>
       </div>
 
+      {/* Botón guardar cambios del perfil */}
       <button onClick={handleSave} disabled={saving} className="w-full py-4 bg-gray-900 dark:bg-red-500 text-white rounded-xl font-bold hover:bg-black dark:hover:bg-red-600 transition shadow-xl shadow-gray-900/20 disabled:opacity-50">
         {saving ? t('adminDashboard.settings.saving', { defaultValue: 'Guardando...' }) : t('adminDashboard.settings.saveConfig', { defaultValue: 'Guardar Cambios del Perfil' })}
       </button>
 
-      {/* Horarios integrados en Mi Restaurante */}
+      {/* SECCIÓN 4: Horarios de atención integrados desde CalendarSection */}
       <div className="pt-4 border-t border-gray-200 dark:border-slate-800">
         <CalendarSection />
       </div>
+
     </div>
   );
 }
