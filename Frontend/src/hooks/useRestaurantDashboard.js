@@ -184,6 +184,67 @@ export function useRestaurantDashboard(user) {
     }
   }
 
+  const handleEditProduct = async (id, formData) => {
+  try {
+    let options = { method: 'PUT' }
+    if (formData.file) {
+      const body = new FormData()
+      body.append('name', formData.name)
+      body.append('price', formData.price)
+      if (formData.description) body.append('description', formData.description)
+      if (formData.category_id) body.append('category_id', formData.category_id)
+      if (formData.stock !== '' && formData.stock != null) body.append('stock', formData.stock)
+      if (formData.prep_time_minutes !== '' && formData.prep_time_minutes != null) {
+        body.append('prep_time_minutes', formData.prep_time_minutes)
+      }
+      body.append('image', formData.file)
+      options.body = body
+    } else {
+      options.body = {
+        name:              formData.name,
+        price:             formData.price,
+        description:       formData.description || null,
+        category_id:       formData.category_id,
+        stock:             formData.stock !== '' ? formData.stock : null,
+        prep_time_minutes: formData.prep_time_minutes !== '' ? formData.prep_time_minutes : null,
+      }
+    }
+    const res = await fetchJson(`/api/restaurant/products/${id}`, options)
+    if (res?.data) {
+      const p = res.data
+      setMenu(prev => prev.map(item => item.id === id ? {
+        ...item,
+        name:              p.name,
+        description:       p.description,
+        price:             Number(p.price),
+        img:               p.image || item.img,
+        category:          p.category?.name || item.category,
+        category_id:       p.category_id,
+        stock:             p.stock,
+        prep_time_minutes: p.prep_time_minutes,
+      } : item))
+      setToast('Producto actualizado')
+      setTimeout(() => setToast(null), 3000)
+    }
+  } catch (error) {
+    console.error('Error al editar producto:', error)
+    setToast('Error al editar el producto')
+    setTimeout(() => setToast(null), 3000)
+  }
+}
+
+const handleToggleAvailability = async (id) => {
+  // Actualización optimista
+  setMenu(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
+  try {
+    await fetchJson(`/api/restaurant/products/${id}/toggle-availability`, { method: 'PATCH' })
+  } catch (error) {
+    console.error('Error al cambiar disponibilidad:', error)
+    // Revertir si falla
+    setMenu(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
+  }
+}
+
   const handleNotifRead = async (id) => {
     try {
       await markNotificationAsRead(id)
@@ -232,5 +293,7 @@ export function useRestaurantDashboard(user) {
     handleNotifRead,
     handleNotifDelete,
     handleNotifMarkAll,
+    handleEditProduct,
+    handleToggleAvailability,
   }
 }

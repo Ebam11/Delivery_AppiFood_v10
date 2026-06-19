@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom'
 import { useTranslate as useTranslation } from '../../hooks/useTranslate';
 import { COLORS } from './constants'
 
-export default function MenuSection({ menu, categories, onAdd, onDelete }) {
+export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit, onToggle }) {
   const { t } = useTranslation()
   const [showModal, setShowModal] = useState(false)
   const [catFilter, setCatFilter] = useState('Todos')
   const [search, setSearch] = useState('')
+  const [editingItem, setEditingItem] = useState(null)
+  const [confirmDelete, setConfirmDelete] = useState(null) // guarda el id a eliminar
   const [form, setForm] = useState({
     name: '', description: '', price: '', category_id: '',
     stock: '', prep_time_minutes: '', img: '', file: null,
@@ -30,13 +32,34 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
   const resetForm = () => {
     setForm({ name: '', description: '', price: '', category_id: '', stock: '', prep_time_minutes: '', img: '', file: null })
     setPreview(null)
+    setEditingItem(null)
   }
 
   const submit = () => {
     if (!form.name || !form.price || !form.category_id) return
-    onAdd(form)
+    if (editingItem) {
+      onEdit(editingItem.id, form)
+    } else {
+      onAdd(form)
+    }
     resetForm()
     setShowModal(false)
+  }
+
+  const openEdit = (item) => {
+    setEditingItem(item)
+    setForm({
+      name:              item.name || '',
+      description:       item.description || '',
+      price:             String(item.price || ''),
+      category_id:       String(item.category_id || ''),
+      stock:             item.stock != null ? String(item.stock) : '',
+      prep_time_minutes: item.prep_time_minutes != null ? String(item.prep_time_minutes) : '',
+      img:               item.img || '',
+      file:              null,
+    })
+    setPreview(item.img || null)
+    setShowModal(true)
   }
 
   const inputCls = "w-full border border-gray-200 dark:border-slate-700 p-3 rounded-xl text-sm bg-gray-50 dark:bg-slate-800 text-gray-800 dark:text-slate-100 outline-none focus:border-red-500 placeholder-gray-400 dark:placeholder-slate-500"
@@ -94,9 +117,14 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
                 className="w-full h-40 object-cover"
                 onError={e => { e.target.src = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop' }}
               />
-              <span className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-semibold ${item.active ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'}`}>
+              {/* Badge activo/inactivo — clickeable */}
+              <button
+                onClick={() => onToggle(item.id)}
+                className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-semibold cursor-pointer transition
+                  ${item.active ? 'bg-green-500 text-white hover:bg-green-600' : 'bg-gray-400 text-white hover:bg-gray-500'}`}
+              >
                 {item.active ? t('rd.active_badge') : t('rd.inactive_badge')}
-              </span>
+              </button>
             </div>
             <div className="p-4">
               <p className="text-xs text-gray-400 dark:text-slate-500 mb-0.5">{item.category?.name || item.category}</p>
@@ -113,11 +141,15 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
                 <span className="font-bold" style={{ color: COLORS.primary }}>${Number(item.price).toLocaleString()}</span>
               </div>
               <div className="flex gap-2">
-                <button className="flex-1 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition">
+                {/* Botón editar */}
+                <button
+                  onClick={() => openEdit(item)}
+                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+                >
                   {t('rd.edit')}
                 </button>
                 <button
-                  onClick={() => onDelete(item.id)}
+                  onClick={() => setConfirmDelete(item.id)}
                   className="flex-1 py-1.5 rounded-lg text-xs font-semibold border border-gray-100 dark:border-slate-800 text-gray-400 dark:text-slate-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition"
                 >
                   {t('rd.delete')}
@@ -141,7 +173,9 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
           onClick={e => { if (e.target === e.currentTarget) { resetForm(); setShowModal(false) } }}
         >
           <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-md shadow-2xl border border-gray-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-base font-bold text-gray-800 dark:text-slate-100 mb-4">{t('rd.new_dish')}</h2>
+            <h2 className="text-base font-bold text-gray-800 dark:text-slate-100 mb-4">
+              {editingItem ? (t('rd.edit_dish') || 'Editar plato') : t('rd.new_dish')}
+            </h2>
             <div className="space-y-3">
               
 
@@ -259,7 +293,48 @@ export default function MenuSection({ menu, categories, onAdd, onDelete }) {
                 className="flex-1 py-2.5 text-sm text-white rounded-xl font-semibold disabled:opacity-50 transition hover:opacity-90"
                 style={{ background: COLORS.primary }}
               >
-                {t('rd.add_btn')}
+                {editingItem ? (t('rd.save_changes') || 'Guardar cambios') : t('rd.add_btn')}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal de confirmación de eliminación */}
+      {confirmDelete && createPortal(
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
+          onClick={() => setConfirmDelete(null)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-gray-100 dark:border-slate-800"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-center mb-5">
+              <p className="text-3xl mb-3">🗑️</p>
+              <h3 className="text-base font-bold text-gray-800 dark:text-slate-100 mb-1">
+                ¿Eliminar este plato?
+              </h3>
+              <p className="text-sm text-gray-400 dark:text-slate-500">
+                Esta acción no se puede deshacer.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 py-2.5 text-sm border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  onDelete(confirmDelete)
+                  setConfirmDelete(null)
+                }}
+                className="flex-1 py-2.5 text-sm text-white rounded-xl font-semibold transition hover:opacity-90 bg-red-500"
+              >
+                Sí, eliminar
               </button>
             </div>
           </div>

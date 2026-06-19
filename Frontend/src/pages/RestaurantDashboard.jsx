@@ -45,6 +45,8 @@ export default function RestaurantDashboard({ user, onLogout }) {
     handleNotifRead,
     handleNotifDelete,
     handleNotifMarkAll,
+    handleEditProduct,
+    handleToggleAvailability,
   } = useRestaurantDashboard(user)
 
   // Función para renderizar la sección activa basada en la navegación
@@ -67,6 +69,8 @@ export default function RestaurantDashboard({ user, onLogout }) {
             categories={categories}
             onAdd={handleAddProduct}
             onDelete={handleDeleteProduct}
+            onEdit={handleEditProduct}
+            onToggleAvailability={handleToggleAvailability}
           />
         )
       case 'analytics': return <AnalyticsSection stats={stats} />
@@ -75,7 +79,7 @@ export default function RestaurantDashboard({ user, onLogout }) {
       case 'calendar': return <CalendarSection />
       case 'messages': return <MessagesSection />
       case 'reviews': return <ReviewsSection />
-      case 'restaurant-info': return <RestaurantInfoSection restaurant={user?.restaurant || user} />
+      case 'restaurant-info': return <RestaurantInfoSection restaurant={user?.restaurant} restaurantId={user?.restaurant?.id} />
       default:
         return <DashboardSection stats={stats} orders={orders} menu={menu} />
     }
