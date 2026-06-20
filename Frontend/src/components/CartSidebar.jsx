@@ -26,6 +26,7 @@ export default function CartSidebar({ isAuth }) {
   const handleCheckout = () => {
     if (!cart.length) return
     if (!isAuth) { navigate('/login'); return }
+    setIsOpen(false)
     navigate('/user/checkout')
   }
 
@@ -33,10 +34,10 @@ export default function CartSidebar({ isAuth }) {
     <>
       {/* Overlay */}
       <div onClick={() => setIsOpen(false)}
-        className={`fixed inset-0 bg-black/50 z-[70] transition-all duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`} />
+        className={`fixed inset-0 bg-black/40 z-[49] transition-all duration-300 ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`} />
 
       {/* Panel */}
-      <aside className={`component-cart-sidebar fixed top-0 right-0 h-full w-full max-w-[400px] bg-white z-[71] flex flex-col shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <aside className={`component-cart-sidebar fixed top-16 right-0 h-[calc(100vh-64px)] w-full max-w-[400px] bg-white dark:bg-slate-900 border-l border-gray-100 dark:border-slate-800 z-[49] flex flex-col shadow-2xl transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">

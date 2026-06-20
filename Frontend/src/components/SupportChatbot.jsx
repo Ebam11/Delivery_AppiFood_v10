@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { getAssistantReply, supportShortcuts } from '../utils/supportAssistant'
+import { useCart } from '../context/useCart'
 
 const AI_ENDPOINT = import.meta.env.VITE_AI_ASSISTANT_URL || '/api/support/chat'
 
@@ -63,6 +64,28 @@ export default function SupportChatbot({ embedded = false, startOpen = false }) 
   }, [messages, open])
 
   const quickActions = useMemo(() => supportShortcuts.slice(0, 4), [])
+
+  const { isOpen: isCartOpen } = useCart()
+  const [isNearFooter, setIsNearFooter] = useState(false)
+
+  // Detectar scroll cerca del footer
+  useEffect(() => {
+    if (embedded) return
+    const handleScroll = () => {
+      const threshold = 180
+      const totalHeight = document.documentElement.scrollHeight
+      const currentScroll = window.innerHeight + window.scrollY
+      
+      if (totalHeight - currentScroll < threshold) {
+        setIsNearFooter(true)
+      } else {
+        setIsNearFooter(false)
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [embedded])
 
   if (hiddenOnPage) return null
 
@@ -177,8 +200,12 @@ export default function SupportChatbot({ embedded = false, startOpen = false }) 
 
   if (embedded) return panel
 
+  const shouldHideFloating = isCartOpen || isNearFooter
+
   return (
-    <div className="component-support-chatbot-float fixed bottom-20 right-5 sm:bottom-22 sm:right-8 z-[9998] flex flex-col items-end gap-3">
+    <div 
+      className={`component-support-chatbot-float fixed bottom-[4.25rem] right-5 sm:bottom-[4.75rem] sm:right-8 z-[9998] flex flex-col items-end gap-3 transition-all duration-300 ${shouldHideFloating ? 'opacity-0 pointer-events-none scale-90 translate-y-4' : 'opacity-100'}`}
+    >
       {open ? (
         panel
       ) : (

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
+import { isValidName } from '../utils/validation'
 
 const Field = ({ label, name, type = 'text', placeholder, show, toggleShow, errors, form, onChange, required = true }) => (
   <div>
@@ -54,16 +55,46 @@ export default function RegisterRestaurant({ onLogin }) {
   const change = e => {
     const { name, value } = e.target
     setForm(f => ({ ...f, [name]: value }))
-    if (errors[name]) {
-      setErrors(er => ({ ...er, [name]: null }))
+    
+    let currentError = null
+    if (name === 'owner_name' && value && !isValidName(value)) {
+      currentError = t('validation.name_special_chars')
     }
+
+    setErrors(er => ({ ...er, [name]: currentError }))
   }
+
+  const getPasswordStrength = (pwd) => {
+    if (!pwd) return { score: 0, text: '', color: 'bg-slate-200', labelColor: 'text-slate-400' }
+    let score = 0
+    if (pwd.length >= 8) score += 1
+    if (/[A-Z]/.test(pwd)) score += 1
+    if (/[a-z]/.test(pwd) && /[0-9]/.test(pwd)) score += 1
+    
+    if (pwd.length < 8) {
+      return { score: 0, text: t('validation.password_too_short'), color: 'bg-red-400', labelColor: 'text-red-500' }
+    }
+    
+    if (score === 1) return { score: 1, text: t('validation.password_weak'), color: 'bg-amber-400', labelColor: 'text-amber-500' }
+    if (score === 2) return { score: 2, text: t('validation.password_medium'), color: 'bg-blue-400', labelColor: 'text-blue-500' }
+    return { score: 3, text: t('validation.password_strong'), color: 'bg-emerald-500', labelColor: 'text-emerald-500' }
+  }
+
+  const pwdInfo = getPasswordStrength(form.password)
 
   const submit = async e => {
     e.preventDefault()
 
+    const newErrors = {}
+    if (!isValidName(form.owner_name)) {
+      newErrors.owner_name = t('validation.name_special_chars')
+    }
     if (form.password !== form.password_confirmation) {
-      setErrors({ password_confirmation: t('register_restaurant.password_mismatch') })
+      newErrors.password_confirmation = t('register_restaurant.password_mismatch')
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors)
       return
     }
 
@@ -213,7 +244,7 @@ export default function RegisterRestaurant({ onLogin }) {
                   toggleShow={() => setShowPass(s => !s)}
                 />
 
-                <Field
+                 <Field
                   label={t('register_restaurant.field_confirm_password')}
                   name="password_confirmation"
                   placeholder={t('register_restaurant.field_confirm_password_placeholder')}
@@ -223,6 +254,40 @@ export default function RegisterRestaurant({ onLogin }) {
                   show={showConf}
                   toggleShow={() => setShowConf(s => !s)}
                 />
+
+                {form.password && (
+                  <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-3 animate-fade-in mt-2 mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-xs font-bold">
+                        {form.password.length >= 8 ? (
+                          <span className="text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-full">
+                            <i className="fas fa-check-circle" /> {t('validation.password_min_length')}
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full">
+                            <i className="far fa-circle" /> {t('validation.password_min_length')}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-xs font-bold">
+                        <span className="text-slate-400">Seguridad:</span>
+                        <span className={`px-2.5 py-1 rounded-full text-white ${pwdInfo.color}`}>
+                          {pwdInfo.text}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all duration-300 ${pwdInfo.color}`} 
+                          style={{ width: `${form.password.length >= 8 ? (pwdInfo.score + 1) * 33.3 : 15}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 <button
                   type="submit"

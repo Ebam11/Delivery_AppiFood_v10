@@ -33,6 +33,7 @@ const RestaurantDashboard = lazy(() => import('../pages/RestaurantDashboard'))
 const RestaurantManagementPage = lazy(() => import('../pages/RestaurantManagementPage'))
 const DriverDashboard = lazy(() => import('../pages/DriverDashboard'))
 const Gamification = lazy(() => import('../pages/Gamification'))
+const Offers = lazy(() => import('../pages/Offers'))
 
 /**
  * Componente para proteger rutas según el rol del usuario.
@@ -109,6 +110,7 @@ export default function AppRoutes({ user, isAuth, loading, handleLogin, handleLo
         
         <Route path="/support" element={<PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}><Support /></PublicPage>} />
         <Route path="/coupons" element={<PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}><Coupons /></PublicPage>} />
+        <Route path="/offers" element={<PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}><Offers /></PublicPage>} />
         <Route path="/help-center" element={<PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}><HelpCenter /></PublicPage>} />
 
         {/* Autenticación */}
@@ -116,7 +118,7 @@ export default function AppRoutes({ user, isAuth, loading, handleLogin, handleLo
         <Route path="/register" element={isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <Register onLogin={handleLogin} />} />
         <Route path="/register-restaurant" element={isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <RegisterRestaurant onLogin={handleLogin} />} />
         <Route path="/restaurant/login" element={isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <RestaurantLogin onLogin={handleLogin} />} />
-        <Route path="/forgot-password" element={<PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}><ForgotPassword /></PublicPage>} />
+        <Route path="/forgot-password" element={isAuth ? <Navigate to={getHomePathByRole(user)} replace /> : <ForgotPassword />} />
 
         {/* Panel Administrativo */}
         <Route path="/admin" element={
@@ -159,10 +161,18 @@ export default function AppRoutes({ user, isAuth, loading, handleLogin, handleLo
         } />
 
         <Route path="/user/orders" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Orders /></UserPage>} />
+        <Route path="/user/orders/:id" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><OrderDetail /></UserPage>} />
+        <Route path="/user/favorites" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Favorites /></UserPage>} />
+
         <Route path="/user/cart" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Cart /></UserPage>} />
         <Route path="/user/checkout" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Checkout /></UserPage>} />
         <Route path="/user/addresses" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Addresses /></UserPage>} />
         <Route path="/user/gamification" element={<UserPage user={user} isAuth={isAuth} onLogout={handleLogout} isLoading={loading}><Gamification /></UserPage>} />
+        <Route path="/payment/confirmation/:orderId" element={
+          <PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
+            <PaymentConfirmation />
+          </PublicPage>
+        } />
 
         {/* 404 - Not Found */}
         <Route path="*" element={

@@ -43,6 +43,10 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Habilitar mod_rewrite de Apache para las rutas de Laravel
 RUN a2enmod rewrite
 
+# Evitar error "More than one MPM loaded" desactivando mpm_event explícitamente
+RUN a2dismod mpm_event || true
+RUN a2enmod mpm_prefork || true
+
 # Exponer el puerto 80
 EXPOSE 80
 

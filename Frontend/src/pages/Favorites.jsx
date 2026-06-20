@@ -1,4 +1,4 @@
-// Archivo: src/pages/Favorites.jsx | Comentario: logica principal del modulo.
+// Archivo: src/pages/Favorites.jsx | Comentario: logica principal del modulo con visualizacion e integracion de imagenes
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
@@ -7,6 +7,7 @@ import { useFavoritesStore } from '../store/favoritesStore';
 import Loading from '../components/Loading';
 import ErrorMessage from '../components/ErrorMessage';
 import { fetchJson } from '../api/fetchJson';
+import { useRestaurantImage } from '../hooks/useImages';
 import './Favorites.css';
 import '../components/SharedUI.css';
 
@@ -18,6 +19,45 @@ const normalizeRestaurant = (restaurant) => ({
     ? `${restaurant.delivery_time_min}-${restaurant.delivery_time_max ?? restaurant.delivery_time_min + 10} min`
     : restaurant?.time || '-- min',
 })
+
+// Subcomponente para renderizar la tarjeta con resolución de imagen dinámica
+function FavoriteRestaurantCard({ restaurant, navigate, t, handleRemoveFavorite }) {
+  const { image, loading } = useRestaurantImage(restaurant?.name, restaurant?.image);
+  
+  return (
+    <div className="favorite-item">
+      <div className="relative h-44 overflow-hidden bg-slate-100 dark:bg-slate-800">
+        {loading ? (
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-gray-200 to-gray-300 dark:from-slate-700 dark:to-slate-650" />
+        ) : (
+          <img src={image || restaurant.image} alt={restaurant.name} className="favorite-img" />
+        )}
+      </div>
+      <div className="favorite-info">
+        <h3>{restaurant.name}</h3>
+        <p className="description">{(restaurant.description || '').substring(0, 100)}</p>
+        <div className="favorite-rating">
+          <span className="rating">{restaurant.rating ? `⭐ ${restaurant.rating}` : ''}</span>
+        </div>
+      </div>
+      <div className="favorite-actions flex justify-between items-center bg-slate-50 dark:bg-slate-800/40 p-4 border-t border-gray-100 dark:border-slate-800">
+        <button 
+          onClick={() => navigate(`/restaurants/${restaurant.id}`)} 
+          className="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition-colors text-center mr-2 shadow-sm"
+        >
+          {t('favorites.view') || 'Ver menú'}
+        </button>
+        <button 
+          onClick={() => handleRemoveFavorite(restaurant.id)} 
+          className="w-10 h-10 flex items-center justify-center border-2 border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-xl transition-all duration-200" 
+          title={t('restaurantCard.remove_fav') || "Quitar favorito"}
+        >
+          <i className="fas fa-heart text-base"></i>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function Favorites() {
   const navigate = useNavigate();
@@ -66,14 +106,9 @@ export default function Favorites() {
 
   const handleRemoveFavorite = async (restaurantId) => {
     if (token) {
-      // server toggle
-      const ok = await toggleFavorite(restaurantId, token)
-      if (!ok) {
-        // set error in store already
-      }
+      await toggleFavorite(restaurantId, token);
     } else {
-      // local fallback
-      toggleFavoriteLocal(restaurantId)
+      toggleFavoriteLocal(restaurantId);
     }
   }
 
@@ -93,24 +128,13 @@ export default function Favorites() {
         {favoriteRestaurants.length > 0 ? (
           <div className="favorites-item-grid">
             {favoriteRestaurants.map((restaurant) => (
-              <div key={restaurant.id} className="favorite-item">
-                {restaurant.image && (
-                  <img src={restaurant.image} alt={restaurant.name} className="favorite-img" />
-                )}
-                <div className="favorite-info">
-                  <h3>{restaurant.name}</h3>
-                  <p className="description">{(restaurant.description || '').substring(0, 100)}</p>
-                  <div className="favorite-rating">
-                    <span className="rating">{restaurant.rating ? `⭐ ${restaurant.rating}` : ''}</span>
-                  </div>
-                </div>
-                <div className="favorite-actions">
-                  <button onClick={() => navigate(`/restaurants/${restaurant.id}`)} className="button-primary text-sm px-4 py-2">{t('favorites.view')}</button>
-                  <button onClick={() => handleRemoveFavorite(restaurant.id)} className="button-outline text-red-500 border-red-500 hover:bg-red-500 text-sm px-4 py-2" title="Quitar favorito">
-                    <i className="fas fa-heart-break"></i>
-                  </button>
-                </div>
-              </div>
+              <FavoriteRestaurantCard 
+                key={restaurant.id}
+                restaurant={restaurant}
+                navigate={navigate}
+                t={t}
+                handleRemoveFavorite={handleRemoveFavorite}
+              />
             ))}
           </div>
         ) : (

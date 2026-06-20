@@ -1,8 +1,4 @@
-/**
- * Archivo: src/pages/RestaurantDetail.jsx
- * Detalle de un restaurante específico, incluyendo menú y horarios.
- */
-
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useAuthStore } from '../store/authStore'
@@ -11,6 +7,44 @@ import { Loading } from '../components/Loading'
 import { AddToCartButton } from '../components/AddToCartButton'
 import Footer from '../components/Footer'
 import heroImage from '../assets/hero.png'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import { useProductImage, useRestaurantImage } from '../hooks/useImages'
+
+// Leaflet marker setup
+const restaurantIcon = new L.DivIcon({
+  className: '',
+  html: `<div style="
+    background: linear-gradient(135deg, #FF4B3E, #FF7A59);
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; box-shadow: 0 4px 12px rgba(255,75,62,0.4);
+    border: 3px solid white;
+  ">🍔</div>`,
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
+});
+
+// Sub-component to resolve product image dynamically
+function ProductMenuItem({ product, onSelect, fmt }) {
+  const { image } = useProductImage(product.name, product.image)
+  return (
+    <div 
+      onClick={() => onSelect(product)}
+      className="bg-white border border-gray-100 rounded-3xl p-4 flex gap-4 hover:shadow-xl transition-all cursor-pointer group"
+    >
+      <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 bg-gray-50">
+        <img src={image || heroImage} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt={product.name} />
+      </div>
+      <div className="flex-1">
+        <h3 className="font-bold text-gray-900 mb-1">{product.name}</h3>
+        <p className="text-xs text-gray-500 line-clamp-2 mb-2">{product.description}</p>
+        <span className="font-black text-red-500">${fmt(product.price)}</span>
+      </div>
+    </div>
+  )
+}
 
 export const RestaurantDetail = () => {
   const navigate = useNavigate()
@@ -28,18 +62,32 @@ export const RestaurantDetail = () => {
     isReviewsLoading = false
   } = useRestaurantDetail()
 
+  // Resolver imagen dinámica del banner superior del restaurante
+  const { image: resolvedBanner } = useRestaurantImage(restaurant?.name, restaurant?.banner || restaurant?.image);
+
   if (isLoading) return <Loading />
   if (!restaurant) return <div className="p-20 text-center">Restaurante no encontrado</div>
 
   const products = Array.isArray(restaurant.products) ? restaurant.products : []
   const fmt = n => Number(n).toLocaleString('es-CO')
 
+  // Group products by category
+  const categoriesGrouped = products.reduce((acc, p) => {
+    const catName = p.category_name || t('restaurant.uncategorized') || 'General';
+    if (!acc[catName]) acc[catName] = [];
+    acc[catName].push(p);
+    return acc;
+  }, {});
+
+  const lat = Number(restaurant.lat || 2.4448)
+  const lng = Number(restaurant.lng || -76.6147)
+
   return (
     <div className="bg-white min-h-screen">
       {/* Header / Banner */}
       <div className="relative h-[400px] overflow-hidden">
         <img 
-          src={restaurant.banner || restaurant.image || heroImage} 
+          src={resolvedBanner || heroImage} 
           className="w-full h-full object-cover" 
           alt={restaurant.name} 
         />
@@ -92,24 +140,23 @@ export const RestaurantDetail = () => {
               <span className="text-gray-400 font-bold">{products.length} platos</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {products.map(p => (
-                <div 
-                  key={p.id}
-                  onClick={() => setSelectedProduct(p)}
-                  className="bg-white border border-gray-100 rounded-3xl p-4 flex gap-4 hover:shadow-xl transition-all cursor-pointer group"
-                >
-                  <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0">
-                    <img src={p.image || heroImage} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt={p.name} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 mb-1">{p.name}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-2 mb-2">{p.description}</p>
-                    <span className="font-black text-red-500">${fmt(p.price)}</span>
-                  </div>
+            {Object.keys(categoriesGrouped).map(catName => (
+              <div key={catName} className="mb-10">
+                <h3 className="text-xl font-black text-gray-800 mb-4 bg-gray-50 px-4 py-2.5 rounded-2xl border-l-4 border-red-500">
+                  {catName}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {categoriesGrouped[catName].map(p => (
+                    <ProductMenuItem 
+                      key={p.id}
+                      product={p}
+                      onSelect={setSelectedProduct}
+                      fmt={fmt}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
 
             {/* Reseñas Section */}
             <div className="mt-16 pt-8 border-t border-gray-100">
@@ -185,11 +232,63 @@ export const RestaurantDetail = () => {
               </div>
             </div>
 
-            {/* Mapa (Placeholder simplificado) */}
-            <div className="bg-gray-100 rounded-3xl h-64 overflow-hidden relative">
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400 font-bold">
-                  Mapa de Ubicación
+            {/* Componente de horarios de Lunes a Domingo */}
+            <div className="bg-slate-50 dark:bg-slate-900 rounded-3xl p-6 border border-slate-100 dark:border-slate-800">
+              <h3 className="text-lg font-black mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
+                <i className="far fa-clock text-red-500" />
+                Horarios del Restaurante
+              </h3>
+              <div className="space-y-2">
+                {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map((day, idx) => {
+                  const dayKeys = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                  const todayIdx = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
+                  const isToday = todayIdx === idx;
+                  
+                  const schedList = restaurant.schedule || restaurant.schedules || [];
+                  const daySched = schedList.find(s => s.day === dayKeys[idx]);
+                  const formatTimeLocal = (t) => {
+                    if (!t) return '';
+                    const [h, m] = t.split(':').map(Number);
+                    const ampm = h >= 12 ? 'PM' : 'AM';
+                    const dh = h % 12 || 12;
+                    return `${dh}:${String(m).padStart(2, '0')} ${ampm}`;
+                  };
+
+                  return (
+                    <div 
+                      key={day}
+                      className={`flex justify-between items-center text-xs py-1 border-b border-gray-100 dark:border-slate-800/40 last:border-0 ${
+                        isToday ? 'font-black text-red-500 dark:text-red-400' : 'text-gray-600 dark:text-slate-400'
+                      }`}
+                    >
+                      <span className="font-semibold">{day} {isToday && '(Hoy)'}</span>
+                      <span className="font-bold">
+                        {daySched && !daySched.is_closed && daySched.opening_time
+                          ? `${formatTimeLocal(daySched.opening_time)} - ${formatTimeLocal(daySched.closing_time)}`
+                          : 'Cerrado'}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
+            </div>
+
+            {/* Mapa Leaflet Real con Coordenadas */}
+            <div className="bg-gray-100 rounded-3xl h-64 overflow-hidden border border-gray-200 shadow-inner relative z-10">
+              <MapContainer
+                center={[lat, lng]}
+                zoom={16}
+                scrollWheelZoom={false}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                  attribution='&copy; CARTO'
+                />
+                <Marker position={[lat, lng]} icon={restaurantIcon}>
+                  <Popup>{restaurant.name}</Popup>
+                </Marker>
+              </MapContainer>
             </div>
           </aside>
         </div>

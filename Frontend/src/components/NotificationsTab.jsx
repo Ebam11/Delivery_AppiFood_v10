@@ -9,7 +9,7 @@ import {
 } from '../api/notifications';
 
 export default function NotificationsTab() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -92,7 +92,7 @@ export default function NotificationsTab() {
             disabled={actionId === 'all'}
             style={{ padding: '10px 16px', borderRadius: 10, border: 'none', background: '#FF4B3E', color: 'white', fontWeight: 700, cursor: actionId === 'all' ? 'not-allowed' : 'pointer' }}
           >
-            {actionId === 'all' ? t('subscriptionTab.processing') : t('notificationsTab.mark_all_read') || 'Marcar todas como leídas'}
+            {actionId === 'all' ? t('subscriptionTab.processing') : t('notificationsTab.mark_all_read')}
           </button>
         )}
       </div>
@@ -110,47 +110,63 @@ export default function NotificationsTab() {
             <p style={{ marginTop: 12, fontWeight: 600 }}>{t('profile.no_notifications')}</p>
           </div>
         ) : (
-          notifications.map((notification) => (
-            <article
-              key={notification.id}
-              style={{
-                borderRadius: 14,
-                border: `1px solid ${notification.is_read ? '#ececec' : '#ffd0cb'}`,
-                background: notification.is_read ? '#ffffff' : '#fff7f6',
-                padding: '16px 18px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                <div>
-                  <p style={{ margin: 0, fontWeight: 800, color: '#2c2c2c' }}>{notification.title}</p>
-                  <p style={{ margin: '8px 0 0', color: '#4b5563', lineHeight: 1.6 }}>{notification.message}</p>
-                  <p style={{ margin: '10px 0 0', fontSize: 12, color: '#9aa0a6' }}>
-                    {notification.created_at ? new Date(notification.created_at).toLocaleString('es-CO') : ''}
-                  </p>
-                </div>
+          notifications.map((notification) => {
+            const orderMatch = notification.message ? notification.message.match(/#(\d+)/) : null;
+            const orderId = orderMatch ? orderMatch[1] : '';
 
-                <div style={{ display: 'flex', gap: 8, alignItems: 'start', flexShrink: 0 }}>
-                  {!notification.is_read && (
+            let displayTitle = notification.title;
+            let displayMessage = notification.message;
+
+            if (notification.title === 'Pago confirmado') {
+              displayTitle = t('notificationsTab.title.Pago confirmado', { defaultValue: 'Pago confirmado' });
+              displayMessage = t('notificationsTab.message.Pago confirmado', { id: orderId, defaultValue: notification.message });
+            } else if (notification.title === 'Pedido creado') {
+              displayTitle = t('notificationsTab.title.Pedido creado', { defaultValue: 'Pedido creado' });
+              displayMessage = t('notificationsTab.message.Pedido creado', { id: orderId, defaultValue: notification.message });
+            }
+
+            return (
+              <article
+                key={notification.id}
+                style={{
+                  borderRadius: 14,
+                  border: `1px solid ${notification.is_read ? '#ececec' : '#ffd0cb'}`,
+                  background: notification.is_read ? '#ffffff' : '#fff7f6',
+                  padding: '16px 18px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.04)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                  <div>
+                    <p style={{ margin: 0, fontWeight: 800, color: '#2c2c2c' }}>{displayTitle}</p>
+                    <p style={{ margin: '8px 0 0', color: '#4b5563', lineHeight: 1.6 }}>{displayMessage}</p>
+                    <p style={{ margin: '10px 0 0', fontSize: 12, color: '#9aa0a6' }}>
+                      {notification.created_at ? new Date(notification.created_at).toLocaleString(i18n.language === 'es' ? 'es-CO' : 'en-US') : ''}
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'start', flexShrink: 0 }}>
+                    {!notification.is_read && (
+                      <button
+                        onClick={() => handleRead(notification.id)}
+                        disabled={actionId === notification.id}
+                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d1d5db', background: 'white', cursor: actionId === notification.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700 }}
+                      >
+                        {actionId === notification.id ? t('subscriptionTab.processing') : t('notificationsTab.read')}
+                      </button>
+                    )}
                     <button
-                      onClick={() => handleRead(notification.id)}
+                      onClick={() => handleDelete(notification.id)}
                       disabled={actionId === notification.id}
-                      style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #d1d5db', background: 'white', cursor: actionId === notification.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700 }}
+                      style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #fecaca', background: '#fff5f5', color: '#dc2626', cursor: actionId === notification.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700 }}
                     >
-                      {actionId === notification.id ? t('subscriptionTab.processing') : t('notificationsTab.read') || 'Leer'}
+                      {actionId === notification.id ? t('subscriptionTab.processing') : t('notificationsTab.delete')}
                     </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(notification.id)}
-                    disabled={actionId === notification.id}
-                    style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid #fecaca', background: '#fff5f5', color: '#dc2626', cursor: actionId === notification.id ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700 }}
-                  >
-                    {actionId === notification.id ? t('subscriptionTab.processing') : t('notificationsTab.delete') || 'Eliminar'}
-                  </button>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))
+              </article>
+            );
+          })
         )}
       </div>
     </div>

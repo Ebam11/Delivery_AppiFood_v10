@@ -65,7 +65,7 @@ export const Orders = () => {
             {orders.map((order) => (
               <div
                 key={order.id}
-                onClick={() => navigate(`/orders/${order.id}`)}
+                onClick={() => navigate(`/user/orders/${order.id}`)}
                 className="bg-white dark:bg-slate-900 rounded-2xl shadow-soft border border-slate-100 dark:border-slate-800 p-6 cursor-pointer hover:shadow-lg transition-all duration-300 hover:-translate-y-0.5"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

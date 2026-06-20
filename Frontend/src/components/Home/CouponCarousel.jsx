@@ -21,10 +21,10 @@ export default function CouponCarousel({ coupons }) {
         <div className="flex items-end justify-between mb-10">
           <div className="max-w-2xl">
             <p className="text-red-500 font-bold text-xs uppercase tracking-widest mb-2 flex items-center gap-2">
-              <i className="fas fa-ticket-alt" /> {t('home.saveMore') || "Ahorra más en tus pedidos"}
+              <i className="fas fa-ticket-alt" /> {t('home.saveMore')}
             </p>
             <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-4">
-              {t('home.featuredCoupons') || "Cupones destacados"}
+              {t('home.featuredCoupons')}
             </h2>
           </div>
           
@@ -55,14 +55,22 @@ export default function CouponCarousel({ coupons }) {
                 <div className="flex justify-between items-start mb-6">
                   <div>
                     <span className="bg-red-50 dark:bg-red-950/30 text-red-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-100 dark:border-red-950/40">
-                      <i className={coupon.icon} /> {coupon.badge}
+                      <i className={coupon.icon} /> {t(`coupons.items.${coupon.code}.badge`, { defaultValue: coupon.badge })}
                     </span>
-                    <h3 className="text-xl font-black text-gray-900 dark:text-white mt-3">{coupon.title}</h3>
-                    <p className="text-gray-500 dark:text-slate-400 text-xs mt-1 leading-relaxed">{coupon.description}</p>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white mt-3">
+                      {t(`coupons.items.${coupon.code}.title`, { defaultValue: coupon.title })}
+                    </h3>
+                    <p className="text-gray-500 dark:text-slate-400 text-xs mt-1 leading-relaxed">
+                      {t(`coupons.items.${coupon.code}.description`, { defaultValue: coupon.description })}
+                    </p>
                   </div>
                   <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-3 rounded-2xl text-center shadow-lg shadow-red-500/20">
-                    <span className="block text-[10px] font-black opacity-80 uppercase leading-none">AHORRA</span>
-                    <span className="block text-lg font-black mt-1 leading-none">{coupon.benefit}</span>
+                    <span className="block text-[10px] font-black opacity-80 uppercase leading-none">
+                      {t('home.save')}
+                    </span>
+                    <span className="block text-lg font-black mt-1 leading-none">
+                      {t(`coupons.items.${coupon.code}.benefit`, { defaultValue: coupon.benefit })}
+                    </span>
                   </div>
                 </div>
 
@@ -74,7 +82,7 @@ export default function CouponCarousel({ coupons }) {
                     to="/coupons" 
                     className="bg-gray-900 dark:bg-slate-800 hover:bg-black dark:hover:bg-slate-700 text-white px-5 py-2.5 rounded-full text-xs font-black transition-all flex items-center gap-2"
                   >
-                    {t('home.viewDetail') || "Ver detalle"}
+                    {t('home.viewDetail')}
                     <i className="fas fa-arrow-right" />
                   </Link>
                 </div>

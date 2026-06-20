@@ -149,10 +149,42 @@ export default function AddressForm() {
               />
             </div>
 
+            <div className="bg-orange-50/50 dark:bg-slate-800/50 border border-orange-100 dark:border-slate-700/50 p-5 rounded-2xl mb-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="font-bold text-gray-800 dark:text-gray-200 text-sm">¿Deseas autodetectar tu ubicación?</h4>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">El sistema puede completar la latitud y longitud por ti mediante GPS.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (navigator.geolocation) {
+                      navigator.geolocation.getCurrentPosition(
+                        (pos) => {
+                          setForm(prev => ({
+                            ...prev,
+                            lat: pos.coords.latitude,
+                            lng: pos.coords.longitude
+                          }));
+                          alert("Ubicación detectada correctamente.");
+                        },
+                        () => alert("No se pudo obtener acceso a la geolocalización.")
+                      );
+                    } else {
+                      alert("Tu navegador no soporta geolocalización.");
+                    }
+                  }}
+                  className="px-4 py-2.5 bg-white border border-gray-200 hover:border-[#FF4B3E] text-gray-700 hover:text-[#FF4B3E] font-bold rounded-xl text-xs transition active:scale-95 shadow-sm whitespace-nowrap"
+                >
+                  📍 Obtener ubicación actual
+                </button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label htmlFor="lat" className="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
-                  Latitud (Opcional)
+                  Coordenada Latitud (Opcional)
                 </label>
                 <input
                   type="number"
@@ -161,14 +193,14 @@ export default function AddressForm() {
                   name="lat"
                   value={form.lat}
                   onChange={handleChange}
-                  placeholder="2.4448"
+                  placeholder="Ej: 2.4448"
                   className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FF4B3E]/30 focus:bg-white rounded-2xl outline-none transition font-medium text-gray-700 placeholder-gray-400"
                 />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="lng" className="block text-xs font-black uppercase tracking-widest text-gray-400 ml-1">
-                  Longitud (Opcional)
+                  Coordenada Longitud (Opcional)
                 </label>
                 <input
                   type="number"
@@ -177,7 +209,7 @@ export default function AddressForm() {
                   name="lng"
                   value={form.lng}
                   onChange={handleChange}
-                  placeholder="-76.6147"
+                  placeholder="Ej: -76.6147"
                   className="w-full px-5 py-4 bg-gray-50 border-2 border-transparent focus:border-[#FF4B3E]/30 focus:bg-white rounded-2xl outline-none transition font-medium text-gray-700 placeholder-gray-400"
                 />
               </div>

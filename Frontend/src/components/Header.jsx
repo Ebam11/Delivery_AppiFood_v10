@@ -38,6 +38,11 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   })()
   const effectiveUser = user || storedUser
 
+  const isGmailUserMissingInfo = isAuth && 
+    effectiveUser && 
+    (effectiveUser.email || '').toLowerCase().endsWith('@gmail.com') && 
+    (!effectiveUser.phone || !effectiveUser.id_number || !effectiveUser.birth_date);
+
   // FUNCIONES AUXILIARES
   const getUserName = () => {
     if (!effectiveUser) return 'Usuario'
@@ -255,6 +260,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     { section: isAuth ? (t('header.nav.sectionSubscriptions') || 'SUSCRIPCIONES') : 'MÁS BENEFICIOS' },
     { to:'/subscription', icon:'fa-crown',        label: t('header.nav.subscriptionPlans') || 'Planes de Suscripción', promo:true },
     { section: t('header.nav.sectionOffers') || 'OFERTAS' },
+    { to:'/offers', icon:'fa-fire',           label: t('header.nav.offersOfDay') || 'Ofertas del Día', promo:true },
     { to:'/coupons', icon:'fa-tag',           label: t('header.nav.coupons') || 'Cupones disponibles', promo:true },
     { section: isAuth ? (t('header.nav.sectionHelp') || 'AYUDA') : 'MÁS INFORMACIÓN' },
     { to:'/help-center', icon:'fa-question-circle', label: t('header.nav.howItWorks') || 'Centro de ayuda', promo:true },
@@ -585,8 +591,23 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         </div>
       )}
 
+      {isGmailUserMissingInfo && (
+        <div className="fixed top-16 left-0 right-0 bg-amber-500 text-white font-bold text-xs sm:text-sm px-4 py-3 shadow-md flex items-center justify-between gap-4 animate-fade-in z-40 border-b border-amber-600">
+          <div className="flex items-center gap-2">
+            <i className="fas fa-exclamation-triangle text-base animate-pulse flex-shrink-0" />
+            <span className="leading-snug">{t('validation.gmail_missing_info_warning')}</span>
+          </div>
+          <Link 
+            to="/user/profile" 
+            className="flex-shrink-0 bg-white hover:bg-amber-50 text-amber-600 font-black px-4 py-2 rounded-xl transition shadow-sm uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap"
+          >
+            {t('validation.gmail_missing_info_button')}
+          </Link>
+        </div>
+      )}
+
       {/* Espacio para header fijo */}
-      <div style={{ height:64 }} />
+      <div style={{ height: isGmailUserMissingInfo ? 116 : 64 }} />
     </>
   )
 }

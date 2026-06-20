@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchJson } from '../api/fetchJson';
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import LoadingScreen from '../components/layout/LoadingScreen';
 import '../styles/Gamification.css';
 
 export default function Gamification() {
@@ -51,43 +52,43 @@ export default function Gamification() {
   const getLevelInfo = (points) => {
     if (points < 150) {
       return {
-        level: 'Bronce',
+        level: t('gamification.levels.bronze', { defaultValue: 'Bronce' }),
         icon: '🥉',
         min: 0,
         max: 150,
         color: 'from-amber-600 to-amber-800',
-        nextLevel: 'Plata',
-        desc: '¡Estás comenzando tu viaje gourmet!'
+        nextLevel: t('gamification.levels.silver', { defaultValue: 'Plata' }),
+        desc: t('gamification.levels.desc_bronze', { defaultValue: '¡Estás comenzando tu viaje gourmet!' })
       };
     } else if (points < 400) {
       return {
-        level: 'Plata',
+        level: t('gamification.levels.silver', { defaultValue: 'Plata' }),
         icon: '🥈',
         min: 150,
         max: 400,
         color: 'from-slate-400 to-slate-600',
-        nextLevel: 'Oro',
-        desc: '¡Eres un comensal frecuente!'
+        nextLevel: t('gamification.levels.gold', { defaultValue: 'Oro' }),
+        desc: t('gamification.levels.desc_silver', { defaultValue: '¡Eres un comensal frecuente!' })
       };
     } else if (points < 800) {
       return {
-        level: 'Oro',
+        level: t('gamification.levels.gold', { defaultValue: 'Oro' }),
         icon: '🥇',
         min: 400,
         max: 800,
         color: 'from-yellow-500 to-amber-500',
-        nextLevel: 'Diamante',
-        desc: '¡Tienes un paladar de oro!'
+        nextLevel: t('gamification.levels.diamond', { defaultValue: 'Diamante' }),
+        desc: t('gamification.levels.desc_gold', { defaultValue: '¡Tienes un paladar de oro!' })
       };
     } else {
       return {
-        level: 'Diamante',
+        level: t('gamification.levels.diamond', { defaultValue: 'Diamante' }),
         icon: '💎',
         min: 800,
         max: 99999, // Max nivel
         color: 'from-cyan-400 to-blue-600',
-        nextLevel: 'Máximo nivel alcanzado',
-        desc: '¡Eres una leyenda gastronómica de AppiFood!'
+        nextLevel: t('gamification.max_level', { defaultValue: '¡Nivel Máximo!' }),
+        desc: t('gamification.levels.desc_diamond', { defaultValue: '¡Eres una leyenda gastronómica de AppiFood!' })
       };
     }
   };
@@ -100,31 +101,24 @@ export default function Gamification() {
         method: 'POST',
         body: { reward_type: rewardType }
       });
-      showToast(res.message || '¡Cupón redimido!', 'success');
+      showToast(res.message || t('gamification.coupon_claimed', { defaultValue: '¡Cupón redimido!' }), 'success');
       setRedeemedCoupon(res.data);
       // Recargar perfil para actualizar puntos
       await fetchUserProfile();
     } catch (err) {
-      showToast(err.message || 'Error al redimir puntos', 'error');
+      showToast(err.message || t('gamification.error_redeem', { defaultValue: 'Error al redimir puntos' }), 'error');
     } finally {
       setActionLoading(null);
     }
   };
 
   if (loading) {
-    return (
-      <div className="gf-container">
-        <div className="gf-loading">
-          <div className="gf-spinner" />
-          <p>Cargando tus recompensas...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen message={t('gamification.loading_rewards', { defaultValue: 'Cargando tus recompensas...' })} />;
   }
 
   const points = user?.points || 0;
   const levelInfo = getLevelInfo(points);
-  const isMaxLevel = levelInfo.level === 'Diamante';
+  const isMaxLevel = levelInfo.level === t('gamification.levels.diamond', { defaultValue: 'Diamante' });
 
   // Progreso en porcentaje para la barra
   const range = levelInfo.max - levelInfo.min;
@@ -134,39 +128,39 @@ export default function Gamification() {
   const rewards = [
     {
       id: 'bronze',
-      title: 'Cupón Bronce',
+      title: t('gamification.rewards.bronze_title', { defaultValue: 'Cupón Bronce' }),
       points: 100,
       value: '$5,000 COP',
-      desc: 'Descuento para cualquier pedido en la plataforma sin compra mínima.',
+      desc: t('gamification.rewards.bronze_desc', { defaultValue: 'Descuento para cualquier pedido en la plataforma sin compra mínima.' }),
       color: 'border-amber-600/30 hover:border-amber-600',
-      badge: '🥉 Bronce'
+      badge: `🥉 ${t('gamification.levels.bronze', { defaultValue: 'Bronce' })}`
     },
     {
       id: 'silver',
-      title: 'Cupón Plata',
+      title: t('gamification.rewards.silver_title', { defaultValue: 'Cupón Plata' }),
       points: 250,
       value: '$15,000 COP',
-      desc: 'Descuento especial de rango medio para tus antojos.',
+      desc: t('gamification.rewards.silver_desc', { defaultValue: 'Descuento especial de rango medio para tus antojos.' }),
       color: 'border-slate-400/30 hover:border-slate-400',
-      badge: '🥈 Plata'
+      badge: `🥈 ${t('gamification.levels.silver', { defaultValue: 'Plata' })}`
     },
     {
       id: 'gold',
-      title: 'Cupón Oro',
+      title: t('gamification.rewards.gold_title', { defaultValue: 'Cupón Oro' }),
       points: 500,
       value: '$35,000 COP',
-      desc: 'Gran descuento de fidelidad premium.',
+      desc: t('gamification.rewards.gold_desc', { defaultValue: 'Gran descuento de fidelidad premium.' }),
       color: 'border-yellow-500/30 hover:border-yellow-500',
-      badge: '🥇 Oro'
+      badge: `🥇 ${t('gamification.levels.gold', { defaultValue: 'Oro' })}`
     },
     {
       id: 'diamond',
-      title: 'Cupón Diamante',
+      title: t('gamification.rewards.diamond_title', { defaultValue: 'Cupón Diamante' }),
       points: 1000,
       value: '$80,000 COP',
-      desc: 'Nuestra máxima recompensa para leyendas AppiFood.',
+      desc: t('gamification.rewards.diamond_desc', { defaultValue: 'Nuestra máxima recompensa para leyendas AppiFood.' }),
       color: 'border-cyan-400/30 hover:border-cyan-400',
-      badge: '💎 Diamante'
+      badge: `💎 ${t('gamification.levels.diamond', { defaultValue: 'Diamante' })}`
     }
   ];
 
@@ -177,8 +171,8 @@ export default function Gamification() {
         <header className="gf-header">
           <div className="gf-header-bg" />
           <div className="gf-header-content">
-            <h1 className="gf-title">🏆 Club de Fidelidad AppiFood</h1>
-            <p className="gf-subtitle">Gana puntos ordenando comida deliciosa y redímelos por cupones gratis.</p>
+            <h1 className="gf-title">{t('gamification.title', { defaultValue: '🏆 Club de Fidelidad AppiFood' })}</h1>
+            <p className="gf-subtitle">{t('gamification.subtitle', { defaultValue: 'Gana puntos ordenando comida deliciosa y redímelos por cupones gratis.' })}</p>
           </div>
         </header>
 
@@ -188,13 +182,13 @@ export default function Gamification() {
             <div className="gf-level-badge-container">
               <span className="gf-level-icon">{levelInfo.icon}</span>
               <div>
-                <h2 className="gf-level-title">Nivel {levelInfo.level}</h2>
+                <h2 className="gf-level-title">{t('gamification.level', { defaultValue: 'Nivel' })} {levelInfo.level}</h2>
                 <p className="gf-level-desc">{levelInfo.desc}</p>
               </div>
             </div>
             <div className="gf-points-display">
               <span className="gf-points-value">{points}</span>
-              <span className="gf-points-label">puntos totales</span>
+              <span className="gf-points-label">{t('gamification.total_points', { defaultValue: 'puntos totales' })}</span>
             </div>
           </div>
 
@@ -203,7 +197,7 @@ export default function Gamification() {
             <div className="gf-progress-labels">
               <span>{levelInfo.min} pts</span>
               <span>
-                {isMaxLevel ? '¡Nivel Máximo!' : `Siguiente nivel: ${levelInfo.nextLevel} (${levelInfo.max} pts)`}
+                {isMaxLevel ? t('gamification.max_level', { defaultValue: '¡Nivel Máximo!' }) : t('gamification.next_level', { level: levelInfo.nextLevel, max: levelInfo.max, defaultValue: `Siguiente nivel: ${levelInfo.nextLevel} (${levelInfo.max} pts)` })}
               </span>
             </div>
             <div className="gf-progress-bar-bg">
@@ -221,21 +215,24 @@ export default function Gamification() {
             <div className="gf-coupon-alert-inner">
               <div className="gf-coupon-icon">🎁</div>
               <div className="flex-1">
-                <h3 className="gf-coupon-alert-title">¡Cupón reclamado con éxito!</h3>
-                <p className="gf-coupon-alert-desc">Usa el siguiente código en el checkout de tu próxima compra:</p>
-                <div className="gf-coupon-code-box">
-                  <span className="gf-coupon-code">{redeemedCoupon.code}</span>
-                  <button
-                    className="gf-copy-btn"
-                    onClick={() => {
-                      navigator.clipboard.writeText(redeemedCoupon.code);
-                      showToast('Código de cupón copiado al portapapeles', 'info');
-                    }}
-                  >
-                    📋 Copiar
-                  </button>
+                <h3 className="gf-coupon-alert-title">{t('gamification.coupon_claimed', { defaultValue: '¡Cupón reclamado con éxito!' })}</h3>
+                <p className="gf-coupon-alert-desc">{t('gamification.use_code', { defaultValue: 'Usa el siguiente código en el checkout de tu próxima compra:' })}</p>
+                <div 
+                  className="gf-coupon-code-box cursor-pointer hover:bg-gray-100 transition-colors"
+                  onClick={() => {
+                    navigator.clipboard.writeText(redeemedCoupon.code);
+                    showToast(t('gamification.copied_toast', { defaultValue: 'Código de cupón copiado al portapapeles' }), 'info');
+                  }}
+                  title={t('gamification.click_to_copy', { defaultValue: 'Haz clic para copiar' })}
+                >
+                  <span className="gf-coupon-code font-mono text-lg font-black tracking-wider text-[#FF4B3E]">
+                    {redeemedCoupon.code}
+                  </span>
+                  <span className="gf-copy-btn text-xs font-bold text-gray-500 flex items-center gap-1">
+                    📋 {t('gamification.copy', { defaultValue: 'Copiar' })}
+                  </span>
                 </div>
-                <p className="gf-coupon-alert-expiry">Expira en 30 días ({redeemedCoupon.expires_at})</p>
+                <p className="gf-coupon-alert-expiry">{t('gamification.expires_in', { date: redeemedCoupon.expires_at, defaultValue: `Expira en 30 días (${redeemedCoupon.expires_at})` })}</p>
               </div>
               <button className="gf-close-alert" onClick={() => setRedeemedCoupon(null)}>✕</button>
             </div>
@@ -244,7 +241,7 @@ export default function Gamification() {
 
         {/* Cupones disponibles */}
         <section className="gf-rewards-section">
-          <h2 className="gf-section-title">🎁 Redimir Recompensas</h2>
+          <h2 className="gf-section-title">{t('gamification.redeem_rewards', { defaultValue: '🎁 Redimir Recompensas' })}</h2>
           <div className="gf-rewards-grid">
             {rewards.map((reward) => {
               const canAfford = points >= reward.points;
@@ -252,7 +249,7 @@ export default function Gamification() {
                 <div key={reward.id} className={`gf-reward-card border-2 ${reward.color} ${!canAfford ? 'opacity-70' : ''}`}>
                   <div className="gf-reward-header">
                     <span className="gf-reward-badge">{reward.badge}</span>
-                    <span className="gf-reward-points">{reward.points} Puntos</span>
+                    <span className="gf-reward-points">{reward.points} {t('gamification.points_count', { count: reward.points, defaultValue: 'Puntos' })}</span>
                   </div>
                   <div className="gf-reward-body">
                     <h3 className="gf-reward-title">{reward.title}</h3>
@@ -268,9 +265,9 @@ export default function Gamification() {
                       {actionLoading === reward.id ? (
                         <div className="gf-btn-spinner" />
                       ) : canAfford ? (
-                        'Redimir ahora'
+                        t('gamification.redeem_now', { defaultValue: 'Redimir ahora' })
                       ) : (
-                        `Faltan ${reward.points - points} pts`
+                        t('gamification.pts_missing', { count: reward.points - points, defaultValue: `Faltan ${reward.points - points} pts` })
                       )}
                     </button>
                   </div>
