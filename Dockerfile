@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     libonig-dev \
     libxml2-dev \
-    libzip-dev
+    libzip-dev \
+    default-mysql-client
 
 # Limpiar caché de apt
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -43,11 +44,15 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Habilitar mod_rewrite de Apache para las rutas de Laravel
 RUN a2enmod rewrite
 
-# Evitar error "More than one MPM loaded" desactivando mpm_event explícitamente
-RUN a2dismod mpm_event || true
-RUN a2enmod mpm_prefork || true
+# ── FIX: Evitar error "More than one MPM loaded" ──
+# Desactivar TODOS los MPMs primero, luego activar solo prefork
+RUN a2dismod mpm_event mpm_worker mpm_prefork 2>/dev/null; \
+    a2enmod mpm_prefork
 
-# Exponer el puerto 80
+# Verificar que solo un MPM está cargado (debug en build)
+RUN apache2ctl -M 2>/dev/null | grep mpm || true
+
+# Exponer el puerto (Railway usa $PORT)
 EXPOSE 80
 
 # Comando de inicio

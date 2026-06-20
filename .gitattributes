@@ -1,0 +1,3 @@
+# Forzar LF en archivos de shell para que funcionen en Docker/Linux
+*.sh text eol=lf
+Dockerfile text eol=lf
