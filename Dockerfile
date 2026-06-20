@@ -45,12 +45,13 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 RUN a2enmod rewrite
 
 # ── FIX: Evitar error "More than one MPM loaded" ──
-# Desactivar TODOS los MPMs primero, luego activar solo prefork
-RUN a2dismod mpm_event mpm_worker mpm_prefork 2>/dev/null; \
-    a2enmod mpm_prefork
+# Eliminar directamente TODOS los MPMs de mods-enabled y activar solo prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.load && \
+    ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf && \
+    ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load
 
-# Verificar que solo un MPM está cargado (debug en build)
-RUN apache2ctl -M 2>/dev/null | grep mpm || true
+# Verificar configuración de Apache (debug en build)
+RUN apache2ctl configtest 2>&1 || true
 
 # Exponer el puerto (Railway usa $PORT)
 EXPOSE 80
