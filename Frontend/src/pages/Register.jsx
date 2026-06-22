@@ -122,8 +122,8 @@ export default function RegisterPage({ onLogin }) {
                 <button 
                   type="button"
                   onClick={() => {
-                    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost/delivery-appifood/Backend/public/api'
-                    window.location.href = `${apiBase}/auth/google`
+                    const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+                    window.location.href = `${apiBase}/api/auth/google`
                   }}
                   className="w-full bg-white border-2 border-slate-100 hover:border-red-500/30 hover:bg-slate-50 text-slate-700 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-sm"
                 >
