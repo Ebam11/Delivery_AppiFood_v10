@@ -44,20 +44,38 @@ export const Orders = () => {
   return (
     <div className="page-orders min-h-screen bg-gray-50 dark:bg-slate-950 p-6 text-gray-900 dark:text-slate-100 transition-colors duration-300">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-8">{t('orders.title')}</h1>
+        <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-8 flex items-center gap-3">
+          <span className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center text-white text-xl">📦</span>
+          {t('orders.title') || 'Mis Pedidos'}
+        </h1>
 
-        {error && <ErrorMessage message={error} onDismiss={clearError} />}
+        {error && (
+          <div className="mb-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0">
+              <i className="fas fa-wifi text-amber-600 dark:text-amber-400 text-sm" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">Sin conexión al servidor</p>
+              <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5">Asegúrate de que tu servidor XAMPP esté corriendo y recarga la página.</p>
+            </div>
+            <button onClick={clearError} className="text-amber-400 hover:text-amber-600">
+              <i className="fas fa-times" />
+            </button>
+          </div>
+        )}
 
         {!orders || orders.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-md p-8 text-center">
-            <p className="text-gray-600 dark:text-slate-400 text-xl mb-4">
-              {t('orders.no_orders')}
-            </p>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm p-16 text-center">
+            <div className="text-7xl mb-4">📋</div>
+            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
+              {t('orders.no_orders') || 'No tienes pedidos aún'}
+            </h3>
+            <p className="text-gray-500 dark:text-slate-400 mb-8">¡Pide tu primer plato favorito ahora!</p>
             <button
               onClick={() => navigate('/restaurants')}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg"
+              className="bg-gradient-to-r from-red-500 to-orange-500 text-white font-black py-3 px-10 rounded-2xl hover:scale-105 transition-transform shadow-lg shadow-red-500/30"
             >
-              {t('orders.first_order')}
+              {t('orders.first_order') || 'Hacer tu Primer Pedido'}
             </button>
           </div>
         ) : (
