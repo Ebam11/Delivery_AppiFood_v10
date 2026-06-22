@@ -34,7 +34,7 @@ echo "Esperando conexion a la base de datos..."
 DB_HOST_VAL="${DB_HOST:-${MYSQLHOST:-127.0.0.1}}"
 DB_PORT_VAL="${DB_PORT:-${MYSQLPORT:-3306}}"
 
-MAX_RETRIES=20
+MAX_RETRIES=3
 RETRY_DELAY=5
 
 for i in $(seq 1 $MAX_RETRIES); do

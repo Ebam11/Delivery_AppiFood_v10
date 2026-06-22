@@ -119,11 +119,24 @@ export default function Favorites() {
   }).filter(Boolean)
 
   return (
-    <main className="favorites-page-container">
+    <main className="favorites-page-container bg-slate-50 dark:bg-slate-950 min-h-screen">
       <div className="container">
-        <h1 className="mb-6">{t('favorites.title')}</h1>
+        <h1 className="text-4xl font-black text-gray-900 dark:text-white mb-8 flex items-center gap-3">
+          <span className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center text-white text-xl">❤️</span>
+          {t('favorites.title') || 'Mis Favoritos'}
+        </h1>
 
-        {error && <ErrorMessage message={error} />}
+        {error && (
+          <div className="mb-6 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center flex-shrink-0">
+              <i className="fas fa-wifi text-amber-600 dark:text-amber-400 text-sm" />
+            </div>
+            <div className="flex-1">
+              <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">Sin conexión al servidor</p>
+              <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5">Asegúrate de que tu servidor XAMPP esté corriendo y recarga la página.</p>
+            </div>
+          </div>
+        )}
 
         {favoriteRestaurants.length > 0 ? (
           <div className="favorites-item-grid">
@@ -138,10 +151,18 @@ export default function Favorites() {
             ))}
           </div>
         ) : (
-          <div className="empty-state">
-            <i className="fas fa-heart text-4xl text-[#FF4B3E]"></i>
-            <p className="mt-3">{t('favorites.empty')}</p>
-            <button onClick={() => navigate('/restaurants')} className="button-primary mt-4">{t('favorites.discover')}</button>
+          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm p-16 text-center">
+            <div className="text-7xl mb-4">💔</div>
+            <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
+              {t('favorites.empty') || 'Aún no tienes favoritos'}
+            </h3>
+            <p className="text-gray-500 dark:text-slate-400 mb-8">Explora restaurantes y guarda tus favoritos aquí.</p>
+            <button 
+              onClick={() => navigate('/restaurants')} 
+              className="bg-gradient-to-r from-red-500 to-orange-500 text-white font-black py-3 px-10 rounded-2xl hover:scale-105 transition-transform shadow-lg shadow-red-500/30"
+            >
+              {t('favorites.discover') || 'Descubrir Restaurantes'}
+            </button>
           </div>
         )}
       </div>
