@@ -86,6 +86,7 @@ export function useAppInit() {
           
           if (userData) {
             const normalizedUser = mergePremiumState(normalizeUserRole(userData))
+
             setUser(normalizedUser)
             localStorage.setItem('user', JSON.stringify(normalizedUser))
           } else {
