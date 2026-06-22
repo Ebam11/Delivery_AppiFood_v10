@@ -11,6 +11,22 @@ import { Loading } from '../components/Loading'
 import { AddToCartButton } from '../components/AddToCartButton'
 import Footer from '../components/Footer'
 import heroImage from '../assets/hero.png'
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
+import L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+
+const restaurantIcon = new L.DivIcon({
+  className: '',
+  html: `<div style="
+    background: linear-gradient(135deg, #FF4B3E, #FF8A3D);
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; box-shadow: 0 4px 12px rgba(255,75,62,0.5);
+    border: 3px solid white;
+  ">🍽️</div>`,
+  iconSize: [36, 36],
+  iconAnchor: [18, 18],
+})
 
 export const RestaurantDetail = () => {
   const navigate = useNavigate()
@@ -185,11 +201,28 @@ export const RestaurantDetail = () => {
               </div>
             </div>
 
-            {/* Mapa (Placeholder simplificado) */}
+            {/* Mapa de ubicación del restaurante */}
             <div className="bg-gray-100 rounded-3xl h-64 overflow-hidden relative">
-              <div className="absolute inset-0 flex items-center justify-center text-gray-400 font-bold">
-                  Mapa de Ubicación
-              </div>
+              {restaurant.lat && restaurant.lng ? (
+                <MapContainer
+                  center={[Number(restaurant.lat), Number(restaurant.lng)]}
+                  zoom={15}
+                  style={{ height: '100%', width: '100%' }}
+                  scrollWheelZoom={false}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; OpenStreetMap contributors'
+                  />
+                  <Marker position={[Number(restaurant.lat), Number(restaurant.lng)]} icon={restaurantIcon}>
+                    <Popup>{restaurant.name}</Popup>
+                  </Marker>
+                </MapContainer>
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center text-gray-400 font-bold text-sm text-center px-4">
+                  Este restaurante aún no ha configurado su ubicación en el mapa.
+                </div>
+              )}
             </div>
           </aside>
         </div>
