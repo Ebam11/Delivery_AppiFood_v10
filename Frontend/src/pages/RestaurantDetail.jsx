@@ -1,3 +1,8 @@
+/**
+ * Archivo: src/pages/RestaurantDetail.jsx
+ * Detalle de un restaurante específico, incluyendo menú y horarios.
+ */
+
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
@@ -10,6 +15,7 @@ import heroImage from '../assets/hero.png'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { useRestaurantImage } from '../hooks/useImages'
 
 const restaurantIcon = new L.DivIcon({
   className: '',
@@ -118,19 +124,34 @@ export const RestaurantDetail = () => {
               <span className="text-gray-400 font-bold">{products.length} platos</span>
             </div>
 
+            {/* Products grouped by category */}
             {Object.keys(categoriesGrouped).map(catName => (
-              <div key={catName} className="mb-10">
-                <h3 className="text-xl font-black text-gray-800 mb-4 bg-gray-50 px-4 py-2.5 rounded-2xl border-l-4 border-red-500">
+              <div key={catName} className="mb-8">
+                <h3 className="text-xl font-bold text-gray-800 mb-4 capitalize flex items-center gap-2">
+                  <span className="w-1 h-6 bg-red-500 rounded-full"></span>
                   {catName}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {categoriesGrouped[catName].map(p => (
-                    <ProductMenuItem 
+                    <div
                       key={p.id}
-                      product={p}
-                      onSelect={setSelectedProduct}
-                      fmt={fmt}
-                    />
+                      onClick={() => setSelectedProduct(p)}
+                      className="bg-white border border-gray-100 rounded-3xl p-4 flex gap-4 hover:shadow-xl transition-all cursor-pointer group"
+                    >
+                      <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0">
+                        <img
+                          src={p.image || heroImage}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                          alt={p.name}
+                          onError={e => { e.target.src = heroImage }}
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-bold text-gray-900 mb-1">{p.name}</h3>
+                        <p className="text-xs text-gray-500 line-clamp-2 mb-2">{p.description}</p>
+                        <span className="font-black text-red-500">${fmt(p.price)}</span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -232,24 +253,6 @@ export const RestaurantDetail = () => {
                   Este restaurante aún no ha configurado su ubicación en el mapa.
                 </div>
               )}
-            </div>
-
-            {/* Mapa Leaflet Real con Coordenadas */}
-            <div className="bg-gray-100 rounded-3xl h-64 overflow-hidden border border-gray-200 shadow-inner relative z-10">
-              <MapContainer
-                center={[lat, lng]}
-                zoom={16}
-                scrollWheelZoom={false}
-                style={{ height: '100%', width: '100%' }}
-              >
-                <TileLayer
-                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                  attribution='&copy; CARTO'
-                />
-                <Marker position={[lat, lng]} icon={restaurantIcon}>
-                  <Popup>{restaurant.name}</Popup>
-                </Marker>
-              </MapContainer>
             </div>
           </aside>
         </div>
