@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import ConfirmModal from './ConfirmModal';
 import {
   cancelSubscription,
   createSubscription,
@@ -11,20 +12,22 @@ import {
 
 export default function SubscriptionTab({ user }) {
   const navigate = useNavigate()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [subscription, setSubscription] = useState(null)
   const [history, setHistory] = useState([])
   const [plans, setPlans] = useState([])
   const [loading, setLoading] = useState(true)
   const [upgrading, setUpgrading] = useState(false)
   const [error, setError] = useState(null)
+  const [showCancelModal, setShowCancelModal] = useState(false)
 
-  const formatPrice = (value) => `$${Number(value || 0).toLocaleString('es-CO')}/mes`
+  const currentLocale = i18n.language === 'es' ? 'es-CO' : 'en-US'
+  const formatPrice = (value) => `$${Number(value || 0).toLocaleString(currentLocale)}${t('subscriptionTab.perMonth')}`
   const freePlan = {
     id: 'free',
-    name: t('subscription.plan_free_name', { defaultValue: 'Gratis' }),
+    name: t('subscriptionTab.plans.free'),
     monthly_price: 0,
-    priceLabel: t('subscription.plan_free_price', { defaultValue: '$0/mes' }),
+    priceLabel: `$0${t('subscriptionTab.perMonth')}`,
   }
 
   useEffect(() => {
@@ -66,12 +69,15 @@ export default function SubscriptionTab({ user }) {
   }
 
   const handleCancel = async () => {
-    if (!confirm(t('subscriptionTab.confirmCancel'))) return
+    setShowCancelModal(false)
+    setLoading(true)
     try {
       const data = await cancelSubscription()
       setSubscription(data?.data ?? data)
     } catch (err) {
-      alert(`${t('subscriptionTab.errorCancel')}: ${err.message}`)
+      setError(`${t('subscriptionTab.errorCancel')}: ${err.message}`)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -84,9 +90,9 @@ export default function SubscriptionTab({ user }) {
   const normalizedPlans = plans.length > 0
     ? plans.map((plan) => ({
         id: plan.id,
-        name: plan.name,
+        name: t('subscriptionTab.plans.' + plan.id, { defaultValue: plan.name }),
         priceLabel: plan.price === 0 || plan.monthly_price === 0
-          ? t('subscription.plan_free_price', { defaultValue: '$0/mes' })
+          ? `$0${t('subscriptionTab.perMonth')}`
           : formatPrice(plan.monthly_price ?? plan.price),
         current: String(effectiveCurrentPlan?.id ?? '') === String(plan.id),
       }))
@@ -99,7 +105,7 @@ export default function SubscriptionTab({ user }) {
         },
         {
           id: effectiveCurrentPlan?.id || 'pro',
-          name: effectiveCurrentPlan?.name || t('subscription.plan_pro_name'),
+          name: t('subscriptionTab.plans.' + (effectiveCurrentPlan?.id || 'pro'), { defaultValue: effectiveCurrentPlan?.name || t('subscription.plan_pro_name') }),
           priceLabel: effectiveCurrentPlan?.monthly_price ? formatPrice(effectiveCurrentPlan.monthly_price) : t('subscription.plan_pro_price'),
           current: !!subscription?.plan,
         },
@@ -119,7 +125,7 @@ export default function SubscriptionTab({ user }) {
           <div>
             <p className="text-sm opacity-90">{t('subscriptionTab.currentPlan')}</p>
             <h3 className="text-3xl font-bold mt-2 flex items-center gap-2">
-              <span>{effectiveCurrentPlan?.name || 'Plan Gratis'}</span>
+              <span>{t('subscriptionTab.plans.' + effectiveCurrentPlan?.id, { defaultValue: effectiveCurrentPlan?.name || t('subscriptionTab.plans.free') })}</span>
               {subscription?.status === 'active' && <i className="fas fa-crown text-yellow-300" aria-hidden="true" />}
             </h3>
             <p className="mt-2 opacity-90">
@@ -128,14 +134,14 @@ export default function SubscriptionTab({ user }) {
                 : subscription?.status === 'active'
                 ? t('subscriptionTab.activeUntil', {
                     date: subscription?.ends_at
-                      ? new Date(subscription.ends_at).toLocaleDateString('es-CO')
+                      ? new Date(subscription.ends_at).toLocaleDateString(currentLocale)
                       : 'N/A',
                   })
                 : t('subscriptionTab.freeCta')}
             </p>
           </div>
           <div className="text-right">
-            <span className="text-lg opacity-90">${Number(effectiveCurrentPlan?.monthly_price || 0).toLocaleString('es-CO')}/mes</span>
+            <span className="text-lg opacity-90">${Number(effectiveCurrentPlan?.monthly_price || 0).toLocaleString(currentLocale)}{t('subscriptionTab.perMonth')}</span>
           </div>
         </div>
       </div>
@@ -160,7 +166,7 @@ export default function SubscriptionTab({ user }) {
                 {upgrading === plan.id
                   ? t('subscriptionTab.processing')
                   : plan.current
-                    ? 'Plan actual'
+                    ? t('subscriptionTab.currentPlanBtn')
                   : t('subscriptionTab.switchPlan')}
               </button>
             </div>
@@ -184,18 +190,18 @@ export default function SubscriptionTab({ user }) {
               {history.length > 0 ? (
                 history.map((entry) => (
                   <tr key={entry.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-3">{entry.ends_at ? new Date(entry.ends_at).toLocaleDateString('es-CO') : '-'}</td>
+                    <td className="px-4 py-3">{entry.ends_at ? new Date(entry.ends_at).toLocaleDateString(currentLocale) : '-'}</td>
                     <td className="px-4 py-3">
-                      {(entry.plan || 'Suscripción')} · {(entry.status || 'sin estado')}
+                      {t('subscriptionTab.plans.' + entry.plan, { defaultValue: entry.plan })} · {t('subscriptionTab.status.' + entry.status, { defaultValue: entry.status })}
                     </td>
-                    <td className="px-4 py-3 text-right">${Number(entry.price || 0).toLocaleString('es-CO')}</td>
+                    <td className="px-4 py-3 text-right">${Number(entry.price || 0).toLocaleString(currentLocale)}</td>
                   </tr>
                 ))
               ) : subscription?.ends_at ? (
                 <tr className="border-t hover:bg-gray-50">
-                  <td className="px-4 py-3">{new Date(subscription.ends_at).toLocaleDateString('es-CO')}</td>
-                  <td className="px-4 py-3">{currentPlan?.name || 'Suscripción'}</td>
-                  <td className="px-4 py-3 text-right">${Number(currentPlan?.monthly_price || 0).toLocaleString('es-CO')}</td>
+                  <td className="px-4 py-3">{new Date(subscription.ends_at).toLocaleDateString(currentLocale)}</td>
+                  <td className="px-4 py-3">{t('subscriptionTab.plans.' + currentPlan?.id, { defaultValue: currentPlan?.name })}</td>
+                  <td className="px-4 py-3 text-right">${Number(currentPlan?.monthly_price || 0).toLocaleString(currentLocale)}</td>
                 </tr>
               ) : (
                 <tr>
@@ -216,13 +222,21 @@ export default function SubscriptionTab({ user }) {
             {t('subscriptionTab.cancelWarning')}
           </p>
           <button
-            onClick={handleCancel}
+            onClick={() => setShowCancelModal(true)}
             className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition font-bold text-sm"
           >
             {t('subscriptionTab.cancelBtn')}
           </button>
         </div>
       )}
+
+      <ConfirmModal 
+        isOpen={showCancelModal}
+        title={t('subscriptionTab.cancelBtn')}
+        message={t('subscriptionTab.confirmCancel')}
+        onConfirm={handleCancel}
+        onCancel={() => setShowCancelModal(false)}
+      />
     </div>
   )
 }

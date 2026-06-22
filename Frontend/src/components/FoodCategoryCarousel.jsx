@@ -57,10 +57,6 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
   const handlePointerDown = (e) => {
     if (!containerRef.current || e.button !== 0) return
 
-    if (e.target instanceof Element && e.target.closest('button')) {
-      return
-    }
-
     dragRef.current = {
       isDragging: true,
       startX: e.clientX,
@@ -121,63 +117,56 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
       >
         <style>{`#category-carousel::-webkit-scrollbar { display: none; }`}</style>
 
-        {foodCategories.map((category) => (
-          <button
-            key={category.id}
-            type="button"
-            onClick={() => handleCategoryClick(category.id)}
-            className={`flex-shrink-0 transition-all duration-300 ${
-              selectedCategory === category.id ? 'scale-110' : 'hover:scale-105'
-            }`}
-          >
-            <div
-              className="w-28 h-28 rounded-[30px] hover:shadow-xl transition-all cursor-pointer flex flex-col items-center justify-center p-4 relative group"
-              style={{
-                background: `linear-gradient(150deg, ${category.color}25 0%, ${category.color}55 65%, ${category.color}35 100%)`,
-                border: `2px solid ${selectedCategory === category.id ? category.color : 'transparent'}`,
-                transform: selectedCategory === category.id
-                  ? 'perspective(1200px) rotateY(-10deg) rotateX(12deg) translateZ(8px)'
-                  : 'perspective(1200px) rotateY(-6deg) rotateX(8deg) translateZ(0)',
-                boxShadow: `0 16px 24px ${category.color}35, inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -8px 14px rgba(0,0,0,0.08)`,
-                transformStyle: 'preserve-3d',
-              }}
+        {foodCategories.map((category) => {
+          const isSelected = selectedCategory === category.id
+          return (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => handleCategoryClick(category.id)}
+              className={`flex-shrink-0 transition-all duration-300 ${
+                isSelected ? 'scale-105' : 'hover:scale-102'
+              }`}
             >
               <div
-                className="absolute inset-x-4 -bottom-2 h-3 rounded-full opacity-45 blur-sm"
-                style={{ background: category.color }}
-              />
-
-              <div
-                className="text-5xl mb-1 transition-transform duration-300 group-hover:scale-125"
+                className={`w-28 h-28 rounded-3xl transition-all cursor-pointer flex flex-col items-center justify-center p-4 relative group ${
+                  isSelected 
+                    ? 'text-white' 
+                    : 'text-gray-700 dark:text-slate-350 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:bg-slate-100/70 dark:hover:bg-slate-700/60 shadow-sm'
+                }`}
                 style={{
-                  filter: `drop-shadow(0 7px 10px ${category.color}70)`,
-                  transform: 'translateZ(24px)',
+                  background: isSelected 
+                    ? 'linear-gradient(135deg, #FF4B3E 0%, #FF6B5C 100%)' 
+                    : undefined,
+                  borderColor: isSelected ? '#FF4B3E' : undefined,
+                  boxShadow: isSelected 
+                    ? '0 12px 20px rgba(255, 75, 62, 0.25)' 
+                    : undefined,
+                  transform: isSelected
+                    ? 'translateY(-2px)'
+                    : 'translateY(0)',
                 }}
               >
-                {category.icon}
-              </div>
-
-              <span
-                className="text-xs font-bold text-center leading-tight text-gray-800 dark:text-slate-200"
-                style={{ transform: 'translateZ(14px)' }}
-              >
-                {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
-              </span>
-
-              <div
-                className="absolute top-0 left-0 w-1/3 h-1/2 rounded-2xl opacity-0 group-hover:opacity-40 transition-opacity duration-300"
-                style={{ background: 'linear-gradient(135deg, white, transparent)', pointerEvents: 'none' }}
-              />
-
-              {selectedCategory === category.id && (
                 <div
-                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full"
-                  style={{ backgroundColor: category.color }}
-                />
-              )}
-            </div>
-          </button>
-        ))}
+                  className="text-4xl mb-2 transition-transform duration-300 group-hover:scale-110"
+                  style={{
+                    filter: isSelected ? 'drop-shadow(0 4px 6px rgba(255,255,255,0.2))' : 'none',
+                  }}
+                >
+                  {category.icon}
+                </div>
+
+                <span
+                  className={`text-[10px] font-black text-center leading-tight tracking-wide ${
+                    isSelected ? 'text-white' : 'text-gray-600 dark:text-slate-300'
+                  }`}
+                >
+                  {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
+                </span>
+              </div>
+            </button>
+          )
+        })}
       </div>
     </div>
   )

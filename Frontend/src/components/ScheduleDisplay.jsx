@@ -130,26 +130,29 @@ export default function ScheduleDisplay({ schedule, isOpen = true, variant = 'ca
   
   // Vista card: tabla completa de 7 días
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-      <h3 className="font-bold text-[#1a2b4c] mb-4 text-[15px]">
-        {t('schedule.opening_hours') || (language === 'es' ? 'Horarios de Apertura y Cierre' : 'Opening Hours')}
+    <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-md border border-gray-100 dark:border-slate-800">
+      <h3 className="font-bold text-gray-900 dark:text-white mb-3 text-[14px]">
+        {t('schedule.opening_hours') || (language === 'es' ? 'Horarios de Apertura' : 'Opening Hours')}
       </h3>
       
-      <div className="space-y-3">
+      <div className="space-y-2">
         {scheduleByDay.map((daySchedule, index) => {
-          if (daySchedule?.is_closed) return null;
-          
+          const isToday = daySchedule.day === todayDayName;
           return (
             <div 
               key={index}
-              className="flex justify-between items-center text-[13px] tracking-wide"
+              className={`flex justify-between items-center text-xs tracking-wide py-1 border-b border-gray-50 dark:border-slate-800/50 last:border-0 ${
+                isToday ? 'font-black text-red-500 dark:text-red-400' : 'text-gray-600 dark:text-slate-400'
+              }`}
             >
-              <span className="text-[#334155]">
-                {days[index]}
+              <span className="font-semibold">
+                {days[index]} {isToday && '(Hoy)'}
               </span>
               
-              <span className="text-[#1e293b]">
-                {formatTime(daySchedule?.opening_time)} - {formatTime(daySchedule?.closing_time)}
+              <span className="font-bold">
+                {daySchedule?.is_closed 
+                  ? (t('schedule.closed') || 'Cerrado') 
+                  : `${formatTime(daySchedule?.opening_time)} - ${formatTime(daySchedule?.closing_time)}`}
               </span>
             </div>
           )

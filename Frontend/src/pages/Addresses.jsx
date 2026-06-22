@@ -15,6 +15,8 @@ export default function Addresses() {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+
   useEffect(() => {
     fetchAddresses();
   }, []);
@@ -35,15 +37,17 @@ export default function Addresses() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm(t('addresses.confirm_delete'))) return;
+  const handleDelete = async () => {
+    if (!confirmDeleteId) return;
     try {
-      await api.delete(`/addresses/${id}`, {
+      await api.delete(`/addresses/${confirmDeleteId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setAddresses(addresses.filter(a => a.id !== id));
+      setAddresses(addresses.filter(a => a.id !== confirmDeleteId));
+      setConfirmDeleteId(null);
     } catch (err) {
       setError(t('addresses.error_delete'));
+      setConfirmDeleteId(null);
     }
   };
 
@@ -94,7 +98,7 @@ export default function Addresses() {
                     <i className="fas fa-edit" /> {t('addresses.edit')}
                   </button>
                   <button
-                    onClick={() => handleDelete(address.id)}
+                    onClick={() => setConfirmDeleteId(address.id)}
                     className="py-2.5 px-4 rounded-xl bg-red-50 text-red-500 hover:bg-red-100 active:scale-95 text-xs font-bold transition flex items-center justify-center gap-1.5"
                   >
                     <i className="fas fa-trash" /> {t('addresses.delete')}
@@ -116,6 +120,35 @@ export default function Addresses() {
             >
               <i className="fas fa-plus text-xs" /> {t('addresses.add_first')}
             </button>
+          </div>
+        )}
+
+        {/* Modal de confirmación estilizado */}
+        {confirmDeleteId && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[99999] p-4">
+            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-gray-100 animate-scale-up">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 text-2xl mx-auto mb-4">
+                <i className="fas fa-exclamation-triangle" />
+              </div>
+              <h3 className="text-xl font-black text-gray-900 text-center mb-2">¿Eliminar dirección?</h3>
+              <p className="text-gray-500 text-center text-sm mb-6">
+                Esta acción no se puede deshacer. Ya no podrás seleccionar este punto de entrega.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-650 active:scale-95 text-white font-bold rounded-2xl transition shadow-lg shadow-red-500/10 text-sm"
+                >
+                  Sí, eliminar
+                </button>
+                <button
+                  onClick={() => setConfirmDeleteId(null)}
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-800 font-bold rounded-2xl transition text-sm"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

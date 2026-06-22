@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { ApiError, fetchJson } from '../api/fetchJson'
+import { isValidName } from '../utils/validation'
 import Footer from '../components/Footer'
 import './Auth.css'
 
@@ -25,8 +26,31 @@ export default function RegisterPage({ onLogin }) {
     if (error) setError(null)
   }
 
+  const isNameInvalid = formData.name && !isValidName(formData.name)
+
+  const getPasswordStrength = (pwd) => {
+    if (!pwd) return { score: 0, text: '', color: 'bg-slate-200', labelColor: 'text-slate-400' }
+    let score = 0
+    if (pwd.length >= 8) score += 1
+    if (/[A-Z]/.test(pwd)) score += 1
+    if (/[a-z]/.test(pwd) && /[0-9]/.test(pwd)) score += 1
+    
+    if (pwd.length < 8) {
+      return { score: 0, text: t('validation.password_too_short'), color: 'bg-red-400', labelColor: 'text-red-500' }
+    }
+    
+    if (score === 1) return { score: 1, text: t('validation.password_weak'), color: 'bg-amber-400', labelColor: 'text-amber-500' }
+    if (score === 2) return { score: 2, text: t('validation.password_medium'), color: 'bg-blue-400', labelColor: 'text-blue-500' }
+    return { score: 3, text: t('validation.password_strong'), color: 'bg-emerald-500', labelColor: 'text-emerald-500' }
+  }
+
+  const pwdInfo = getPasswordStrength(formData.password)
+
   const handleRegister = async (e) => {
     e.preventDefault()
+    if (!isValidName(formData.name)) {
+      return setError(t('validation.name_special_chars'))
+    }
     if (formData.password !== formData.confirm_password) {
       return setError(t('register.error_passwords_match') || "Las contraseñas no coinciden")
     }
@@ -98,8 +122,8 @@ export default function RegisterPage({ onLogin }) {
                 <button 
                   type="button"
                   onClick={() => {
-                    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost/delivery-appifood/Backend/public/api'
-                    window.location.href = `${apiBase}/auth/google`
+                    const apiBase = import.meta.env.VITE_API_BASE || 'http://localhost:8000'
+                    window.location.href = `${apiBase}/api/auth/google`
                   }}
                   className="w-full bg-white border-2 border-slate-100 hover:border-red-500/30 hover:bg-slate-50 text-slate-700 font-bold py-4 rounded-2xl transition-all flex items-center justify-center gap-3 shadow-sm"
                 >
@@ -130,7 +154,11 @@ export default function RegisterPage({ onLogin }) {
                           <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{t('register.name')}</label>
                           <input 
                             type="text" name="name" value={formData.name} onChange={handleChange}
-                            className="w-full bg-slate-50 border-2 border-transparent focus:border-red-500/30 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-medium text-slate-700"
+                            className={`w-full border-2 rounded-2xl px-6 py-4 outline-none transition-all font-medium text-slate-700 ${
+                              isNameInvalid 
+                                ? 'border-red-500 bg-red-50/20 focus:border-red-500' 
+                                : 'border-transparent bg-slate-50 focus:border-red-500/30 focus:bg-white'
+                            }`}
                             placeholder="Tu nombre completo" required
                           />
                         </div>
@@ -163,6 +191,40 @@ export default function RegisterPage({ onLogin }) {
                             />
                           </div>
                         </div>
+
+                        {formData.password && (
+                          <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 space-y-3 animate-fade-in mt-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 text-xs font-bold">
+                                {formData.password.length >= 8 ? (
+                                  <span className="text-emerald-600 flex items-center gap-1.5 bg-emerald-50 px-2.5 py-1 rounded-full">
+                                    <i className="fas fa-check-circle" /> {t('validation.password_min_length')}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500 flex items-center gap-1.5 bg-slate-100 px-2.5 py-1 rounded-full">
+                                    <i className="far fa-circle" /> {t('validation.password_min_length')}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="flex items-center gap-1.5 text-xs font-bold">
+                                <span className="text-slate-400">Seguridad:</span>
+                                <span className={`px-2.5 py-1 rounded-full text-white ${pwdInfo.color}`}>
+                                  {pwdInfo.text}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full transition-all duration-300 ${pwdInfo.color}`} 
+                                  style={{ width: `${formData.password.length >= 8 ? (pwdInfo.score + 1) * 33.3 : 15}%` }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       <button 

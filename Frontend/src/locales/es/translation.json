@@ -5,6 +5,17 @@
     "pageNotFound": "Página no encontrada",
     "backToHome": "Volver al inicio"
   },
+  "validation": {
+    "name_special_chars": "El nombre no puede contener números ni caracteres especiales.",
+    "password_special_chars": "La contraseña no debe contener caracteres especiales (solo letras y números).",
+    "password_too_short": "Muy corta",
+    "password_weak": "Débil",
+    "password_medium": "Media",
+    "password_strong": "Segura",
+    "password_min_length": "Mínimo 8 caracteres",
+    "gmail_missing_info_warning": "Iniciaste sesión con Google. Por favor, completa tu información de perfil (teléfono, documento y fecha de nacimiento) para poder realizar pedidos.",
+    "gmail_missing_info_button": "Completar perfil"
+  },
   "nav": {
     "home": "Inicio",
     "login": "Iniciar sesión",
@@ -22,7 +33,15 @@
     "specialDiscounts": "Descuentos especiales",
     "offersTitle": "Ofertas del Día",
     "offersSubtitle": "Los mejores platos con descuentos exclusivos para ti.",
-    "continue_email": "Continuar con mi correo"
+    "continue_email": "Continuar con mi correo",
+    "save": "AHORRA",
+    "viewAllOffers": "Ver todas las ofertas",
+    "hero": {
+      "limited_offer": "Oferta limitada — solo",
+      "stats_restaurants": "Restaurantes",
+      "stats_delivery": "Entrega prom.",
+      "stats_rating": "Calificación"
+    }
   },
   "hero": {
     "slide1": {
@@ -121,7 +140,22 @@
     "restaurants_found": "restaurantes encontrados",
     "badge_open": "ABIERTO",
     "badge_closed": "CERRADO",
-    "badge_new": "NUEVO"
+    "badge_new": "NUEVO",
+    "filter_label": "Filtros:",
+    "all_restaurants_title": "Todos los restaurantes",
+    "filter_delivery_all": "🛵 Envío: Cualquiera",
+    "filter_delivery_free": "🛵 Envío: Gratis",
+    "filter_delivery_cheap": "🛵 Envío: Menos de $3.000",
+    "filter_time_all": "⚡ Tiempo: Cualquiera",
+    "filter_time_fast": "⚡ Tiempo: Rápido (<30 min)",
+    "filter_time_under45": "⚡ Tiempo: Menos de 45 min",
+    "filter_rating_all": "⭐ Calificación: Cualquiera",
+    "filter_rating_4plus": "⭐ Calificación: 4.0+",
+    "filter_rating_45plus": "⭐ Calificación: 4.5+",
+    "filter_budget_placeholder": "Presupuesto",
+    "filter_clean": "Limpiar",
+    "results": "resultados",
+    "searching_for": "Buscando"
   },
   "language": {
     "es": "Español",
@@ -174,7 +208,13 @@
     "id_pp": "Pasaporte",
     "placeholder_id": "1234567890",
     "email_address": "AppiFood@gmail.com",
-    "error_delete": "Error al eliminar la cuenta."
+    "error_delete": "Error al eliminar la cuenta.",
+    "verified": "Verificado",
+    "night_mode": "Modo Noche:",
+    "identity_document": "Documento de identidad",
+    "email_verified": "Verificado",
+    "email_not_verified": "No verificado",
+    "id_nit": "NIT"
   },
   "orders": {
     "title": "Mis Pedidos",
@@ -1136,12 +1176,32 @@
     "confirmCancel": "¿Estás seguro de que deseas cancelar tu suscripción?",
     "errorUpgrade": "Error al cambiar plan",
     "errorCancel": "Error al cancelar",
+    "perMonth": "/mes",
+    "currentPlanBtn": "Plan actual",
+    "status": {
+      "active": "activo",
+      "pending_payment": "pago pendiente",
+      "inactive": "inactivo"
+    },
     "plans": {
       "free": "Gratis",
       "freeFeature": "Acceso básico",
       "pro": "AppiPro",
       "proFeature1": "Órdenes ilimitadas",
       "proFeature2": "10% descuento"
+    }
+  },
+  "notificationsTab": {
+    "mark_all_read": "Marcar todas como leídas",
+    "read": "Leer",
+    "delete": "Eliminar",
+    "title": {
+      "Pago confirmado": "Pago confirmado",
+      "Pedido creado": "Pedido creado"
+    },
+    "message": {
+      "Pago confirmado": "Tu pago del pedido #{{id}} fue confirmado.",
+      "Pedido creado": "Tu pedido #{{id}} fue creado correctamente."
     }
   },
   "help": {
@@ -1186,11 +1246,6 @@
     "default": "Predeterminado",
     "expires": "Vence:",
     "edit": "Editar",
-    "delete": "Eliminar"
-  },
-  "notificationsTab": {
-    "mark_all_read": "Marcar todas como leídas",
-    "read": "Leer",
     "delete": "Eliminar"
   },
   "schedule": {
@@ -1311,5 +1366,42 @@
     "view_orders": "Ver pedidos",
     "go_to_profile": "Ir a mi perfil",
     "subscription": "Suscripción"
+  },
+  "gamification": {
+    "title": "🏆 Club de Fidelidad AppiFood",
+    "subtitle": "Gana puntos ordenando comida deliciosa y redímelos por cupones gratis.",
+    "level": "Nivel",
+    "total_points": "puntos totales",
+    "max_level": "¡Nivel Máximo!",
+    "next_level": "Siguiente nivel: {{level}} ({{max}} pts)",
+    "coupon_claimed": "¡Cupón reclamado con éxito!",
+    "use_code": "Usa el siguiente código en el checkout de tu próxima compra:",
+    "click_to_copy": "Haz clic para copiar",
+    "copy": "Copiar",
+    "expires_in": "Expira en 30 días ({{date}})",
+    "redeem_rewards": "🎁 Redimir Recompensas",
+    "redeem_now": "Redimir ahora",
+    "pts_missing": "Faltan {{count}} pts",
+    "loading_rewards": "Cargando tus recompensas...",
+    "levels": {
+      "bronze": "Bronce",
+      "silver": "Plata",
+      "gold": "Oro",
+      "diamond": "Diamante",
+      "desc_bronze": "¡Estás comenzando tu viaje gourmet!",
+      "desc_silver": "¡Eres un comensal frecuente!",
+      "desc_gold": "¡Tienes un paladar de oro!",
+      "desc_diamond": "¡Eres una leyenda gastronómica de AppiFood!"
+    },
+    "rewards": {
+      "bronze_title": "Cupón Bronce",
+      "bronze_desc": "Descuento para cualquier pedido en la plataforma sin compra mínima.",
+      "silver_title": "Cupón Plata",
+      "silver_desc": "Descuento especial de rango medio para tus antojos.",
+      "gold_title": "Cupón Oro",
+      "gold_desc": "Gran descuento de fidelidad premium.",
+      "diamond_title": "Cupón Diamante",
+      "diamond_desc": "Nuestra máxima recompensa para leyendas AppiFood."
+    }
   }
 }

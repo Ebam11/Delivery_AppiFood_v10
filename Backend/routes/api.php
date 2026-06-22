@@ -57,7 +57,8 @@ Route::get('/health', static fn (): JsonResponse => response()->json([
 Route::get('/restaurants', [RestaurantController::class, 'index']);
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
 Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'indexPublic']);
-    Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index']);
+Route::get('/auth/verify-email-link/{id}', [ProfileController::class, 'verifyEmailLink'])->name('verification.verify');
+Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index']);
 Route::post('/support/chat', SupportAssistantController::class)->middleware('throttle:20,1');
 
 // Endpoints protegidos.
@@ -97,6 +98,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/', [ProfileController::class, 'update']);
             Route::delete('/', [ProfileController::class, 'destroy']);
             Route::post('/avatar', [ProfileController::class, 'avatar']);
+            Route::post('/verify-email', [ProfileController::class, 'verifyEmail']);
+            Route::post('/verify-phone', [ProfileController::class, 'verifyPhone']);
         });
 
         Route::prefix('addresses')->group(function () {

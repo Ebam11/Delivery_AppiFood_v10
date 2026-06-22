@@ -3,19 +3,37 @@ import { useEffect, useRef, useState } from 'react'
 
 /**
  * Hook para lazy loading de imágenes usando Intersection Observer
- * Solo carga la imagen cuando es visible en pantalla
+ * Solo carga la imagen cuando es visible en pantalla y asegura que esté completamente descargada
  */
 export const useLazyLoad = (imageSrc, placeholderSrc) => {
   const [src, setSrc] = useState(placeholderSrc || imageSrc)
-  const [isLoaded, setIsLoaded] = useState(!imageSrc)
+  const [isLoaded, setIsLoaded] = useState(false)
   const imgRef = useRef(null)
 
   useEffect(() => {
-    if (!imageSrc) return
+    if (!imageSrc) {
+      setIsLoaded(true)
+      return
+    }
+
+    setIsLoaded(false)
+    setSrc(placeholderSrc || '')
+
+    const triggerLoad = () => {
+      const img = new Image()
+      img.src = imageSrc
+      img.onload = () => {
+        setSrc(imageSrc)
+        setIsLoaded(true)
+      }
+      img.onerror = () => {
+        setSrc(placeholderSrc || imageSrc)
+        setIsLoaded(true)
+      }
+    }
 
     if (typeof IntersectionObserver === 'undefined') {
-      setSrc(imageSrc)
-      setIsLoaded(true)
+      triggerLoad()
       return
     }
 
@@ -23,13 +41,12 @@ export const useLazyLoad = (imageSrc, placeholderSrc) => {
       entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
-            setSrc(imageSrc)
-            setIsLoaded(true)
+            triggerLoad()
             observer.unobserve(entry.target)
           }
         })
       },
-      { rootMargin: '50px' } // Empieza a cargar 50px antes de ser visible
+      { rootMargin: '100px' } // Un poco más de margen para mejorar la experiencia de usuario
     )
 
     if (imgRef.current) {
@@ -41,7 +58,8 @@ export const useLazyLoad = (imageSrc, placeholderSrc) => {
         observer.unobserve(imgRef.current)
       }
     }
-  }, [imageSrc])
+  }, [imageSrc, placeholderSrc])
 
   return { ref: imgRef, src, isLoaded }
 }
+

@@ -23,6 +23,7 @@ export const Checkout = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderId, setOrderId] = useState(null);
   const [hasLoadedCart, setHasLoadedCart] = useState(false);
+  const [savedAddresses, setSavedAddresses] = useState([]);
 
   const paymentStatus = searchParams.get('status');
 
@@ -39,7 +40,32 @@ export const Checkout = () => {
       }
     };
 
+    const fetchSavedAddresses = async () => {
+      try {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('/api/addresses', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted) {
+            const list = data?.data || [];
+            setSavedAddresses(list);
+            // Si hay una dirección default, ponerla por defecto
+            const def = list.find(a => a.is_default);
+            if (def) {
+              setFormData(prev => ({ ...prev, address: def.address }));
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Error fetching saved addresses for checkout:', err);
+      }
+    };
+
     loadCart();
+    fetchSavedAddresses();
 
     return () => {
       isMounted = false;
@@ -121,6 +147,31 @@ export const Checkout = () => {
                 <label className="block text-lg font-bold text-gray-800 dark:text-gray-100 mb-3 transition-colors duration-300">
                   {t('checkout.address_label')}
                 </label>
+
+                {savedAddresses.length > 0 && (
+                  <div className="mb-4">
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                      Selecciona una dirección guardada:
+                    </label>
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setFormData(prev => ({ ...prev, address: e.target.value }));
+                        }
+                      }}
+                      value={formData.address}
+                      className="w-full px-4 py-3 bg-gray-55 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 text-gray-800 dark:text-white rounded-xl focus:outline-none focus:border-[#FF4B3E] cursor-pointer text-sm"
+                    >
+                      <option value="">-- Elige una dirección guardada --</option>
+                      {savedAddresses.map((addr) => (
+                        <option key={addr.id} value={addr.address}>
+                          {addr.name || 'Dirección sin nombre'} ({addr.address})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 <input
                   type="text"
                   name="address"

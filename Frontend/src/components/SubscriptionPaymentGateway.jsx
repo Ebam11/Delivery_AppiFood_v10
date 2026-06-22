@@ -231,7 +231,8 @@ export default function SubscriptionPaymentGateway({ subscription, onSuccess, on
           <div className="flex gap-3">
             <button
               onClick={() => setStep(2)}
-              className="flex-1 px-4 py-3 rounded-lg font-bold bg-[#FF4B3E] text-white hover:bg-[#e03a2d] transition"
+              disabled={loading}
+              className="flex-1 px-4 py-3 rounded-lg font-bold bg-[#FF4B3E] text-white hover:bg-[#e03a2d] transition disabled:opacity-50"
             >
               Continuar
             </button>
@@ -249,13 +250,15 @@ export default function SubscriptionPaymentGateway({ subscription, onSuccess, on
           <div className="flex gap-3">
             <button
               onClick={() => setStep(1)}
-              className="flex-1 px-4 py-3 rounded-lg font-bold border-2 border-gray-300 text-gray-900 hover:bg-gray-50 transition"
+              disabled={loading}
+              className="flex-1 px-4 py-3 rounded-lg font-bold border-2 border-gray-300 text-gray-900 hover:bg-gray-50 transition disabled:opacity-50"
             >
               Atrás
             </button>
             <button
               onClick={() => setStep(3)}
-              className="flex-1 px-4 py-3 rounded-lg font-bold bg-[#FF4B3E] text-white hover:bg-[#e03a2d] transition"
+              disabled={loading}
+              className="flex-1 px-4 py-3 rounded-lg font-bold bg-[#FF4B3E] text-white hover:bg-[#e03a2d] transition disabled:opacity-50"
             >
               Revisar compra
             </button>

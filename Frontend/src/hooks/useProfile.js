@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchJson } from '../api/fetchJson'
+import { useTranslate as useTranslation } from './useTranslate'
+import { isValidName } from '../utils/validation'
 
 /**
  * Hook para manejar la lógica del perfil de usuario.
  */
 export function useProfile(user, onUpdateProfile, onLogout) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('info')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -30,6 +33,12 @@ export function useProfile(user, onUpdateProfile, onLogout) {
 
   const handleUpdate = async (e) => {
     e.preventDefault()
+
+    if (!isValidName(formData.first_name) || !isValidName(formData.last_name)) {
+      setError(t('validation.name_special_chars'))
+      return
+    }
+
     setLoading(true)
     setError(null)
 

@@ -38,7 +38,7 @@ export default function HeroCarousel({ slides, currentIndex, onIndexChange, stat
             -{activeSlide.discount}%
           </div>
           <p className="text-gray-300 text-lg">
-            Oferta limitada — solo <span className="text-white font-bold text-xl">${fmt(activeSlide.price)}</span>
+            {t('home.hero.limited_offer', { defaultValue: 'Oferta limitada — solo' })} <span className="text-white font-bold text-xl">${fmt(activeSlide.price)}</span>
           </p>
         </div>
 
@@ -47,9 +47,9 @@ export default function HeroCarousel({ slides, currentIndex, onIndexChange, stat
           <Link to="/restaurants" className="bg-red-500 hover:bg-red-600 text-white px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 flex items-center gap-2">
             <i className="fas fa-utensils" /> {t('home.order_now') || "Ordenar ahora"}
           </Link>
-          <a href="#popular" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-8 py-4 rounded-full font-bold transition-all flex items-center gap-2">
+          <Link to="/restaurants" className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-8 py-4 rounded-full font-bold transition-all flex items-center gap-2">
             <i className="fas fa-store" /> {t('home.view_restaurants') || "Ver restaurantes"}
-          </a>
+          </Link>
         </div>
 
         {/* Indicadores de Carrusel */}
@@ -66,9 +66,9 @@ export default function HeroCarousel({ slides, currentIndex, onIndexChange, stat
         {/* Estadísticas Rápidas */}
         <div className="flex justify-center gap-10 md:gap-20 border-t border-white/10 pt-10">
           {[
-            { value: stats.restaurants, label: 'Restaurantes' },
-            { value: stats.avg_delivery, label: 'Entrega prom.' },
-            { value: stats.avg_rating, label: 'Calificación' },
+            { value: stats.restaurants, label: t('home.hero.stats_restaurants', { defaultValue: 'Restaurantes' }) },
+            { value: stats.avg_delivery, label: t('home.hero.stats_delivery', { defaultValue: 'Entrega prom.' }) },
+            { value: stats.avg_rating, label: t('home.hero.stats_rating', { defaultValue: 'Calificación' }) },
           ].map((s, i) => (
             <div key={i} className="text-center">
               <span className="block text-white text-2xl font-black">{s.value}</span>

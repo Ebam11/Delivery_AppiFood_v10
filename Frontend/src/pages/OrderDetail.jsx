@@ -173,7 +173,7 @@ export const OrderDetail = () => {
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-gray-600 text-xl">{t('order_detail.not_found')}</p>
           <button
-            onClick={() => navigate('/orders')}
+            onClick={() => navigate('/user/orders')}
             className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg"
           >
             {t('order_detail.back')}
@@ -189,7 +189,7 @@ export const OrderDetail = () => {
     <div className="page-order-detail min-h-screen bg-gray-50 p-6">
       <div className="max-w-4xl mx-auto">
         <button
-          onClick={() => navigate('/orders')}
+          onClick={() => navigate('/user/orders')}
           className="mb-6 text-[#FF4B3E] hover:text-[#e03a2d] font-bold flex items-center gap-2 transition"
         >
           <i className="fas fa-arrow-left" /> {t('order_detail.back')}
@@ -316,7 +316,7 @@ export const OrderDetail = () => {
                 </button>
               )}
               <button
-                onClick={() => navigate('/orders')}
+                onClick={() => navigate('/user/orders')}
                 className="w-full sm:flex-1 py-3.5 bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-800 font-bold rounded-xl transition flex items-center justify-center gap-2"
               >
                 <i className="fas fa-chevron-left" /> {t('order_detail.back')}

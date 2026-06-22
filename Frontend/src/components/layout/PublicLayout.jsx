@@ -10,7 +10,7 @@ import { FOOD_BACKDROP_IMAGES } from '../../utils/appHelpers'
  */
 export default function PublicLayout({ children, isAuth, user, onLogout, isLoading }) {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#fffdf8]">
+    <div className="relative min-h-screen bg-white dark:bg-[#0f0f16]">
       {/* Elementos decorativos de fondo */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <img src={FOOD_BACKDROP_IMAGES[0]} alt="" className="absolute left-4 top-8 h-20 w-20 rotate-[-12deg] opacity-[0.08] blur-[0.2px] sm:h-24 sm:w-24" />

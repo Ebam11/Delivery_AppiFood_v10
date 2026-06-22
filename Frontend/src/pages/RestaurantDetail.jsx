@@ -1,8 +1,4 @@
-/**
- * Archivo: src/pages/RestaurantDetail.jsx
- * Detalle de un restaurante específico, incluyendo menú y horarios.
- */
-
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useAuthStore } from '../store/authStore'
@@ -44,18 +40,32 @@ export const RestaurantDetail = () => {
     isReviewsLoading = false
   } = useRestaurantDetail()
 
+  // Resolver imagen dinámica del banner superior del restaurante
+  const { image: resolvedBanner } = useRestaurantImage(restaurant?.name, restaurant?.banner || restaurant?.image);
+
   if (isLoading) return <Loading />
   if (!restaurant) return <div className="p-20 text-center">Restaurante no encontrado</div>
 
   const products = Array.isArray(restaurant.products) ? restaurant.products : []
   const fmt = n => Number(n).toLocaleString('es-CO')
 
+  // Group products by category
+  const categoriesGrouped = products.reduce((acc, p) => {
+    const catName = p.category_name || t('restaurant.uncategorized') || 'General';
+    if (!acc[catName]) acc[catName] = [];
+    acc[catName].push(p);
+    return acc;
+  }, {});
+
+  const lat = Number(restaurant.lat || 2.4448)
+  const lng = Number(restaurant.lng || -76.6147)
+
   return (
     <div className="bg-white min-h-screen">
       {/* Header / Banner */}
       <div className="relative h-[400px] overflow-hidden">
         <img 
-          src={restaurant.banner || restaurant.image || heroImage} 
+          src={resolvedBanner || heroImage} 
           className="w-full h-full object-cover" 
           alt={restaurant.name} 
         />
@@ -108,24 +118,23 @@ export const RestaurantDetail = () => {
               <span className="text-gray-400 font-bold">{products.length} platos</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {products.map(p => (
-                <div 
-                  key={p.id}
-                  onClick={() => setSelectedProduct(p)}
-                  className="bg-white border border-gray-100 rounded-3xl p-4 flex gap-4 hover:shadow-xl transition-all cursor-pointer group"
-                >
-                  <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0">
-                    <img src={p.image || heroImage} className="w-full h-full object-cover group-hover:scale-110 transition-transform" alt={p.name} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-bold text-gray-900 mb-1">{p.name}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-2 mb-2">{p.description}</p>
-                    <span className="font-black text-red-500">${fmt(p.price)}</span>
-                  </div>
+            {Object.keys(categoriesGrouped).map(catName => (
+              <div key={catName} className="mb-10">
+                <h3 className="text-xl font-black text-gray-800 mb-4 bg-gray-50 px-4 py-2.5 rounded-2xl border-l-4 border-red-500">
+                  {catName}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {categoriesGrouped[catName].map(p => (
+                    <ProductMenuItem 
+                      key={p.id}
+                      product={p}
+                      onSelect={setSelectedProduct}
+                      fmt={fmt}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
 
             {/* Reseñas Section */}
             <div className="mt-16 pt-8 border-t border-gray-100">
@@ -223,6 +232,24 @@ export const RestaurantDetail = () => {
                   Este restaurante aún no ha configurado su ubicación en el mapa.
                 </div>
               )}
+            </div>
+
+            {/* Mapa Leaflet Real con Coordenadas */}
+            <div className="bg-gray-100 rounded-3xl h-64 overflow-hidden border border-gray-200 shadow-inner relative z-10">
+              <MapContainer
+                center={[lat, lng]}
+                zoom={16}
+                scrollWheelZoom={false}
+                style={{ height: '100%', width: '100%' }}
+              >
+                <TileLayer
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                  attribution='&copy; CARTO'
+                />
+                <Marker position={[lat, lng]} icon={restaurantIcon}>
+                  <Popup>{restaurant.name}</Popup>
+                </Marker>
+              </MapContainer>
             </div>
           </aside>
         </div>

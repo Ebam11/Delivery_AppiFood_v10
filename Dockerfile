@@ -11,7 +11,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     libonig-dev \
     libxml2-dev \
-    libzip-dev
+    libzip-dev \
+    default-mysql-client
 
 # Limpiar caché de apt
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -43,7 +44,16 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Habilitar mod_rewrite de Apache para las rutas de Laravel
 RUN a2enmod rewrite
 
-# Exponer el puerto 80
+# ── FIX: Evitar error "More than one MPM loaded" ──
+# Eliminar directamente TODOS los MPMs de mods-enabled y activar solo prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.load && \
+    ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf && \
+    ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load
+
+# Verificar configuración de Apache (debug en build)
+RUN apache2ctl configtest 2>&1 || true
+
+# Exponer el puerto (Railway usa $PORT)
 EXPOSE 80
 
 # Comando de inicio

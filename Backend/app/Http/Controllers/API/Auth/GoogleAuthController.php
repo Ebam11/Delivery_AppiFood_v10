@@ -44,16 +44,14 @@ class GoogleAuthController extends Controller
                     'name' => $googleUser->name,
                     'email' => $googleUser->email,
                     'google_id' => $googleUser->id,
-                    'google_avatar' => $googleUser->avatar,
                     'password' => null, // O usar bcrypt(Str::random(16))
                     'role' => UserRole::USER->value,
                     'status' => true,
                 ]);
             } else {
-                // Actualizar google_id y avatar si ya existía por email
+                // Actualizar google_id si ya existía por email
                 $user->update([
                     'google_id' => $googleUser->id,
-                    'google_avatar' => $googleUser->avatar,
                 ]);
             }
 
@@ -67,7 +65,7 @@ class GoogleAuthController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'role' => $user->role,
-                'avatar' => $user->google_avatar,
+                'avatar' => $user->avatar,
             ]));
 
             return redirect()->away("{$frontendUrl}/login?token={$token}&user={$userData}");

@@ -1,10 +1,7 @@
-/**
- * Archivo: src/pages/Profile.jsx
- * Página de perfil de usuario con campos completos y verificación.
- */
-
+import { useState, useEffect } from 'react';
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useProfile } from '../hooks/useProfile'
+import { fetchJson } from '../api/fetchJson'
 import SubscriptionTab from '../components/SubscriptionTab'
 import NotificationsTab from '../components/NotificationsTab'
 import PaymentMethodsTab from '../components/PaymentMethodsTab'
@@ -25,6 +22,56 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
     handleDeleteAccount
   } = useProfile(user, onUpdateProfile, onLogout)
 
+  const [emailVerified, setEmailVerified] = useState(user?.email_verified || false)
+  const [phoneVerified, setPhoneVerified] = useState(user?.phone_verified || false)
+  const [verifyMsg, setVerifyMsg] = useState(null)
+  const [verifyLoading, setVerifyLoading] = useState(null) // 'email' | 'phone' | null
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified') === 'email') {
+      setEmailVerified(true);
+      setVerifyMsg({ type: 'success', text: '✅ ¡Tu correo electrónico ha sido verificado con éxito!' });
+      setActiveTab('security');
+      // Limpiar el parámetro de la URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, [setActiveTab]);
+
+  const handleVerifyEmail = async () => {
+    setVerifyLoading('email')
+    setVerifyMsg(null)
+    try {
+      const res = await fetchJson('/profile/verify-email', { method: 'POST' })
+      if (res.data) {
+        setEmailVerified(true)
+        onUpdateProfile?.(res.data)
+        setVerifyMsg({ type: 'success', text: '✅ Correo verificado correctamente.' })
+      } else {
+        setVerifyMsg({ type: 'success', text: '📩 Te hemos enviado un enlace de confirmación a tu correo electrónico.' })
+      }
+    } catch (err) {
+      setVerifyMsg({ type: 'error', text: err.message || 'Error al enviar el correo de verificación.' })
+    } finally {
+      setVerifyLoading(null)
+    }
+  }
+
+  const handleVerifyPhone = async () => {
+    setVerifyLoading('phone')
+    setVerifyMsg(null)
+    try {
+      const res = await fetchJson('/profile/verify-phone', { method: 'POST' })
+      setPhoneVerified(true)
+      onUpdateProfile?.(res.data || res)
+      setVerifyMsg({ type: 'success', text: '✅ Teléfono verificado correctamente.' })
+    } catch (err) {
+      setVerifyMsg({ type: 'error', text: err.message || 'Error al verificar el teléfono.' })
+    } finally {
+      setVerifyLoading(null)
+    }
+  }
+
   const menuItems = [
     { id: 'info', label: t('profile.account_info') || 'Información de cuenta', icon: 'fas fa-user-circle' },
     { id: 'security', label: t('profile.security') || 'Seguridad', icon: 'fas fa-shield-alt' },
@@ -33,9 +80,6 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
     { id: 'notifications', label: t('profile.notifications') || 'Notificaciones', icon: 'fas fa-bell' },
     { id: 'orders', label: t('profile.last_orders') || 'Mis pedidos', icon: 'fas fa-history' },
   ]
-
-  const emailVerified = user?.email_verified || false
-  const phoneVerified = user?.phone_verified || false
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen transition-colors duration-300">
@@ -93,7 +137,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                 <div className="flex items-center justify-between mb-8">
                   <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100">{t('profile.account_info') || 'Información de cuenta'}</h3>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-gray-500 dark:text-gray-400">Modo Noche:</span>
+                    <span className="text-sm font-bold text-gray-500 dark:text-gray-400">{t('profile.night_mode') || 'Modo Noche:'}</span>
                     <ThemeToggle />
                   </div>
                 </div>
@@ -167,11 +211,11 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                       <div className="profile-input-group">
                         <label className="profile-label">{t('profile.id_type') || 'Tipo de documento'}</label>
                         <select name="id_type" value={formData.id_type} onChange={handleChange} className="profile-input cursor-pointer">
-                          <option value="cc">Cédula de Ciudadanía (CC)</option>
-                          <option value="ce">Cédula de Extranjería (CE)</option>
-                          <option value="ti">Tarjeta de Identidad (TI)</option>
-                          <option value="passport">Pasaporte</option>
-                          <option value="nit">NIT</option>
+                          <option value="cc">{t('profile.id_cc') || 'Cédula de Ciudadanía (CC)'}</option>
+                          <option value="ce">{t('profile.id_ce') || 'Cédula de Extranjería (CE)'}</option>
+                          <option value="ti">{t('profile.id_ti') || 'Tarjeta de Identidad (TI)'}</option>
+                          <option value="passport">{t('profile.id_pp') || 'Pasaporte'}</option>
+                          <option value="nit">{t('profile.id_nit') || 'NIT'}</option>
                         </select>
                       </div>
                       <div className="profile-input-group">
@@ -190,9 +234,9 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                     <div className="profile-input-group">
                       <label className="profile-label">{t('profile.gender') || 'Género'}</label>
                       <select name="gender" value={formData.gender} onChange={handleChange} className="profile-input cursor-pointer">
-                        <option value="male">{t('profile.gender_male') || 'Masculino'}</option>
-                        <option value="female">{t('profile.gender_female') || 'Femenino'}</option>
-                        <option value="other">{t('profile.gender_other') || 'Otro'}</option>
+                        <option value="male">{t('profile.male') || 'Masculino'}</option>
+                        <option value="female">{t('profile.female') || 'Femenino'}</option>
+                        <option value="other">{t('profile.other') || 'Otro'}</option>
                       </select>
                     </div>
                   </div>
@@ -219,7 +263,21 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
             {activeTab === 'security' && (
               <div className="animate-fade-in">
                 <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100 mb-8">{t('profile.security') || 'Seguridad'}</h3>
-                
+
+                {/* Mensaje de feedback verificación */}
+                {verifyMsg && (
+                  <div className={`mb-4 p-4 rounded-2xl text-sm font-bold flex items-center gap-3 border ${
+                    verifyMsg.type === 'success'
+                      ? 'bg-green-50 dark:bg-green-900/20 text-green-700 border-green-200 dark:border-green-800'
+                      : 'bg-red-50 dark:bg-red-900/20 text-red-700 border-red-200 dark:border-red-800'
+                  }`}>
+                    {verifyMsg.text}
+                    <button onClick={() => setVerifyMsg(null)} className="ml-auto text-current opacity-60 hover:opacity-100">
+                      <i className="fas fa-times" />
+                    </button>
+                  </div>
+                )}
+
                 {/* Verificación de email */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 mb-6">
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
@@ -237,8 +295,13 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                         <i className="fas fa-check-circle" /> {t('profile.verified') || 'Verificado'}
                       </span>
                     ) : (
-                      <button className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition shadow-sm flex-shrink-0">
-                        {t('profile.send_verification') || 'Enviar verificación'}
+                      <button
+                        onClick={handleVerifyEmail}
+                        disabled={verifyLoading === 'email'}
+                        className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition shadow-sm flex-shrink-0 disabled:opacity-60 flex items-center gap-2"
+                      >
+                        {verifyLoading === 'email' ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-paper-plane" />}
+                        {verifyLoading === 'email' ? 'Enviando...' : (t('profile.send_verification') || 'Verificar ahora')}
                       </button>
                     )}
                   </div>
@@ -254,6 +317,11 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                       <div>
                         <h4 className="font-bold text-gray-900 dark:text-gray-100">{t('profile.phone_verification') || 'Verificación de número de celular'}</h4>
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{formData.phone || t('profile.no_phone') || 'No registrado'}</p>
+                        {!formData.phone && (
+                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold">
+                            <i className="fas fa-info-circle mr-1" />Agrega un teléfono en la pestaña de información primero.
+                          </p>
+                        )}
                       </div>
                     </div>
                     {phoneVerified ? (
@@ -261,11 +329,13 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                         <i className="fas fa-check-circle" /> {t('profile.verified') || 'Verificado'}
                       </span>
                     ) : (
-                      <button 
-                        disabled={!formData.phone}
-                        className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                      <button
+                        onClick={handleVerifyPhone}
+                        disabled={!formData.phone || verifyLoading === 'phone'}
+                        className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center gap-2"
                       >
-                        {t('profile.send_code') || 'Enviar código SMS'}
+                        {verifyLoading === 'phone' ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-mobile-alt" />}
+                        {verifyLoading === 'phone' ? 'Verificando...' : (t('profile.send_code') || 'Verificar teléfono')}
                       </button>
                     )}
                   </div>

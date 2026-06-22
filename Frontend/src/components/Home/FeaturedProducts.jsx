@@ -1,4 +1,5 @@
 import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * Sección de productos/ofertas destacadas.
@@ -6,6 +7,7 @@ import { useTranslate as useTranslation } from '../../hooks/useTranslate';
  */
 export default function FeaturedProducts({ products, loading, onSelectProduct, isFavorite, onFavoriteToggle }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   
   const fmt = n => Number(n).toLocaleString('es-CO')
 
@@ -25,53 +27,52 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="bg-white dark:bg-slate-900 rounded-3xl h-80 animate-pulse shadow-sm" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {[1, 2, 4, 8].map(i => (
+              <div key={i} className="bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 animate-pulse">
+                <div className="w-full h-48 bg-gray-200 dark:bg-slate-700 rounded-2xl mb-4" />
+                <div className="w-20 h-4 bg-gray-200 dark:bg-slate-700 rounded mb-2" />
+                <div className="w-full h-6 bg-gray-200 dark:bg-slate-700 rounded mb-4" />
+                <div className="flex justify-between items-center">
+                  <div className="w-16 h-8 bg-gray-200 dark:bg-slate-700 rounded" />
+                  <div className="w-10 h-10 bg-gray-200 dark:bg-slate-700 rounded-full" />
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {products.map((p, idx) => (
-              <div 
-                key={`${p.id}-${idx}`}
-                onClick={() => onSelectProduct(p)}
-                className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer border border-transparent dark:border-slate-800"
-              >
-                {/* Imagen del Producto */}
-                <div className="h-48 overflow-hidden relative">
-                  <img 
-                    src={p.image || '/images/placeholder.png'} 
-                    alt={p.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    onError={e => { e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop' }}
-                  />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {products.slice(0, 8).map(p => (
+              <div key={p.id} className="group bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative flex flex-col justify-between">
+                
+                {/* Botón Favoritos */}
+                <button 
+                  onClick={() => onFavoriteToggle?.(p.id)}
+                  className="absolute top-8 right-8 w-10 h-10 rounded-2xl bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors shadow-sm z-10"
+                >
+                  <i className={`${isFavorite?.(p.id) ? 'fas fa-heart text-red-500 scale-110' : 'far fa-heart'} transition-transform`} />
+                </button>
+
+                <div onClick={() => onSelectProduct?.(p)} className="cursor-pointer">
+                  <div className="w-full h-48 rounded-2xl overflow-hidden mb-5 bg-slate-100 dark:bg-slate-700">
+                    <img 
+                      src={p.image || 'https://via.placeholder.com/300x200'} 
+                      alt={p.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
                   
-                  {/* Badge de Descuento */}
-                  {p.pct && (
-                    <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full font-black text-xs shadow-lg">
-                      -{p.pct}%
-                    </div>
-                  )}
-
-                  {/* Botón Favorito */}
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); onFavoriteToggle(p.restaurantId) }}
-                    className={`absolute top-4 right-4 w-9 h-9 rounded-full flex items-center justify-center transition-all bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm shadow-md
-                      ${isFavorite(p.restaurantId) ? 'text-red-500 scale-110' : 'text-gray-400 hover:text-red-500'}`}
-                  >
-                    <i className={`${isFavorite(p.restaurantId) ? 'fas' : 'far'} fa-heart`} />
-                  </button>
-                </div>
-
-                {/* Info del Producto */}
-                <div className="p-5">
-                  <p className="text-red-500 font-bold text-[10px] uppercase tracking-wider mb-1">
-                    {p.restaurantName}
-                  </p>
-                  <h3 className="font-black text-gray-900 dark:text-white text-lg mb-2 truncate" title={p.name}>
+                  <span className="inline-block text-[10px] font-black uppercase tracking-wider text-red-500 bg-red-50 dark:bg-red-500/10 px-2.5 py-1 rounded-full mb-3">
+                    {p.restaurantName || 'AppiFood'}
+                  </span>
+                  
+                  <h3 className="font-black text-gray-900 dark:text-white group-hover:text-[#FF4B3E] transition-colors leading-tight mb-2 truncate">
                     {p.name}
                   </h3>
+                  
+                  <p className="text-gray-400 dark:text-slate-400 text-xs line-clamp-2">
+                    {p.description}
+                  </p>
                   
                   <div className="flex items-center justify-between mt-4">
                     <div>
@@ -92,8 +93,11 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
         )}
 
         <div className="text-center mt-16">
-          <button className="bg-white dark:bg-slate-900 border-2 border-gray-100 dark:border-slate-800 hover:border-red-500 text-gray-900 dark:text-slate-200 font-black px-10 py-4 rounded-full transition-all shadow-sm hover:shadow-lg">
-            Ver todas las ofertas
+          <button 
+            onClick={() => navigate('/offers')}
+            className="bg-white dark:bg-slate-900 border-2 border-gray-100 dark:border-slate-800 hover:border-red-500 text-gray-900 dark:text-slate-200 font-black px-10 py-4 rounded-full transition-all shadow-sm hover:shadow-lg"
+          >
+            {t('home.viewAllOffers') || "Ver todas las ofertas"}
           </button>
         </div>
       </div>
