@@ -1,64 +1,219 @@
-import { useState, useEffect } from 'react'
-import { fetchJson } from '../api/fetchJson'
+// Frontend/src/hooks/useAdminDashboard.js
+import { useState, useEffect, useCallback } from 'react';
+import { adminApi } from '../services/adminApi';
 
-/**
- * Hook para manejar la lógica del Panel de Administración Global.
- */
 export function useAdminDashboard() {
-  const [activeTab, setActiveTab] = useState('dashboard')
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
-  const [restaurants, setRestaurants] = useState([])
-  const [users, setUsers] = useState([])
-  const [orders, setOrders] = useState([])
-  const [toast, setToast] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  
+  // Datos reales
+  const [stats, setStats] = useState(null);
+  const [restaurants, setRestaurants] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [pagination, setPagination] = useState({});
+  const [filters, setFilters] = useState({});
+  const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    const loadAdminData = async () => {
-      try {
-        setLoading(true)
-        const [usersRes, restRes, ordersRes] = await Promise.all([
-          fetchJson('/api/admin/users'),
-          fetchJson('/api/admin/restaurants'),
-          fetchJson('/api/admin/orders')
-        ]).catch(() => [null, null, null])
-
-        if (usersRes?.data) setUsers(usersRes.data)
-        else if (Array.isArray(usersRes)) setUsers(usersRes)
-
-        if (restRes?.data) setRestaurants(restRes.data)
-        else if (Array.isArray(restRes)) setRestaurants(restRes)
-
-        if (ordersRes?.data) setOrders(ordersRes.data)
-        else if (Array.isArray(ordersRes)) setOrders(ordersRes)
-        
-      } catch (error) {
-        console.error('Error loading admin data', error)
-      } finally {
-        setLoading(false)
+  // Función para cargar datos según tab activa
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      switch (activeTab) {
+        case 'dashboard': {
+          const response = await adminApi.getDashboard();
+          setStats(response.data);
+          break;
+        }
+        case 'restaurants': {
+          const response = await adminApi.getRestaurants(filters);
+          setRestaurants(response.data || []);
+          setPagination(response.meta || {});
+          break;
+        }
+        case 'users': {
+          const response = await adminApi.getUsers(filters);
+          setUsers(response.data || []);
+          setPagination(response.meta || {});
+          break;
+        }
+        case 'orders': {
+          const response = await adminApi.getOrders(filters);
+          setOrders(response.data || []);
+          setPagination(response.meta || {});
+          break;
+        }
+        case 'reviews': {
+          const response = await adminApi.getReviews(filters);
+          setReviews(response.data || []);
+          setPagination(response.meta || {});
+          break;
+        }
+        default:
+          break;
       }
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+      showToast('Error al cargar datos', 'error');
+    } finally {
+      setLoading(false);
     }
+  }, [activeTab, filters]);
 
-    loadAdminData()
-  }, [])
+  // Cargar al cambiar de tab o filtros
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
-  const showToast = (msg) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 3000)
-  }
+  // ===== ACCIONES =====
+  
+  // Usuarios
+  const toggleUserStatus = async (id) => {
+    try {
+      await adminApi.toggleUserStatus(id);
+      await loadData();
+      showToast('Estado de usuario actualizado');
+    } catch (error) {
+      showToast('Error al actualizar usuario', 'error');
+    }
+  };
+
+  const deleteUser = async (id) => {
+    if (!confirm('¿Eliminar este usuario?')) return;
+    try {
+      await adminApi.deleteUser(id);
+      await loadData();
+      showToast('Usuario eliminado');
+    } catch (error) {
+      showToast('Error al eliminar usuario', 'error');
+    }
+  };
+
+  // Restaurantes
+  const verifyRestaurant = async (id) => {
+    try {
+      await adminApi.verifyRestaurant(id);
+      await loadData();
+      showToast('Estado de verificación actualizado');
+    } catch (error) {
+      showToast('Error al verificar restaurante', 'error');
+    }
+  };
+
+  const toggleRestaurantStatus = async (id) => {
+    try {
+      await adminApi.toggleRestaurantStatus(id);
+      await loadData();
+      showToast('Estado de restaurante actualizado');
+    } catch (error) {
+      showToast('Error al actualizar restaurante', 'error');
+    }
+  };
+
+  const deleteRestaurant = async (id) => {
+    if (!confirm('¿Eliminar este restaurante?')) return;
+    try {
+      await adminApi.deleteRestaurant(id);
+      await loadData();
+      showToast('Restaurante eliminado');
+    } catch (error) {
+      showToast('Error al eliminar restaurante', 'error');
+    }
+  };
+
+  // Órdenes
+  const updateOrderStatus = async (id, status) => {
+    try {
+      await adminApi.updateOrderStatus(id, status);
+      await loadData();
+      showToast('Estado de orden actualizado');
+    } catch (error) {
+      showToast('Error al actualizar orden', 'error');
+    }
+  };
+
+  const deleteOrder = async (id) => {
+    if (!confirm('¿Eliminar esta orden?')) return;
+    try {
+      await adminApi.deleteOrder(id);
+      await loadData();
+      showToast('Orden eliminada');
+    } catch (error) {
+      showToast('Error al eliminar orden', 'error');
+    }
+  };
+
+  // Reviews
+  const toggleReviewVisibility = async (id) => {
+    try {
+      await adminApi.toggleReviewVisibility(id);
+      await loadData();
+      showToast('Visibilidad actualizada');
+    } catch (error) {
+      showToast('Error al actualizar review', 'error');
+    }
+  };
+
+  const deleteReview = async (id) => {
+    if (!confirm('¿Eliminar esta review?')) return;
+    try {
+      await adminApi.deleteReview(id);
+      await loadData();
+      showToast('Review eliminada');
+    } catch (error) {
+      showToast('Error al eliminar review', 'error');
+    }
+  };
+
+  // Toast
+  const showToast = (msg, type = 'success') => {
+    setToast({ message: msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Actualizar filtros
+  const updateFilters = (newFilters) => {
+    setFilters(prev => ({ ...prev, ...newFilters }));
+  };
 
   return {
+    // Estado
     activeTab,
     setActiveTab,
     isSidebarOpen,
     setIsSidebarOpen,
+    loading,
+    stats,
     restaurants,
-    setRestaurants,
     users,
-    setUsers,
     orders,
+    reviews,
+    pagination,
+    filters,
     toast,
+    
+    // Acciones
     showToast,
-    loading
-  }
+    loadData,
+    updateFilters,
+    
+    // CRUD Usuarios
+    toggleUserStatus,
+    deleteUser,
+    
+    // CRUD Restaurantes
+    verifyRestaurant,
+    toggleRestaurantStatus,
+    deleteRestaurant,
+    
+    // CRUD Órdenes
+    updateOrderStatus,
+    deleteOrder,
+    
+    // CRUD Reviews
+    toggleReviewVisibility,
+    deleteReview,
+  };
 }

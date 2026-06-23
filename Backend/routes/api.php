@@ -208,6 +208,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('orders')->group(function () {
             Route::get('/', [OrderMonitorController::class, 'index']);
             Route::get('/{id}', [OrderMonitorController::class, 'show']);
+            Route::patch('/{id}/status', [OrderMonitorController::class, 'updateStatus']);
+            Route::delete('/{id}', [OrderMonitorController::class, 'destroy']);
         });
 
         Route::prefix('coupons')->group(function () {
@@ -231,6 +233,19 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/restaurants', [ReportController::class, 'restaurants']);
             Route::get('/users', [ReportController::class, 'users']);
         });
+
+        Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
+    // ... rutas existentes ...
+    
+    // Órdenes - COMPLETAR
+    Route::patch('orders/{id}/status', [OrderMonitorController::class, 'updateStatus']);
+    Route::delete('orders/{id}', [OrderMonitorController::class, 'destroy']);
+    
+    // Reviews - NUEVO
+    Route::get('reviews', [ReviewManagementController::class, 'index']);
+    Route::patch('reviews/{id}/toggle-visibility', [ReviewManagementController::class, 'toggleVisibility']);
+    Route::delete('reviews/{id}', [ReviewManagementController::class, 'destroy']);
+    });
     });
 
     // Endpoints para rol:driver (repartidor).

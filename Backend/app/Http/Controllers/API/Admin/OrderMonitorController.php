@@ -43,4 +43,38 @@ class OrderMonitorController extends Controller
 
         return response()->json(['data' => new OrderResource($order)]);
     }
+
+    public function updateStatus(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'status' => ['required', 'in:' . implode(',', OrderStatus::values())]
+        ]);
+
+        $order = Order::findOrFail($id);
+
+        $newStatus = OrderStatus::from($request->status);
+
+        if (!$order->canTransitionTo($newStatus)) {
+            return response()->json([
+                'message' => 'Transición de estado no permitida.',
+                'current_status' => $order->status->value,
+                'requested_status' => $newStatus->value
+            ], 422);
+        }
+
+        $order->transitionTo($newStatus);
+
+        return response()->json([
+            'message' => 'Estado actualizado correctamente.',
+            'data' => new OrderResource($order->fresh(['user', 'restaurant', 'payment']))
+        ]);
+    }
+
+    public function destroy(int $id): JsonResponse
+    {
+        $order = Order::findOrFail($id);
+        $order->delete();
+
+        return response()->json(['message' => 'Orden eliminada correctamente.']);
+    }
 }
