@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslate as useTranslation } from '../hooks/useTranslate';
 import { useAuthStore } from '../store/authStore'
 import { useRestaurantDetail } from '../hooks/useRestaurantDetail'
+import { useRestaurantImage } from '../hooks/useImages'
 import { Loading } from '../components/Loading'
 import { AddToCartButton } from '../components/AddToCartButton'
 import Footer from '../components/Footer'
@@ -29,6 +30,27 @@ const restaurantIcon = new L.DivIcon({
   iconSize: [36, 36],
   iconAnchor: [18, 18],
 })
+
+// ✅ Componente definido antes de ser usado
+const ProductMenuItem = ({ product, onSelect, fmt }) => (
+  <div
+    onClick={() => onSelect(product)}
+    className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md cursor-pointer transition-all hover:-translate-y-1 group"
+  >
+    <div className="h-40 bg-gray-100 overflow-hidden">
+      <img
+        src={product.image || heroImage}
+        alt={product.name}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      />
+    </div>
+    <div className="p-4">
+      <h4 className="font-black text-gray-900 text-sm mb-1 line-clamp-1">{product.name}</h4>
+      <p className="text-xs text-gray-400 line-clamp-2 mb-3">{product.description || ''}</p>
+      <span className="text-red-500 font-black text-base">${fmt(product.price)}</span>
+    </div>
+  </div>
+)
 
 export const RestaurantDetail = () => {
   const navigate = useNavigate()
@@ -231,20 +253,65 @@ export const RestaurantDetail = () => {
               </div>
             </div>
 
-            {/* Mapa de ubicación del restaurante */}
-            <div className="bg-gray-100 rounded-3xl h-64 overflow-hidden relative">
+            {/* Horario - siempre visible, lunes a domingo */}
+            <div className="bg-slate-50 rounded-3xl p-6 border border-slate-100">
+              <h3 className="text-lg font-black mb-4 flex items-center gap-2">
+                <i className="fas fa-clock text-red-500" /> Horario
+              </h3>
+              <div className="space-y-1">
+                {(() => {
+                  const days = [
+                    { key: 'monday',    label: 'Lunes' },
+                    { key: 'tuesday',   label: 'Martes' },
+                    { key: 'wednesday', label: 'Miércoles' },
+                    { key: 'thursday',  label: 'Jueves' },
+                    { key: 'friday',    label: 'Viernes' },
+                    { key: 'saturday',  label: 'Sábado' },
+                    { key: 'sunday',    label: 'Domingo' },
+                  ]
+                  const jsDay = new Date().getDay()
+                  const todayKey = days[jsDay === 0 ? 6 : jsDay - 1].key
+                  return days.map(({ key, label }) => {
+                    const day = restaurant.schedule?.[key]
+                    const isToday = key === todayKey
+                    const closed = !day || day.closed || (!day.open && !day.close)
+                    return (
+                      <div
+                        key={key}
+                        className={`flex justify-between items-center text-sm px-3 py-2 rounded-xl transition-colors ${
+                          isToday ? 'bg-red-50 border border-red-200' : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        <span className={`font-bold flex items-center gap-1.5 ${isToday ? 'text-red-500' : 'text-gray-600'}`}>
+                          {isToday && <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />}
+                          {label}
+                        </span>
+                        <span className={`font-semibold text-xs ${
+                          closed ? 'text-gray-300' : isToday ? 'text-red-500' : 'text-gray-700'
+                        }`}>
+                          {closed ? 'Cerrado' : `${day.open} – ${day.close}`}
+                        </span>
+                      </div>
+                    )
+                  })
+                })()}
+              </div>
+            </div>
+
+            {/* Mapa de ubicación */}
+            <div className="bg-gray-100 rounded-3xl h-64 overflow-hidden border border-gray-200 shadow-inner relative z-10">
               {restaurant.lat && restaurant.lng ? (
                 <MapContainer
-                  center={[Number(restaurant.lat), Number(restaurant.lng)]}
-                  zoom={15}
-                  style={{ height: '100%', width: '100%' }}
+                  center={[lat, lng]}
+                  zoom={16}
                   scrollWheelZoom={false}
+                  style={{ height: '100%', width: '100%' }}
                 >
                   <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; OpenStreetMap contributors'
+                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; CARTO'
                   />
-                  <Marker position={[Number(restaurant.lat), Number(restaurant.lng)]} icon={restaurantIcon}>
+                  <Marker position={[lat, lng]} icon={restaurantIcon}>
                     <Popup>{restaurant.name}</Popup>
                   </Marker>
                 </MapContainer>
