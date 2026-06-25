@@ -50,6 +50,9 @@ RUN rm -f /etc/apache2/mods-enabled/mpm_*.conf /etc/apache2/mods-enabled/mpm_*.l
     ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf && \
     ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load
 
+# ── FIX: Configurar ServerName para evitar warning AH00558 ──
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 # Verificar configuración de Apache (debug en build)
 RUN apache2ctl configtest 2>&1 || true
 

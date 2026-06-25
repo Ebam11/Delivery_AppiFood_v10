@@ -11,9 +11,6 @@ if [ ! -f /etc/apache2/mods-enabled/mpm_prefork.load ]; then
   ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf
 fi
 
-# ── Configurar ServerName para evitar warning AH00558 ──
-echo "ServerName localhost" >> /etc/apache2/apache2.conf
-
 # ── Configurar el puerto de Apache para Railway ──
 if [ -n "$PORT" ]; then
   echo "Configurando Apache en puerto $PORT..."
