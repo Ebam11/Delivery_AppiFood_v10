@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore'
 import { useRestaurantDetail } from '../hooks/useRestaurantDetail'
-import { useRestaurantImage } from '../hooks/useImages'
 import { Loading } from '../components/Loading'
 import { AddToCartButton } from '../components/AddToCartButton'
 import Footer from '../components/Footer'

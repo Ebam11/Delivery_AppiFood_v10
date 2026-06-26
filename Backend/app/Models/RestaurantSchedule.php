@@ -22,10 +22,17 @@ class RestaurantSchedule extends Model
         return $this->belongsTo(Restaurant::class);
     }
 
-    // Verifica si hoy está abierto
+    /**
+     * Verifica si ESTE horario corresponde a hoy Y la hora actual está dentro del rango.
+     */
     public function isOpenNow(): bool
     {
         if ($this->is_closed) return false;
+
+        // Verificar que el día de este horario coincide con hoy
+        $today = strtolower(now()->englishDayOfWeek);
+        if (strtolower($this->day) !== $today) return false;
+
         $now = now()->format('H:i:s');
         return $now >= $this->opening_time && $now <= $this->closing_time;
     }

@@ -47,14 +47,32 @@ export function useRestaurantDetail() {
 
   const restaurant = selectedRestaurant?.data || selectedRestaurant || fallbackRestaurant
 
-  // Cálculo de estado abierto/cerrado
-  const isCurrentlyOpen = useMemo(() => {
-    if (!restaurant) return false
-    if (typeof restaurant.isOpen === 'boolean') return restaurant.isOpen
-    
-    // Lógica simplificada para el demo
-    return restaurant.is_active !== false
-  }, [restaurant])
+// Cálculo de estado abierto/cerrado
+const isCurrentlyOpen = useMemo(() => {
+  if (!restaurant) return false
+
+  // Prioridad 1: campo calculado por el backend
+  if (typeof restaurant.isOpen === 'boolean') return restaurant.isOpen
+
+  // Prioridad 2: calcular desde horarios si están disponibles
+  if (Array.isArray(restaurant.schedules) && restaurant.schedules.length > 0) {
+    const now = new Date()
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+    const today = days[now.getDay()]
+    const todaySchedule = restaurant.schedules.find(s =>
+      s.day?.toLowerCase() === today
+    )
+
+    if (!todaySchedule || todaySchedule.is_closed) return false
+
+    const currentTime = now.toTimeString().slice(0, 8) // HH:MM:SS
+    return currentTime >= todaySchedule.opening_time &&
+          currentTime <= todaySchedule.closing_time
+  }
+
+  // Prioridad 3: último fallback si no hay horarios configurados
+  return restaurant.is_active !== false
+}, [restaurant])
 
   return {
     restaurant,
