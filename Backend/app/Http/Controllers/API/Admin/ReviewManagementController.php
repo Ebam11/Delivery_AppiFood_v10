@@ -1,5 +1,6 @@
-// Backend/app/Http/Controllers/API/Admin/ReviewManagementController.php
 <?php
+
+// Backend/app/Http/Controllers/API/Admin/ReviewManagementController.php
 
 namespace App\Http\Controllers\API\Admin;
 
@@ -21,9 +22,9 @@ class ReviewManagementController extends Controller
             'data' => $reviews,
             'meta' => $reviews instanceof \Illuminate\Pagination\LengthAwarePaginator ? [
                 'current_page' => $reviews->currentPage(),
-                'last_page' => $reviews->lastPage(),
-                'per_page' => $reviews->perPage(),
-                'total' => $reviews->total(),
+                'last_page'    => $reviews->lastPage(),
+                'per_page'     => $reviews->perPage(),
+                'total'        => $reviews->total(),
             ] : null
         ]);
     }
@@ -31,21 +32,19 @@ class ReviewManagementController extends Controller
     public function toggleVisibility(int $id): JsonResponse
     {
         $review = Review::findOrFail($id);
-        
-        // Si no existe el campo is_visible, lo creamos
+
         if (!isset($review->is_visible)) {
-            // Podemos usar un campo 'hidden' o 'status'
             $review->update(['status' => $review->status === 'active' ? 'hidden' : 'active']);
             return response()->json([
                 'message' => 'Review actualizada.',
-                'status' => $review->status
+                'status'  => $review->status
             ]);
         }
-        
+
         $review->update(['is_visible' => !$review->is_visible]);
-        
+
         return response()->json([
-            'message' => $review->is_visible ? 'Review visible.' : 'Review oculto.',
+            'message'    => $review->is_visible ? 'Review visible.' : 'Review oculto.',
             'is_visible' => $review->is_visible
         ]);
     }

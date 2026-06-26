@@ -33,18 +33,18 @@ use App\Http\Controllers\API\User\RestaurantController;
 use App\Http\Controllers\API\User\ReviewController;
 use App\Http\Controllers\API\User\LoyaltyController;
 use App\Http\Controllers\API\Driver\DriverController;
+use App\Http\Controllers\API\Admin\ReviewManagementController as AdminReviewManagementController;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Route;
 
-// Endpoints publicos.
+// ─── Endpoints públicos ───────────────────────────────────────────────────────
+
 Route::prefix('auth')->group(function () {
     Route::post('/register', RegisterController::class)->middleware('throttle:5,1');
     Route::post('/login', LoginController::class)->middleware('throttle:5,1');
     Route::post('/refresh', [\App\Http\Controllers\API\Auth\RefreshTokenController::class, 'refresh'])->middleware('throttle:10,1');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->middleware('throttle:3,1');
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:3,1');
-
-    // Google Auth
     Route::get('/google', [\App\Http\Controllers\API\Auth\GoogleAuthController::class, 'redirectToGoogle']);
     Route::get('/google/callback', [\App\Http\Controllers\API\Auth\GoogleAuthController::class, 'handleGoogleCallback']);
 });
@@ -61,13 +61,15 @@ Route::get('/auth/verify-email-link/{id}', [ProfileController::class, 'verifyEma
 Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index']);
 Route::post('/support/chat', SupportAssistantController::class)->middleware('throttle:20,1');
 
-// Endpoints protegidos.
+// ─── Endpoints protegidos ─────────────────────────────────────────────────────
+
 Route::middleware('auth:sanctum')->group(function () {
+
     Route::post('/auth/logout', LogoutController::class);
     Route::post('/auth/revoke', [\App\Http\Controllers\API\Auth\RefreshTokenController::class, 'revoke']);
     Route::get('/me', [ProfileController::class, 'show']);
 
-    // Funciones compartidas para usuarios autenticados.
+    // Notificaciones compartidas
     Route::prefix('notifications')->group(function () {
         Route::get('/', [NotificationController::class, 'index']);
         Route::patch('/{id}/read', [NotificationController::class, 'markRead']);
@@ -77,8 +79,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/upload', UploadController::class);
 
-    // Endpoints para rol:user.
+    // ─── Rol: user ────────────────────────────────────────────────────────────
     Route::middleware('role:user')->group(function () {
+
         Route::prefix('payments')->group(function () {
             Route::get('/methods', [PaymentController::class, 'methods']);
             Route::get('/{id}', [PaymentController::class, 'show']);
@@ -134,18 +137,26 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/reviews', [ReviewController::class, 'store']);
         Route::delete('/reviews/{id}', [ReviewController::class, 'destroy']);
         Route::post('/loyalty/redeem', [LoyaltyController::class, 'redeem']);
+
+        Route::prefix('subscriptions')->group(function () {
+            Route::get('/', [SubscriptionController::class, 'index']);
+            Route::post('/', [SubscriptionController::class, 'store']);
+            Route::post('/{id}/confirm', [SubscriptionController::class, 'confirm']);
+            Route::patch('/{id}/cancel', [SubscriptionController::class, 'cancel']);
+        });
     });
 
-    // Endpoints para rol:restaurant.
-        Route::middleware('role:restaurant')->prefix('restaurant')->group(function () {
-            Route::get('/dashboard', RestaurantDashboard::class);
+    // ─── Rol: restaurant ──────────────────────────────────────────────────────
+    Route::middleware('role:restaurant')->prefix('restaurant')->group(function () {
 
-            Route::prefix('profile')->group(function () {
-                Route::get('/', [ProfileRestaurantController::class, 'show']);
-                Route::put('/', [ProfileRestaurantController::class, 'update']);
-                Route::post('/logo', [ProfileRestaurantController::class, 'logo']);
-                Route::post('/banner', [ProfileRestaurantController::class, 'banner']); // ← agregar aquí
-            });
+        Route::get('/dashboard', RestaurantDashboard::class);
+
+        Route::prefix('profile')->group(function () {
+            Route::get('/', [ProfileRestaurantController::class, 'show']);
+            Route::put('/', [ProfileRestaurantController::class, 'update']);
+            Route::post('/logo', [ProfileRestaurantController::class, 'logo']);
+            Route::post('/banner', [ProfileRestaurantController::class, 'banner']);
+        });
 
         Route::prefix('categories')->group(function () {
             Route::get('/', [CategoryController::class, 'index']);
@@ -177,16 +188,9 @@ Route::middleware('auth:sanctum')->group(function () {
         });
     });
 
-    Route::middleware('role:user')->prefix('subscriptions')->group(function () {
-        Route::get('/', [SubscriptionController::class, 'index']);
-        Route::post('/', [SubscriptionController::class, 'store']);
-        Route::post('/{id}/confirm', [SubscriptionController::class, 'confirm']);
-        Route::patch('/{id}/cancel', [SubscriptionController::class, 'cancel']);
-    });
-
-
-    // Endpoints para rol:admin.
+    // ─── Rol: admin ───────────────────────────────────────────────────────────
     Route::middleware('role:admin')->prefix('admin')->group(function () {
+
         Route::get('/dashboard', AdminDashboard::class);
 
         Route::prefix('users')->group(function () {
@@ -212,6 +216,12 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/{id}', [OrderMonitorController::class, 'destroy']);
         });
 
+        Route::prefix('reviews')->group(function () {
+            Route::get('/', [AdminReviewManagementController::class, 'index']);
+            Route::patch('/{id}/toggle-visibility', [AdminReviewManagementController::class, 'toggleVisibility']);
+            Route::delete('/{id}', [AdminReviewManagementController::class, 'destroy']);
+        });
+
         Route::prefix('coupons')->group(function () {
             Route::get('/', [CouponController::class, 'index']);
             Route::post('/', [CouponController::class, 'store']);
@@ -233,22 +243,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/restaurants', [ReportController::class, 'restaurants']);
             Route::get('/users', [ReportController::class, 'users']);
         });
-
-        Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
-    // ... rutas existentes ...
-    
-    // Órdenes - COMPLETAR
-    Route::patch('orders/{id}/status', [OrderMonitorController::class, 'updateStatus']);
-    Route::delete('orders/{id}', [OrderMonitorController::class, 'destroy']);
-    
-    // Reviews - NUEVO
-    Route::get('reviews', [ReviewManagementController::class, 'index']);
-    Route::patch('reviews/{id}/toggle-visibility', [ReviewManagementController::class, 'toggleVisibility']);
-    Route::delete('reviews/{id}', [ReviewManagementController::class, 'destroy']);
-    });
     });
 
-    // Endpoints para rol:driver (repartidor).
+    // ─── Rol: driver ──────────────────────────────────────────────────────────
     Route::middleware('role:driver')->prefix('driver')->group(function () {
         Route::get('/stats', [DriverController::class, 'stats']);
         Route::get('/orders/available', [DriverController::class, 'availableOrders']);
@@ -260,5 +257,5 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-// Endpoint público para tracking de ubicación del repartidor (lo consume el cliente).
+// ─── Tracking público de repartidor ──────────────────────────────────────────
 Route::middleware('auth:sanctum')->get('/orders/{order}/driver-location', [DriverController::class, 'getLocation']);
