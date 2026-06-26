@@ -45,6 +45,7 @@ export default function RestaurantDashboard({ user, onLogout }) {
     handleNotifMarkAll,
     handleEditProduct,
     handleToggleAvailability,
+    restaurantProfile,
   } = useRestaurantDashboard(user)
 
   const renderContent = () => {
@@ -76,7 +77,13 @@ export default function RestaurantDashboard({ user, onLogout }) {
       case 'calendar': return <CalendarSection />
       case 'messages': return <MessagesSection />
       case 'reviews': return <ReviewsSection />
-      case 'restaurant-info': return <RestaurantInfoSection restaurant={user?.restaurant} restaurantId={user?.restaurant?.id} />
+      case 'restaurant-info':
+  return (
+    <RestaurantInfoSection
+      restaurant={restaurantProfile || user?.restaurant}
+      restaurantId={restaurantProfile?.id || user?.restaurant?.id}
+    />
+  )
       default:
         return <DashboardSection stats={stats} orders={orders} menu={menu} />
     }

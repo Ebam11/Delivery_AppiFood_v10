@@ -19,6 +19,7 @@ export function useRestaurantDashboard(user) {
   const [toast, setToast]                 = useState(null)
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount]     = useState(0)
+  const [restaurantProfile, setRestaurantProfile] = useState(null)
 
   const mapOrder = (order) => {
     const items = Array.isArray(order?.items)
@@ -60,10 +61,11 @@ export function useRestaurantDashboard(user) {
     const loadData = async () => {
       setLoading(true)
       try {
-        const [ordersRes, productsRes, categoriesRes] = await Promise.all([
+        const [ordersRes, productsRes, categoriesRes, profileRes] = await Promise.all([
           fetchJson('/api/restaurant/orders'),
           fetchJson('/api/restaurant/products?paginate=false'),
-          fetchJson('/api/restaurant/categories')
+          fetchJson('/api/restaurant/categories'),
+          fetchJson('/api/restaurant/profile'),  // ← nuevo
         ])
 
         if (ordersRes?.data) {
@@ -91,6 +93,10 @@ export function useRestaurantDashboard(user) {
         if (categoriesRes) {
           const cats = Array.isArray(categoriesRes) ? categoriesRes : categoriesRes.data || []
           setCategories(cats)
+        }
+
+        if (profileRes?.data) {
+          setRestaurantProfile(profileRes.data)
         }
       } catch (error) {
         console.error('Error al cargar datos del restaurante:', error)
@@ -295,5 +301,6 @@ const handleToggleAvailability = async (id) => {
     handleNotifMarkAll,
     handleEditProduct,
     handleToggleAvailability,
+    restaurantProfile,
   }
 }
