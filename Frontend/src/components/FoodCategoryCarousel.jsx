@@ -45,6 +45,7 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
   const itemRefs = useRef({})
   const [mousePos, setMousePos] = useState({ x: null, y: null })
   const [isHovered, setIsHovered] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   const foodCategories = categories.map((name) => {
     const theme = CATEGORY_THEME[name] || { icon: '🍽️', color: '#8884FF' }
