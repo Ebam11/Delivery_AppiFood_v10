@@ -191,41 +191,42 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
                 onClick={() => handleCategoryClick(category.id)}
                 className={`transition-all duration-300`}
               >
-              <div
-                className={`w-28 h-28 rounded-3xl transition-all cursor-pointer flex flex-col items-center justify-center p-4 relative group ${
-                  isSelected 
-                    ? 'text-white' 
-                    : 'text-gray-700 dark:text-slate-350 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:bg-slate-100/70 dark:hover:bg-slate-700/60 shadow-sm'
-                }`}
-                style={{
-                  background: isSelected 
-                    ? 'linear-gradient(135deg, #FF4B3E 0%, #FF6B5C 100%)' 
-                    : undefined,
-                  borderColor: isSelected ? '#FF4B3E' : undefined,
-                  boxShadow: isSelected 
-                    ? '0 12px 20px rgba(255, 75, 62, 0.25)' 
-                    : undefined,
-                  transform: isSelected
-                    ? 'translateY(-2px)'
-                    : 'translateY(0)',
-                }}
-              >
                 <div
-                  className="text-4xl mb-2 transition-transform duration-300 group-hover:scale-110"
+                  className={`w-28 h-28 rounded-3xl transition-all cursor-pointer flex flex-col items-center justify-center p-4 relative group ${
+                    isSelected 
+                      ? 'text-white' 
+                      : 'text-gray-700 dark:text-slate-350 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:bg-slate-100/70 dark:hover:bg-slate-700/60 shadow-sm'
+                  }`}
                   style={{
-                    filter: isSelected ? 'drop-shadow(0 4px 6px rgba(255,255,255,0.2))' : 'none',
+                    background: isSelected 
+                      ? 'linear-gradient(135deg, #FF4B3E 0%, #FF6B5C 100%)' 
+                      : undefined,
+                    borderColor: isSelected ? '#FF4B3E' : undefined,
+                    boxShadow: isSelected 
+                      ? '0 12px 20px rgba(255, 75, 62, 0.25)' 
+                      : undefined,
+                    transform: isSelected
+                      ? 'translateY(-2px)'
+                      : 'translateY(0)',
                   }}
                 >
-                  {category.icon}
-                </div>
+                  <div
+                    className="text-4xl mb-2 transition-transform duration-300 group-hover:scale-110"
+                    style={{
+                      filter: isSelected ? 'drop-shadow(0 4px 6px rgba(255,255,255,0.2))' : 'none',
+                    }}
+                  >
+                    {category.icon}
+                  </div>
 
-                <span
-                  className={`text-[10px] font-black text-center leading-tight tracking-wide ${
-                    isSelected ? 'text-white' : 'text-gray-600 dark:text-slate-300'
-                  }`}
-                >
-                  {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
-                </span>
+                  <span
+                    className={`text-[10px] font-black text-center leading-tight tracking-wide ${
+                      isSelected ? 'text-white' : 'text-gray-600 dark:text-slate-300'
+                    }`}
+                  >
+                    {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
+                  </span>
+                </div>
               </button>
             </div>
           )
