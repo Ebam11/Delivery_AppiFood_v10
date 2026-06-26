@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import LanguageSwitcher from './components/LanguageSwitcher'
-import './i18n/i18n.js'
+import './i18n.js'
 
 import { useState } from 'react'
 import { useCart } from './context/useCart'
