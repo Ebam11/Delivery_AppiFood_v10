@@ -30,7 +30,8 @@ export default function RestaurantsPage() {
     ratingFilter,
     setRatingFilter,
     budgetInput,
-    setBudgetInput
+    setBudgetInput,
+    userLocationLabel
   } = useRestaurants()
 
   // Tipos de comida disponibles
@@ -46,13 +47,24 @@ export default function RestaurantsPage() {
       {/* Cabecera */}
       <section className="pt-8 pb-4">
         <div className="container mx-auto px-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
-              {t("restaurants.title") || "Explora Restaurantes"}
-            </h1>
-            <p className="text-gray-500 dark:text-slate-400">
-              {t("restaurants.subtitle") || "Descubre los mejores sabores de la ciudad."}
-            </p>
+          <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
+                {t("restaurants.title") || "Explora Restaurantes"}
+              </h1>
+              <p className="text-gray-500 dark:text-slate-400 text-sm">
+                {t("restaurants.subtitle") || "Descubre los mejores sabores de la ciudad."}
+              </p>
+            </div>
+            {userLocationLabel && (
+              <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 rounded-2xl px-4 py-2.5 w-fit">
+                <span className="text-purple-600 dark:text-purple-400 text-sm">📍</span>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-purple-500 dark:text-purple-400 uppercase tracking-widest leading-none mb-0.5">Ordenados por cercanía a:</span>
+                  <span className="text-xs font-bold text-gray-700 dark:text-slate-350 line-clamp-1">{userLocationLabel}</span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Estadísticas Rápidas */}
@@ -198,21 +210,6 @@ export default function RestaurantsPage() {
 
           {/* Grilla de Resultados */}
           <div className="py-12">
-            <div className="flex items-center justify-between mb-10">
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-                {searchQuery 
-                  ? `${t("restaurants.searching_for") || "Buscando"} "${searchQuery}"` 
-                  : (selectedCategory 
-                      ? t(`foodCarousel.categories.${selectedCategory}`, { defaultValue: selectedCategory }) 
-                      : t("restaurants.all_restaurants_title") || "Todos los restaurantes"
-                    )
-                }
-              </h2>
-              <span className="text-gray-400 dark:text-slate-500 font-medium">
-                {restaurants.length} {t("restaurants.results") || "resultados"}
-              </span>
-            </div>
-
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
@@ -222,15 +219,72 @@ export default function RestaurantsPage() {
             ) : (
               <>
                 {restaurants.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {restaurants.map(r => (
-                      <RestaurantCard 
-                        key={r.id} 
-                        restaurant={r} 
-                        onSelect={(res) => navigate(`/restaurants/${res.id}`)}
-                        onFavoriteToggle={handleFavoriteToggle}
-                      />
-                    ))}
+                  <div className="flex flex-col gap-12">
+                    {/* SECCIÓN 1: Restaurantes Cerca de Mí (Menos de 5.0 km) */}
+                    {(() => {
+                      const nearbyList = restaurants.filter(r => r.distance !== null && r.distance <= 5.0)
+                      if (nearbyList.length === 0) return null
+                      return (
+                        <div className="border-b border-gray-100 dark:border-slate-800/40 pb-10">
+                          <div className="flex items-center justify-between mb-6">
+                            <div>
+                              <h2 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                                📍 {t("restaurants.nearby_section") || "Restaurantes cerca de mí"}
+                              </h2>
+                              <p className="text-xs text-gray-400 dark:text-slate-500 font-semibold mt-1">
+                                Establecimientos a menos de 5 km de tu ubicación actual
+                              </p>
+                            </div>
+                            <span className="text-xs font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-3 py-1.5 rounded-full">
+                              {nearbyList.length} encontrados
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {nearbyList.map(r => (
+                              <RestaurantCard 
+                                key={`nearby-${r.id}`} 
+                                restaurant={r} 
+                                onSelect={(res) => navigate(`/restaurants/${res.id}`)}
+                                onFavoriteToggle={handleFavoriteToggle}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* SECCIÓN 2: Todos los Restaurantes */}
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h2 className="text-2xl font-black text-gray-900 dark:text-white">
+                            {searchQuery 
+                              ? `${t("restaurants.searching_for") || "Buscando"} "${searchQuery}"` 
+                              : (selectedCategory 
+                                  ? t(`foodCarousel.categories.${selectedCategory}`, { defaultValue: selectedCategory }) 
+                                  : t("restaurants.all_restaurants_title") || "Todos los restaurantes"
+                                )
+                            }
+                          </h2>
+                          <p className="text-xs text-gray-400 dark:text-slate-500 font-semibold mt-1">
+                            Explora la oferta gastronómica completa
+                          </p>
+                        </div>
+                        <span className="text-gray-400 dark:text-slate-500 font-medium">
+                          {restaurants.length} {t("restaurants.results") || "resultados"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {restaurants.map(r => (
+                          <RestaurantCard 
+                            key={r.id} 
+                            restaurant={r} 
+                            onSelect={(res) => navigate(`/restaurants/${res.id}`)}
+                            onFavoriteToggle={handleFavoriteToggle}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-24 bg-white dark:bg-slate-950 rounded-3xl border-2 border-dashed border-gray-100 dark:border-slate-800">

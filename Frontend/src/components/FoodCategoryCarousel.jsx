@@ -42,7 +42,9 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
   const { t } = useTranslation()
   const containerRef = useRef(null)
   const dragRef = useRef({ isDragging: false, startX: 0, scrollLeft: 0, moved: false })
-  const [isDragging, setIsDragging] = useState(false)
+  const itemRefs = useRef({})
+  const [mousePos, setMousePos] = useState({ x: null, y: null })
+  const [isHovered, setIsHovered] = useState(false)
 
   const foodCategories = categories.map((name) => {
     const theme = CATEGORY_THEME[name] || { icon: '🍽️', color: '#8884FF' }
@@ -68,6 +70,15 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
   }
 
   const handlePointerMove = (e) => {
+    // Si arrastra el mouse, actualizar posición del mouse para la lupa también
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      setMousePos({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      })
+    }
+
     if (!containerRef.current || !dragRef.current.isDragging) return
 
     const walk = e.clientX - dragRef.current.startX
@@ -94,6 +105,46 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
     onSelectCategory(categoryId)
   }
 
+  // Lógica del efecto macOS Dock Magnification
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    })
+  }
+
+  const handleMouseEnter = () => {
+    setIsHovered(true)
+  }
+
+  const handleMouseLeave = () => {
+    setIsHovered(false)
+    setMousePos({ x: null, y: null })
+  }
+
+  const getScaleAndMargin = (catId) => {
+    const el = itemRefs.current[catId]
+    if (!el || !isHovered || mousePos.x === null) return { scale: 1, margin: 0 }
+
+    const rect = el.getBoundingClientRect()
+    const containerRect = containerRef.current.getBoundingClientRect()
+    const itemCenterX = rect.left - containerRect.left + rect.width / 2
+
+    const distance = Math.abs(mousePos.x - itemCenterX)
+    const maxDistance = 140
+
+    if (distance < maxDistance) {
+      const factor = Math.cos((distance / maxDistance) * (Math.PI / 2))
+      const scale = 1 + factor * 0.22 // Escala de magnificación ideal
+      const margin = factor * 6 // Espacio dinámico para que no colisionen
+      return { scale, margin }
+    }
+
+    return { scale: 1, margin: 0 }
+  }
+
   return (
     <div className="component-food-category-carousel relative w-full mb-8">
       {/* Carousel Container */}
@@ -104,6 +155,9 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        onMouseMove={handleMouseMove}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
         className={`flex gap-6 overflow-x-auto scroll-smooth pt-4 pb-8 px-11 md:px-12 transition-all ${
           isDragging ? 'cursor-grabbing' : 'cursor-grab'
         }`}
@@ -119,15 +173,24 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
 
         {foodCategories.map((category) => {
           const isSelected = selectedCategory === category.id
+          const { scale, margin } = getScaleAndMargin(category.id)
           return (
-            <button
+            <div
               key={category.id}
-              type="button"
-              onClick={() => handleCategoryClick(category.id)}
-              className={`flex-shrink-0 transition-all duration-300 ${
-                isSelected ? 'scale-105' : 'hover:scale-102'
-              }`}
+              ref={(el) => { itemRefs.current[category.id] = el }}
+              className="flex-shrink-0 transition-all duration-150 ease-out"
+              style={{
+                transform: `scale(${scale})`,
+                marginLeft: `${margin}px`,
+                marginRight: `${margin}px`,
+                transformOrigin: 'bottom center', // Efecto dock
+              }}
             >
+              <button
+                type="button"
+                onClick={() => handleCategoryClick(category.id)}
+                className={`transition-all duration-300`}
+              >
               <div
                 className={`w-28 h-28 rounded-3xl transition-all cursor-pointer flex flex-col items-center justify-center p-4 relative group ${
                   isSelected 
@@ -163,8 +226,8 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
                 >
                   {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
                 </span>
-              </div>
-            </button>
+              </button>
+            </div>
           )
         })}
       </div>
