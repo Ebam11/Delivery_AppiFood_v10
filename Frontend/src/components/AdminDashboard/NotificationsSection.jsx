@@ -19,7 +19,8 @@ export default function NotificationsSection({ showToast }) {
     setError(null)
     try {
       const res = await adminApi.getNotifications()
-      setNotifications(res.data || res || [])
+      const list = Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : []
+      setNotifications(list)
     } catch (err) {
       setError('No se pudieron cargar las notificaciones.')
     } finally {
