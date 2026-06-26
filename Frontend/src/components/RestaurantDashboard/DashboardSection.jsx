@@ -263,11 +263,13 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
           <div className="space-y-4">
             {ACTIVITY.map((a,i) => (
               <div key={i} className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-base" style={{ background: COLORS.primaryLight }}>{a.icon}</div>
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: COLORS.primaryLight }}>
+                <i className={`fas ${a.icon} text-sm`} style={{ color: COLORS.primary }} />
+                </div>
                 <div className="min-w-0">
-                  <p className="text-xs text-gray-800 dark:text-slate-200 font-semibold">{a.name}</p>
-                  <p className="text-[11px] text-gray-500 dark:text-slate-400 truncate">{a.action}</p>
-                  <p className="text-[10px] text-gray-400 dark:text-slate-500">{a.time}</p>
+                  <p className="text-xs text-gray-800 dark:text-slate-200 font-semibold">{t(a.nameKey)}</p>
+                  <p className="text-[11px] text-gray-500 dark:text-slate-400 truncate">{t(a.actionKey)}</p>
+                  <p className="text-[10px] text-gray-400 dark:text-slate-500">{t(a.timeKey)}</p>
                 </div>
               </div>
             ))}

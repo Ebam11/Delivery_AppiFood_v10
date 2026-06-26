@@ -1,6 +1,5 @@
 /**
  * Constantes compartidas del Dashboard de Restaurante.
- * Centraliza colores y datos de actividad que antes estaban en restaurantDashboardData.
  */
 export const COLORS = {
   primary: '#FF4B3E',
@@ -12,10 +11,9 @@ export const COLORS = {
   info: '#3B82F6',
 };
 
-
 export const ACTIVITY = [
-  { icon: '🛒', nameKey: 'rd.activity.new_order', actionKey: 'rd.activity.order_received', timeKey: 'rd.activity.time_5min' },
-  { icon: '⭐', nameKey: 'rd.activity.new_review', actionKey: 'rd.activity.review_5_stars', timeKey: 'rd.activity.time_12min' },
-  { icon: '📦', nameKey: 'rd.activity.order_delivered', actionKey: 'rd.activity.order_completed', timeKey: 'rd.activity.time_25min' },
-  { icon: '🍕', nameKey: 'rd.activity.product_out_of_stock', actionKey: 'rd.activity.pizza_hawaiana_out', timeKey: 'rd.activity.time_1h' },
-]
+  { icon: 'fa-bag-shopping',  nameKey: 'rd.activity.new_order',           actionKey: 'rd.activity.order_received',    timeKey: 'rd.activity.time_5min'  },
+  { icon: 'fa-star',          nameKey: 'rd.activity.new_review',          actionKey: 'rd.activity.review_5_stars',    timeKey: 'rd.activity.time_12min' },
+  { icon: 'fa-box',           nameKey: 'rd.activity.order_delivered',     actionKey: 'rd.activity.order_completed',   timeKey: 'rd.activity.time_25min' },
+  { icon: 'fa-triangle-exclamation', nameKey: 'rd.activity.product_out_of_stock', actionKey: 'rd.activity.pizza_hawaiana_out', timeKey: 'rd.activity.time_1h' },
+];

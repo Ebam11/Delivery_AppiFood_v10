@@ -24,6 +24,7 @@ export const useAuthStore = create((set) => ({
     }
   },
 
+  
   // Logout
   logout: async () => {
     set({ isLoading: true });
@@ -33,6 +34,7 @@ export const useAuthStore = create((set) => ({
       console.error('Error en logout:', error);
     }
     localStorage.removeItem('token');
+    localStorage.removeItem('theme'); // ← limpiar tema al cerrar sesión
     set({ token: null, user: null, isLoading: false });
   },
 

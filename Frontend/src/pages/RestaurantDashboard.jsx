@@ -102,7 +102,11 @@ export default function RestaurantDashboard({ user, onLogout }) {
 
       <div className="flex-1 flex flex-col min-w-0 md:pl-[220px]">
         <TopBar
-          title={t(`rd.${activeTab.replace('-', '_')}`)}
+          title={
+            activeTab === 'dashboard' && restaurantProfile?.name
+              ? restaurantProfile.name
+              : t(`rd.${activeTab.replace('-', '_')}`)
+          }
           onMenuOpen={() => setIsSidebarOpen(true)}
           user={user}
           notifications={notifications}
