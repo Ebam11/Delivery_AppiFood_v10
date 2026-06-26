@@ -1,9 +1,8 @@
 /**
  * Archivo: src/pages/RestaurantDashboard.jsx
  * Punto de entrada principal para el panel de administración del restaurante.
- * Organizado de forma modular para facilitar su mantenimiento.
  */
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { useRestaurantDashboard } from '../hooks/useRestaurantDashboard'
 import Sidebar from '../components/RestaurantDashboard/Sidebar'
 import TopBar from '../components/RestaurantDashboard/TopBar'
@@ -23,7 +22,6 @@ import '../styles/RestaurantDashboard.css'
 export default function RestaurantDashboard({ user, onLogout }) {
   const { t } = useTranslation()
   
-  // Toda la lógica de estado y manejadores se encuentra en este hook personalizado
   const {
     activeTab,
     setActiveTab,
@@ -49,7 +47,6 @@ export default function RestaurantDashboard({ user, onLogout }) {
     handleToggleAvailability,
   } = useRestaurantDashboard(user)
 
-  // Función para renderizar la sección activa basada en la navegación
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -87,7 +84,6 @@ export default function RestaurantDashboard({ user, onLogout }) {
 
   return (
     <div className="rd-container flex min-h-screen bg-slate-50 dark:bg-slate-950 text-gray-800 dark:text-slate-100 transition-colors duration-250">
-      {/* Navegación Lateral */}
       <Sidebar 
         active={activeTab} 
         onNav={setActiveTab} 
@@ -98,7 +94,6 @@ export default function RestaurantDashboard({ user, onLogout }) {
       />
 
       <div className="flex-1 flex flex-col min-w-0 md:pl-[220px]">
-        {/* Barra Superior */}
         <TopBar
           title={t(`rd.${activeTab.replace('-', '_')}`)}
           onMenuOpen={() => setIsSidebarOpen(true)}
@@ -110,20 +105,17 @@ export default function RestaurantDashboard({ user, onLogout }) {
           onNotifMarkAll={handleNotifMarkAll}
         />
 
-        {/* Contenido Principal */}
         <main className="flex-1 p-6 overflow-y-auto">
           {renderContent()}
         </main>
       </div>
 
-      {/* Notificaciones flotantes */}
       {toast && (
         <div className="fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg font-medium text-sm text-white bg-red-500 animate-bounce">
           ✓ {toast}
         </div>
       )}
 
-      {/* Modal de Detalle de Orden */}
       {selectedOrder && (
         <OrderDetailModal 
           order={selectedOrder} 

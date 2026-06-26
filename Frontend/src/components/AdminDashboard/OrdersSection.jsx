@@ -1,7 +1,7 @@
 // Frontend/src/components/AdminDashboard/OrdersSection.jsx
-import { useState } from 'react';
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
-import { Badge } from '../RestaurantDashboard/Common';
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Badge } from '../RestaurantDashboard/Common'
 
 export default function OrdersSection({ 
   orders, 
@@ -10,26 +10,25 @@ export default function OrdersSection({
   onDelete,
   pagination 
 }) {
-  const { t } = useTranslation();
-  const [search, setSearch] = useState('');
+  const { t } = useTranslation()
+  const [search, setSearch] = useState('')
 
-  // ORDER STATUSES para acciones
-  const ORDER_STATUSES = ['pending', 'confirmed', 'preparing', 'on_the_way', 'delivered', 'cancelled'];
+  const ORDER_STATUSES = ['pending', 'confirmed', 'preparing', 'on_the_way', 'delivered', 'cancelled']
 
   const visible = orders.filter(o => {
-    const customer = o.user?.name || o.customer_name || '';
-    const restaurant = o.restaurant?.name || o.restaurant_name || '';
+    const customer = o.user?.name || o.customer_name || ''
+    const restaurant = o.restaurant?.name || o.restaurant_name || ''
     return customer.toLowerCase().includes(search.toLowerCase()) || 
            restaurant.toLowerCase().includes(search.toLowerCase()) || 
-           String(o.id).includes(search);
-  });
+           String(o.id).includes(search)
+  })
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -38,7 +37,7 @@ export default function OrdersSection({
         <h3 className="font-bold text-gray-800 dark:text-slate-100 text-lg">
           {t('adminDashboard.breadcrumb.globalOrders', { defaultValue: 'Pedidos Globales' })}
           <span className="ml-2 text-sm font-normal text-gray-500">
-            ({orders.length} total)
+            ({orders.length} {t('adminDashboard.entities.orders')})
           </span>
         </h3>
         
@@ -108,7 +107,7 @@ export default function OrdersSection({
                       >
                         {ORDER_STATUSES.map(status => (
                           <option key={status} value={status}>
-                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                            {t(`orders.status_${status}`)}
                           </option>
                         ))}
                       </select>
@@ -125,7 +124,7 @@ export default function OrdersSection({
               {visible.length === 0 && (
                 <tr>
                   <td colSpan="6" className="px-6 py-12 text-center text-gray-500 dark:text-slate-400">
-                    No se encontraron pedidos.
+                    {t('adminDashboard.no_orders_found') || 'No se encontraron pedidos.'}
                   </td>
                 </tr>
               )}
@@ -134,14 +133,13 @@ export default function OrdersSection({
         </div>
       </div>
 
-      {/* Paginación */}
       {pagination && pagination.total > 0 && (
         <div className="flex justify-between items-center text-sm text-gray-500 dark:text-slate-400">
           <span>
-            Mostrando {pagination.from || 0} - {pagination.to || 0} de {pagination.total || 0}
+            {t('adminDashboard.pagination.showing', { defaultValue: 'Mostrando' })} {pagination.from || 0} - {pagination.to || 0} {t('adminDashboard.pagination.of', { defaultValue: 'de' })} {pagination.total || 0}
           </span>
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-// Archivo: src/pages/RegisterRestaurant.jsx | Comentario: logica principal del modulo.
+// Archivo: src/pages/RegisterRestaurant.jsx
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
 import { isValidName } from '../utils/validation'
@@ -116,18 +116,8 @@ export default function RegisterRestaurant({ onLogin }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      try {
-        if (!import.meta.env.PROD) console.log('respuesta completa del backend', JSON.stringify(data))
-      } catch (e) {
-        if (process.env.NODE_ENV !== 'production') console.log('respuesta completa del backend', JSON.stringify(data))
-      }
 
       localStorage.setItem('token', data.token)
-      try {
-        if (!import.meta.env.PROD) console.log('data.user:', data.user)
-      } catch (e) {
-        if (process.env.NODE_ENV !== 'production') console.log('data.user:', data.user)
-      }
       localStorage.setItem('user', JSON.stringify(data.user))
       onLogin?.(data.user)
       navigate('/restaurant/dashboard')
@@ -271,7 +261,7 @@ export default function RegisterRestaurant({ onLogin }) {
                       </div>
 
                       <div className="flex items-center gap-1.5 text-xs font-bold">
-                        <span className="text-slate-400">Seguridad:</span>
+                        <span className="text-slate-400">{t('register.strength') || 'Seguridad:'}</span>
                         <span className={`px-2.5 py-1 rounded-full text-white ${pwdInfo.color}`}>
                           {pwdInfo.text}
                         </span>

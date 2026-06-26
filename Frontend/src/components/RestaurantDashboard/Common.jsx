@@ -1,9 +1,6 @@
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { COLORS } from './constants'
 
-/**
- * Badge de estado para las órdenes.
- */
 export function Badge({ status }) {
   const { t } = useTranslation()
   
@@ -15,6 +12,9 @@ export function Badge({ status }) {
     delivered:  { color: '#10b981', bg: '#f0fdf4', text: 'orders.status_delivered' },
     completed:  { color: '#10b981', bg: '#f0fdf4', text: 'orders.status_delivered' },
     cancelled:  { color: '#ef4444', bg: '#fef2f2', text: 'orders.status_cancelled' },
+    active:     { color: '#10b981', bg: '#f0fdf4', text: 'adminDashboard.status.active' },
+    suspended:  { color: '#ef4444', bg: '#fef2f2', text: 'adminDashboard.status.suspended' },
+    inactive:   { color: '#6b7280', bg: '#f3f4f6', text: 'adminDashboard.status.inactive' },
   }
   
   const c = config[status] || config.pending
@@ -29,9 +29,6 @@ export function Badge({ status }) {
   )
 }
 
-/**
- * Componente de calificación por estrellas.
- */
 export function Stars({ rating, size = 'text-sm' }) {
   return (
     <span className="flex items-center gap-0.5">

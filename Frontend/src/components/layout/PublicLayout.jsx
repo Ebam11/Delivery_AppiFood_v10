@@ -1,17 +1,14 @@
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next' // <- CORREGIDO
 import Header from '../Header'
 import CartSidebar from '../CartSidebar'
 import SupportChatbot from '../SupportChatbot'
 import { FOOD_BACKDROP_IMAGES } from '../../utils/appHelpers'
 
-/**
- * Layout para las páginas públicas y de clientes.
- * Incluye el Header, Sidebar del carrito y el fondo decorativo.
- */
 export default function PublicLayout({ children, isAuth, user, onLogout, isLoading }) {
+  const { t } = useTranslation() // <- CORREGIDO (aunque no se usa, se mantiene por consistencia)
+  
   return (
     <div className="relative min-h-screen bg-white dark:bg-[#0f0f16]">
-      {/* Elementos decorativos de fondo */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
         <img src={FOOD_BACKDROP_IMAGES[0]} alt="" className="absolute left-4 top-8 h-20 w-20 rotate-[-12deg] opacity-[0.08] blur-[0.2px] sm:h-24 sm:w-24" />
         <img src={FOOD_BACKDROP_IMAGES[1]} alt="" className="absolute right-8 top-20 h-20 w-20 rotate-[10deg] opacity-[0.08] blur-[0.2px] sm:h-24 sm:w-24" />

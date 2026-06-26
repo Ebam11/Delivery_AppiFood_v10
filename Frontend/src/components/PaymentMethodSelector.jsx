@@ -2,7 +2,7 @@
 import React from 'react';
 import { usePaymentStore } from '../store/paymentStore';
 import { useCartStore } from '../store/cartStore';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 
 export default function PaymentMethodSelector() {
   const { createPayment, loading, error } = usePaymentStore();

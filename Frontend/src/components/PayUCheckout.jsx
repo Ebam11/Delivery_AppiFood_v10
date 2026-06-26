@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { usePaymentStore } from '../store/paymentStore';
 import { useCartStore } from '../store/cartStore';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { getUserPaymentMethods } from '../api/payment';
 
 export default function PayUCheckout({ orderId }) {

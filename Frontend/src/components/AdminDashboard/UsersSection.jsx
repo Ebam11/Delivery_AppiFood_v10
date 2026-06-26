@@ -1,7 +1,7 @@
 // Frontend/src/components/AdminDashboard/UsersSection.jsx
-import { useState } from 'react';
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
-import { Badge } from '../RestaurantDashboard/Common';
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Badge } from '../RestaurantDashboard/Common'
 
 export default function UsersSection({ 
   users, 
@@ -10,29 +10,29 @@ export default function UsersSection({
   onDelete,
   pagination 
 }) {
-  const { t } = useTranslation();
-  const [filter, setFilter] = useState('all');
-  const [search, setSearch] = useState('');
+  const { t } = useTranslation()
+  const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
 
   const visible = users.filter(u => {
-    const matchStatus = filter === 'all' || u.status === filter;
+    const matchStatus = filter === 'all' || u.status === filter
     const matchSearch = u.name?.toLowerCase().includes(search.toLowerCase()) || 
-                       u.email?.toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchSearch;
-  });
+                       u.email?.toLowerCase().includes(search.toLowerCase())
+    return matchStatus && matchSearch
+  })
 
   const FILTERS = [
     { key: 'all', label: t('adminDashboard.filter.all', { defaultValue: 'Todos' }) },
     { key: 'active', label: t('adminDashboard.filter.active', { defaultValue: 'Activos' }) },
     { key: 'suspended', label: t('adminDashboard.filter.suspended', { defaultValue: 'Suspendidos' }) },
-  ];
+  ]
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
       </div>
-    );
+    )
   }
 
   const stats = {
@@ -40,11 +40,10 @@ export default function UsersSection({
     active: users.filter(u => u.status === 'active').length,
     suspended: users.filter(u => u.status === 'suspended').length,
     admin: users.filter(u => u.role === 'admin').length,
-  };
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { label: t('adminDashboard.userStats.total', { defaultValue: 'Total' }), value: stats.total, color: 'text-gray-800 dark:text-slate-100' },
@@ -59,7 +58,6 @@ export default function UsersSection({
         ))}
       </div>
 
-      {/* Filtros */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="flex flex-wrap gap-2">
           {FILTERS.map(f => (
@@ -88,7 +86,6 @@ export default function UsersSection({
         </div>
       </div>
 
-      {/* Tabla */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -113,8 +110,8 @@ export default function UsersSection({
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {visible.map(u => {
-                const isAdmin = u.role === 'admin';
-                const isActive = u.status === 'active';
+                const isAdmin = u.role === 'admin'
+                const isActive = u.status === 'active'
                 
                 return (
                   <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition group">
@@ -126,14 +123,14 @@ export default function UsersSection({
                         <div>
                           <p className="font-bold text-gray-900 dark:text-slate-100">{u.name}</p>
                           <p className="text-xs text-gray-500 dark:text-slate-400">
-                            {u.created_at ? `Unido: ${new Date(u.created_at).toLocaleDateString()}` : ''}
+                            {u.created_at ? `${t('adminDashboard.userTable.registered') || 'Unido'}: ${new Date(u.created_at).toLocaleDateString()}` : ''}
                           </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-medium text-gray-800 dark:text-slate-200">{u.email}</p>
-                      <p className="text-xs text-gray-500 dark:text-slate-400">{u.phone || 'Sin teléfono'}</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">{u.phone || t('adminDashboard.no_phone') || 'Sin teléfono'}</p>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -176,12 +173,12 @@ export default function UsersSection({
                       </div>
                     </td>
                   </tr>
-                );
+                )
               })}
               {visible.length === 0 && (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-gray-500 dark:text-slate-400">
-                    No se encontraron usuarios.
+                    {t('adminDashboard.no_users_found') || 'No se encontraron usuarios.'}
                   </td>
                 </tr>
               )}
@@ -190,14 +187,13 @@ export default function UsersSection({
         </div>
       </div>
 
-      {/* Paginación */}
       {pagination && pagination.total > 0 && (
         <div className="flex justify-between items-center text-sm text-gray-500 dark:text-slate-400">
           <span>
-            Mostrando {pagination.from || 0} - {pagination.to || 0} de {pagination.total || 0}
+            {t('adminDashboard.pagination.showing', { defaultValue: 'Mostrando' })} {pagination.from || 0} - {pagination.to || 0} {t('adminDashboard.pagination.of', { defaultValue: 'de' })} {pagination.total || 0}
           </span>
         </div>
       )}
     </div>
-  );
+  )
 }

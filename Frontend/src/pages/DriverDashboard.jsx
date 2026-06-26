@@ -1,17 +1,15 @@
 /**
  * Archivo: src/pages/DriverDashboard.jsx
  * Panel principal del repartidor (Driver).
- * Permite ver pedidos disponibles, aceptarlos, actualizar ubicación GPS
- * en tiempo real, completar entregas y ver historial.
  */
 import { useState, useEffect, useCallback, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { fetchJson } from '../api/fetchJson'
 import '../styles/DriverDashboard.css'
 
-// ─── Iconos personalizados de Leaflet ──────────────────────
 const driverIcon = new L.DivIcon({
   className: '',
   html: `<div style="
@@ -51,7 +49,6 @@ const restaurantIcon = new L.DivIcon({
   iconAnchor: [18, 18],
 })
 
-// ─── Componente para autocentrar el mapa ───────────────────
 function MapAutoCenter({ center }) {
   const map = useMap()
   useEffect(() => {
@@ -62,18 +59,17 @@ function MapAutoCenter({ center }) {
   return null
 }
 
-// ─── Etiquetas de estado ───────────────────────────────────
 const STATUS_LABELS = {
-  pending: 'Pendiente',
-  confirmed: 'Confirmado',
-  preparing: 'Preparando',
-  on_the_way: 'En camino',
-  delivered: 'Entregado',
-  cancelled: 'Cancelado',
+  pending: 'pending',
+  confirmed: 'confirmed',
+  preparing: 'preparing',
+  on_the_way: 'on_the_way',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
 }
 
-// ─── Componente Principal ──────────────────────────────────
 export default function DriverDashboard({ user, onLogout }) {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState('available')
   const [availableOrders, setAvailableOrders] = useState([])
   const [myOrders, setMyOrders] = useState([])
@@ -86,13 +82,11 @@ export default function DriverDashboard({ user, onLogout }) {
   const geoWatchRef = useRef(null)
   const locationIntervalRef = useRef(null)
 
-  // ── Mostrar notificación toast ───────────────────────────
   const showToast = useCallback((message, type = 'success') => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 4000)
   }, [])
 
-  // ── Cargar estadísticas ──────────────────────────────────
   const loadStats = useCallback(async () => {
     try {
       const res = await fetchJson('/api/driver/stats')
@@ -102,7 +96,6 @@ export default function DriverDashboard({ user, onLogout }) {
     }
   }, [])
 
-  // ── Cargar pedidos disponibles ───────────────────────────
   const loadAvailable = useCallback(async () => {
     try {
       const res = await fetchJson('/api/driver/orders/available')
@@ -112,7 +105,6 @@ export default function DriverDashboard({ user, onLogout }) {
     }
   }, [])
 
-  // ── Cargar pedidos activos ───────────────────────────────
   const loadMyOrders = useCallback(async () => {
     try {
       const res = await fetchJson('/api/driver/orders/active')
@@ -122,7 +114,6 @@ export default function DriverDashboard({ user, onLogout }) {
     }
   }, [])
 
-  // ── Cargar historial ─────────────────────────────────────
   const loadHistory = useCallback(async () => {
     try {
       const res = await fetchJson('/api/driver/orders/history')
@@ -132,7 +123,6 @@ export default function DriverDashboard({ user, onLogout }) {
     }
   }, [])
 
-  // ── Carga inicial ────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       setLoading(true)
@@ -142,17 +132,15 @@ export default function DriverDashboard({ user, onLogout }) {
     init()
   }, [loadStats, loadAvailable, loadMyOrders])
 
-  // ── Refrescar datos periódicamente ───────────────────────
   useEffect(() => {
     const interval = setInterval(() => {
       loadAvailable()
       loadMyOrders()
       loadStats()
-    }, 15000) // Cada 15 segundos
+    }, 15000)
     return () => clearInterval(interval)
   }, [loadAvailable, loadMyOrders, loadStats])
 
-  // ── Geolocalización del navegador ────────────────────────
   useEffect(() => {
     if ('geolocation' in navigator) {
       geoWatchRef.current = navigator.geolocation.watchPosition(
@@ -173,7 +161,6 @@ export default function DriverDashboard({ user, onLogout }) {
     }
   }, [])
 
-  // ── Enviar ubicación GPS al backend para pedidos en curso ─
   useEffect(() => {
     if (!driverPos || myOrders.length === 0) return
 
@@ -187,12 +174,12 @@ export default function DriverDashboard({ user, onLogout }) {
           body: { lat: driverPos.lat, lng: driverPos.lng },
         })
       } catch (err) {
-        // Silencioso - no bloquear la UI
+        // Silencioso
       }
     }
 
     locationIntervalRef.current = setInterval(sendLocation, 10000)
-    sendLocation() // Enviar inmediatamente
+    sendLocation()
 
     return () => {
       if (locationIntervalRef.current) {
@@ -201,59 +188,54 @@ export default function DriverDashboard({ user, onLogout }) {
     }
   }, [driverPos, myOrders])
 
-  // ── Aceptar un pedido ────────────────────────────────────
   const handleAcceptOrder = async (orderId) => {
     setActionLoading(orderId)
     try {
       await fetchJson(`/api/driver/orders/${orderId}/accept`, { method: 'POST' })
-      showToast('¡Pedido aceptado! Dirígete al restaurante.', 'success')
+      showToast(t('driver.order_accepted') || '¡Pedido aceptado! Dirígete al restaurante.', 'success')
       await Promise.all([loadAvailable(), loadMyOrders(), loadStats()])
     } catch (err) {
-      showToast(err.message || 'Error al aceptar pedido', 'error')
+      showToast(err.message || t('driver.accept_error') || 'Error al aceptar pedido', 'error')
     } finally {
       setActionLoading(null)
     }
   }
 
-  // ── Completar un pedido ──────────────────────────────────
   const handleCompleteOrder = async (orderId) => {
     setActionLoading(orderId)
     try {
       const res = await fetchJson(`/api/driver/orders/${orderId}/complete`, { method: 'POST' })
       const points = res?.points_earned || 0
       showToast(
-        `¡Entrega completada!${points > 0 ? ` El cliente ganó ${points} puntos.` : ''}`,
+        `${t('driver.delivery_completed') || '¡Entrega completada!'}${points > 0 ? ` ${t('driver.points_earned') || 'El cliente ganó'} ${points} ${t('driver.points') || 'puntos.'}` : ''}`,
         'success'
       )
       await Promise.all([loadMyOrders(), loadStats()])
       setActiveTab('available')
     } catch (err) {
-      showToast(err.message || 'Error al completar pedido', 'error')
+      showToast(err.message || t('driver.complete_error') || 'Error al completar pedido', 'error')
     } finally {
       setActionLoading(null)
     }
   }
 
-  // ── Cargar historial al cambiar de tab ───────────────────
   useEffect(() => {
     if (activeTab === 'history') {
       loadHistory()
     }
   }, [activeTab, loadHistory])
 
-  // ── Render: Loading State ────────────────────────────────
   if (loading) {
     return (
       <div className="dd-container">
         <div className="dd-loading">
           <div className="dd-loading-spinner" />
-          <div className="dd-loading-text">Cargando panel del repartidor...</div>
+          <div className="dd-loading-text">{t('driver.loading') || 'Cargando panel del repartidor...'}</div>
         </div>
       </div>
     )
   }
 
-  // ── Datos derivados ──────────────────────────────────────
   const activeOrder = myOrders.find(o => o.status === 'on_the_way')
   const initials = (user?.name || 'D').slice(0, 2).toUpperCase()
   const tabCounts = {
@@ -264,30 +246,28 @@ export default function DriverDashboard({ user, onLogout }) {
   return (
     <div className="dd-container">
       <div className="dd-main">
-        {/* ─── Header ────────────────────────────────────── */}
         <header className="dd-header">
           <div className="dd-header-inner">
             <div className="dd-logo">
               <div className="dd-logo-icon">🛵</div>
-              <span className="dd-logo-text">AppiFood Driver</span>
+              <span className="dd-logo-text">{t('driver.app_name') || 'AppiFood Driver'}</span>
             </div>
             <div className="dd-user-info">
-              <span className="dd-status-badge online">En línea</span>
+              <span className="dd-status-badge online">{t('driver.online') || 'En línea'}</span>
               <div style={{ textAlign: 'right' }}>
-                <div className="dd-user-name">{user?.name || 'Repartidor'}</div>
-                <div className="dd-user-role">Repartidor</div>
+                <div className="dd-user-name">{user?.name || t('driver.driver') || 'Repartidor'}</div>
+                <div className="dd-user-role">{t('driver.driver_role') || 'Repartidor'}</div>
               </div>
               <div className="dd-user-avatar">{initials}</div>
             </div>
           </div>
         </header>
 
-        {/* ─── Tabs ──────────────────────────────────────── */}
         <nav className="dd-tabs">
           {[
-            { id: 'available', label: 'Disponibles', icon: '📋' },
-            { id: 'active', label: 'En Curso', icon: '🚀' },
-            { id: 'history', label: 'Historial', icon: '📜' },
+            { id: 'available', label: t('driver.available') || 'Disponibles', icon: '📋' },
+            { id: 'active', label: t('driver.active') || 'En Curso', icon: '🚀' },
+            { id: 'history', label: t('driver.history') || 'Historial', icon: '📜' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -303,22 +283,20 @@ export default function DriverDashboard({ user, onLogout }) {
           ))}
         </nav>
 
-        {/* ─── Content ───────────────────────────────────── */}
         <div className="dd-content dd-fade-in">
-          {/* ── Stats Cards ──────────────────────────────── */}
           <div className="dd-stats-grid">
             <div className="dd-stat-card">
               <div className="dd-stat-icon purple">📦</div>
               <div>
                 <div className="dd-stat-value">{stats?.deliveries_today ?? 0}</div>
-                <div className="dd-stat-label">Entregas hoy</div>
+                <div className="dd-stat-label">{t('driver.deliveries_today') || 'Entregas hoy'}</div>
               </div>
             </div>
             <div className="dd-stat-card">
               <div className="dd-stat-icon teal">🏆</div>
               <div>
                 <div className="dd-stat-value">{stats?.deliveries_total ?? 0}</div>
-                <div className="dd-stat-label">Total entregas</div>
+                <div className="dd-stat-label">{t('driver.total_deliveries') || 'Total entregas'}</div>
               </div>
             </div>
             <div className="dd-stat-card">
@@ -327,30 +305,29 @@ export default function DriverDashboard({ user, onLogout }) {
                 <div className="dd-stat-value">
                   ${(stats?.earnings_today ?? 0).toLocaleString('es-CO')}
                 </div>
-                <div className="dd-stat-label">Ganancia hoy</div>
+                <div className="dd-stat-label">{t('driver.earnings_today') || 'Ganancia hoy'}</div>
               </div>
             </div>
             <div className="dd-stat-card">
               <div className="dd-stat-icon yellow">🔥</div>
               <div>
                 <div className="dd-stat-value">{stats?.active_orders ?? 0}</div>
-                <div className="dd-stat-label">Pedidos activos</div>
+                <div className="dd-stat-label">{t('driver.active_orders') || 'Pedidos activos'}</div>
               </div>
             </div>
           </div>
 
-          {/* ── Active Order with Map ────────────────────── */}
           {activeOrder && (
             <div className="dd-active-order">
               <div className="dd-active-order-title">
-                🚀 Pedido en Curso — #{activeOrder.id}
+                🚀 {t('driver.active_order') || 'Pedido en Curso'} — #{activeOrder.id}
               </div>
               <div className="dd-active-order-grid">
                 <div>
                   <div className="dd-order-info-row">
                     <div className="dd-order-info-icon">👤</div>
                     <div>
-                      <div className="dd-order-info-label">Cliente</div>
+                      <div className="dd-order-info-label">{t('driver.customer') || 'Cliente'}</div>
                       <div className="dd-order-info-value">
                         {activeOrder.customer_name || activeOrder.user?.name || 'Cliente'}
                       </div>
@@ -359,7 +336,7 @@ export default function DriverDashboard({ user, onLogout }) {
                   <div className="dd-order-info-row">
                     <div className="dd-order-info-icon">📍</div>
                     <div>
-                      <div className="dd-order-info-label">Dirección</div>
+                      <div className="dd-order-info-label">{t('driver.address') || 'Dirección'}</div>
                       <div className="dd-order-info-value">
                         {activeOrder.delivery_address || 'Sin dirección'}
                       </div>
@@ -368,7 +345,7 @@ export default function DriverDashboard({ user, onLogout }) {
                   <div className="dd-order-info-row">
                     <div className="dd-order-info-icon">💵</div>
                     <div>
-                      <div className="dd-order-info-label">Total</div>
+                      <div className="dd-order-info-label">{t('driver.total') || 'Total'}</div>
                       <div className="dd-order-info-value">
                         ${Number(activeOrder.total).toLocaleString('es-CO')}
                       </div>
@@ -380,12 +357,11 @@ export default function DriverDashboard({ user, onLogout }) {
                       onClick={() => handleCompleteOrder(activeOrder.id)}
                       disabled={actionLoading === activeOrder.id}
                     >
-                      {actionLoading === activeOrder.id ? '⏳' : '✅'} Marcar como Entregado
+                      {actionLoading === activeOrder.id ? '⏳' : '✅'} {t('driver.mark_delivered') || 'Marcar como Entregado'}
                     </button>
                   </div>
                 </div>
 
-                {/* Mapa de tracking */}
                 <div className="dd-map-wrapper" style={{ margin: 0 }}>
                   <div className="dd-map-container">
                     <MapContainer
@@ -402,7 +378,7 @@ export default function DriverDashboard({ user, onLogout }) {
                         <>
                           <MapAutoCenter center={[driverPos.lat, driverPos.lng]} />
                           <Marker position={[driverPos.lat, driverPos.lng]} icon={driverIcon}>
-                            <Popup>📍 Tu ubicación actual</Popup>
+                            <Popup>{t('driver.your_location') || '📍 Tu ubicación actual'}</Popup>
                           </Marker>
                         </>
                       )}
@@ -424,17 +400,15 @@ export default function DriverDashboard({ user, onLogout }) {
             </div>
           )}
 
-          {/* ── Tab: Available Orders ────────────────────── */}
           {activeTab === 'available' && (
             <div>
-              <h2 className="dd-section-title">📋 Pedidos Disponibles</h2>
+              <h2 className="dd-section-title">📋 {t('driver.available_orders') || 'Pedidos Disponibles'}</h2>
               {availableOrders.length === 0 ? (
                 <div className="dd-empty">
                   <div className="dd-empty-icon">🕐</div>
-                  <div className="dd-empty-title">No hay pedidos disponibles</div>
+                  <div className="dd-empty-title">{t('driver.no_available_orders') || 'No hay pedidos disponibles'}</div>
                   <div className="dd-empty-desc">
-                    Los nuevos pedidos aparecerán aquí automáticamente.
-                    ¡Mantente atento!
+                    {t('driver.no_orders_hint') || 'Los nuevos pedidos aparecerán aquí automáticamente. ¡Mantente atento!'}
                   </div>
                 </div>
               ) : (
@@ -444,14 +418,14 @@ export default function DriverDashboard({ user, onLogout }) {
                       <div className="dd-order-card-header">
                         <span className="dd-order-id">#{order.id}</span>
                         <span className={`dd-order-status ${order.status}`}>
-                          {STATUS_LABELS[order.status] || order.status_label}
+                          {t(`orders.status_${order.status}`, { defaultValue: order.status_label })}
                         </span>
                       </div>
                       <div className="dd-order-card-body">
                         <div className="dd-order-info-row">
                           <div className="dd-order-info-icon">🍽️</div>
                           <div>
-                            <div className="dd-order-info-label">Restaurante</div>
+                            <div className="dd-order-info-label">{t('driver.restaurant') || 'Restaurante'}</div>
                             <div className="dd-order-info-value">
                               {order.restaurant_name || order.restaurant?.name || '-'}
                             </div>
@@ -460,7 +434,7 @@ export default function DriverDashboard({ user, onLogout }) {
                         <div className="dd-order-info-row">
                           <div className="dd-order-info-icon">👤</div>
                           <div>
-                            <div className="dd-order-info-label">Cliente</div>
+                            <div className="dd-order-info-label">{t('driver.customer') || 'Cliente'}</div>
                             <div className="dd-order-info-value">
                               {order.customer_name || order.user?.name || 'Cliente'}
                             </div>
@@ -469,14 +443,13 @@ export default function DriverDashboard({ user, onLogout }) {
                         <div className="dd-order-info-row">
                           <div className="dd-order-info-icon">📍</div>
                           <div>
-                            <div className="dd-order-info-label">Dirección de entrega</div>
+                            <div className="dd-order-info-label">{t('driver.delivery_address') || 'Dirección de entrega'}</div>
                             <div className="dd-order-info-value">
                               {order.delivery_address || 'Sin dirección'}
                             </div>
                           </div>
                         </div>
 
-                        {/* Items del pedido */}
                         {order.items && order.items.length > 0 && (
                           <div className="dd-order-items-list">
                             {order.items.map((item, i) => (
@@ -489,7 +462,7 @@ export default function DriverDashboard({ user, onLogout }) {
                               </div>
                             ))}
                             <div className="dd-order-total">
-                              <span>Total</span>
+                              <span>{t('driver.total') || 'Total'}</span>
                               <span>${Number(order.total).toLocaleString('es-CO')}</span>
                             </div>
                           </div>
@@ -501,7 +474,7 @@ export default function DriverDashboard({ user, onLogout }) {
                           onClick={() => handleAcceptOrder(order.id)}
                           disabled={actionLoading === order.id}
                         >
-                          {actionLoading === order.id ? '⏳ Aceptando...' : '🛵 Aceptar Pedido'}
+                          {actionLoading === order.id ? '⏳' : '🛵'} {t('driver.accept_order') || 'Aceptar Pedido'}
                         </button>
                       </div>
                     </div>
@@ -511,16 +484,15 @@ export default function DriverDashboard({ user, onLogout }) {
             </div>
           )}
 
-          {/* ── Tab: Active Orders ───────────────────────── */}
           {activeTab === 'active' && (
             <div>
-              <h2 className="dd-section-title">🚀 Pedidos en Curso</h2>
+              <h2 className="dd-section-title">🚀 {t('driver.active_orders_title') || 'Pedidos en Curso'}</h2>
               {myOrders.length === 0 ? (
                 <div className="dd-empty">
                   <div className="dd-empty-icon">✨</div>
-                  <div className="dd-empty-title">No tienes pedidos activos</div>
+                  <div className="dd-empty-title">{t('driver.no_active_orders') || 'No tienes pedidos activos'}</div>
                   <div className="dd-empty-desc">
-                    Acepta un pedido desde la pestaña "Disponibles" para comenzar a entregar.
+                    {t('driver.no_active_hint') || 'Acepta un pedido desde la pestaña "Disponibles" para comenzar a entregar.'}
                   </div>
                 </div>
               ) : (
@@ -530,14 +502,14 @@ export default function DriverDashboard({ user, onLogout }) {
                       <div className="dd-order-card-header">
                         <span className="dd-order-id">#{order.id}</span>
                         <span className={`dd-order-status ${order.status}`}>
-                          {STATUS_LABELS[order.status] || order.status_label}
+                          {t(`orders.status_${order.status}`, { defaultValue: order.status_label })}
                         </span>
                       </div>
                       <div className="dd-order-card-body">
                         <div className="dd-order-info-row">
                           <div className="dd-order-info-icon">👤</div>
                           <div>
-                            <div className="dd-order-info-label">Cliente</div>
+                            <div className="dd-order-info-label">{t('driver.customer') || 'Cliente'}</div>
                             <div className="dd-order-info-value">
                               {order.customer_name || order.user?.name || 'Cliente'}
                             </div>
@@ -546,7 +518,7 @@ export default function DriverDashboard({ user, onLogout }) {
                         <div className="dd-order-info-row">
                           <div className="dd-order-info-icon">📍</div>
                           <div>
-                            <div className="dd-order-info-label">Dirección</div>
+                            <div className="dd-order-info-label">{t('driver.address') || 'Dirección'}</div>
                             <div className="dd-order-info-value">
                               {order.delivery_address || 'Sin dirección'}
                             </div>
@@ -555,7 +527,7 @@ export default function DriverDashboard({ user, onLogout }) {
                         <div className="dd-order-info-row">
                           <div className="dd-order-info-icon">💵</div>
                           <div>
-                            <div className="dd-order-info-label">Total</div>
+                            <div className="dd-order-info-label">{t('driver.total') || 'Total'}</div>
                             <div className="dd-order-info-value">
                               ${Number(order.total).toLocaleString('es-CO')}
                             </div>
@@ -565,7 +537,7 @@ export default function DriverDashboard({ user, onLogout }) {
                           <div className="dd-order-info-row">
                             <div className="dd-order-info-icon">📝</div>
                             <div>
-                              <div className="dd-order-info-label">Notas</div>
+                              <div className="dd-order-info-label">{t('driver.notes') || 'Notas'}</div>
                               <div className="dd-order-info-value">{order.notes}</div>
                             </div>
                           </div>
@@ -578,12 +550,12 @@ export default function DriverDashboard({ user, onLogout }) {
                             onClick={() => handleCompleteOrder(order.id)}
                             disabled={actionLoading === order.id}
                           >
-                            {actionLoading === order.id ? '⏳' : '✅'} Entregar
+                            {actionLoading === order.id ? '⏳' : '✅'} {t('driver.deliver') || 'Entregar'}
                           </button>
                         )}
                         {order.status !== 'on_the_way' && (
                           <div className="dd-btn dd-btn-outline" style={{ cursor: 'default' }}>
-                            ⏳ Esperando preparación del restaurante
+                            ⏳ {t('driver.waiting_restaurant') || 'Esperando preparación del restaurante'}
                           </div>
                         )}
                       </div>
@@ -594,16 +566,15 @@ export default function DriverDashboard({ user, onLogout }) {
             </div>
           )}
 
-          {/* ── Tab: History ─────────────────────────────── */}
           {activeTab === 'history' && (
             <div>
-              <h2 className="dd-section-title">📜 Historial de Entregas</h2>
+              <h2 className="dd-section-title">📜 {t('driver.delivery_history') || 'Historial de Entregas'}</h2>
               {history.length === 0 ? (
                 <div className="dd-empty">
                   <div className="dd-empty-icon">📦</div>
-                  <div className="dd-empty-title">Sin entregas aún</div>
+                  <div className="dd-empty-title">{t('driver.no_history') || 'Sin entregas aún'}</div>
                   <div className="dd-empty-desc">
-                    Tu historial de entregas aparecerá aquí una vez que completes pedidos.
+                    {t('driver.no_history_hint') || 'Tu historial de entregas aparecerá aquí una vez que completes pedidos.'}
                   </div>
                 </div>
               ) : (
@@ -611,12 +582,12 @@ export default function DriverDashboard({ user, onLogout }) {
                   <table className="dd-history-table">
                     <thead>
                       <tr>
-                        <th>Pedido</th>
-                        <th>Cliente</th>
-                        <th>Restaurante</th>
-                        <th>Total</th>
-                        <th>Estado</th>
-                        <th>Fecha</th>
+                        <th>{t('driver.order_id') || 'Pedido'}</th>
+                        <th>{t('driver.customer') || 'Cliente'}</th>
+                        <th>{t('driver.restaurant') || 'Restaurante'}</th>
+                        <th>{t('driver.total') || 'Total'}</th>
+                        <th>{t('driver.status') || 'Estado'}</th>
+                        <th>{t('driver.date') || 'Fecha'}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -632,7 +603,7 @@ export default function DriverDashboard({ user, onLogout }) {
                           </td>
                           <td>
                             <span className={`dd-order-status ${order.status}`}>
-                              {STATUS_LABELS[order.status] || order.status_label}
+                              {t(`orders.status_${order.status}`, { defaultValue: order.status_label })}
                             </span>
                           </td>
                           <td style={{ color: 'var(--dd-text-muted)', fontSize: '0.82rem' }}>
@@ -655,11 +626,9 @@ export default function DriverDashboard({ user, onLogout }) {
         </div>
       </div>
 
-      {/* ── Toast Notification ───────────────────────────── */}
       {toast && (
         <div className={`dd-toast ${toast.type}`}>
-          {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'}{' '}
-          {toast.message}
+          {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'} {toast.message}
         </div>
       )}
     </div>

@@ -1,17 +1,16 @@
-// Archivo: src/components/CartSidebar.jsx | Comentario: logica principal del modulo.
 // src/components/CartSidebar.jsx
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useCart } from '../context/useCart'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
 export default function CartSidebar({ isAuth }) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { cart, count, subtotal, discount, total, DELIVERY, appliedCoupon,
           isOpen, setIsOpen, removeItem, updateQty, clearCart, applyCoupon, fmt } = useCart()
   const [couponInput, setCouponInput] = useState('')
-  const [couponMsg, setCouponMsg]     = useState(null)
-  const { t } = useTranslation()
+  const [couponMsg, setCouponMsg] = useState(null)
 
   const handleCoupon = () => {
     const r = applyCoupon(couponInput)

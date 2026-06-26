@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 
 export default function RestaurantManagementPage({ title, description, note }) {
   const { t } = useTranslation()

@@ -1,12 +1,11 @@
-// Archivo: src/components/ProductModal.jsx | Comentario: logica principal del modulo.
 // src/components/ProductModal.jsx
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useCart } from '../context/useCart'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
 export default function ProductModal({ product, onClose }) {
   const { t } = useTranslation()
-  const [qty, setQty]   = useState(1)
+  const [qty, setQty] = useState(1)
   const { addItem, fmt } = useCart()
   const isMockProduct = Boolean(product?.isMock)
 

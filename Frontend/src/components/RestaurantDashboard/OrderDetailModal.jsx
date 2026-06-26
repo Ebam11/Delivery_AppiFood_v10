@@ -1,10 +1,7 @@
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { COLORS } from './constants'
 import { Badge } from './Common'
 
-/**
- * Modal con el detalle extendido de una orden.
- */
 export default function OrderDetailModal({ order, onClose, onStatusChange }) {
   const { t } = useTranslation()
   if (!order) return null
@@ -22,7 +19,6 @@ export default function OrderDetailModal({ order, onClose, onStatusChange }) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-        {/* Header del Modal */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="font-bold text-gray-800">{t('rd.order_id')}</h2>
@@ -33,7 +29,6 @@ export default function OrderDetailModal({ order, onClose, onStatusChange }) {
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Lista de Items */}
           <div className="border border-gray-100 rounded-xl overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50">
@@ -59,7 +54,6 @@ export default function OrderDetailModal({ order, onClose, onStatusChange }) {
             </div>
           </div>
 
-          {/* Información del Cliente y Tracking */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-3">
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('rd.customer_col')}</p>
@@ -89,7 +83,6 @@ export default function OrderDetailModal({ order, onClose, onStatusChange }) {
             </div>
           </div>
 
-          {/* Cambio de Estado */}
           <div className="space-y-3">
             <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t('rd.update_status')}</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

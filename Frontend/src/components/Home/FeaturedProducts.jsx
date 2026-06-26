@@ -1,5 +1,5 @@
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
-import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 /**
  * Sección de productos/ofertas destacadas.

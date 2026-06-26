@@ -1,7 +1,7 @@
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { COLORS, ACTIVITY } from './constants'
 import { Badge } from './Common'
-import { Line, Doughnut } from 'react-chartjs-2';
+import { Line, Doughnut } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -12,7 +12,7 @@ import {
   Title,
   Tooltip,
   Legend
-} from 'chart.js';
+} from 'chart.js'
 
 ChartJS.register(
   CategoryScale,
@@ -23,15 +23,11 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend
-);
+)
 
-/**
- * Sección principal del Dashboard con estadísticas y gráficos.
- */
 export default function DashboardSection({ orders, menu, stats, loading }) {
   const { t } = useTranslation()
   
-  // Helpers para simular datos de gráficos
   const toPercent = (value, max = 100) => {
     const safeMax = Math.max(Number(max) || 0, 1)
     return `${Math.max(0, Math.min(100, (Number(value) / safeMax) * 100))}%`
@@ -44,7 +40,6 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
     })
   )
 
-  // Datos procesados
   const totalOrders = stats?.orders?.total || orders.length
   const totalRevenue = stats?.revenue?.total || orders.reduce((s,o) => s + o.amount, 0)
   const completedOrders = stats?.orders?.total ? Math.round(stats.orders.total * 0.75) : orders.filter(o => o.status === 'completed').length
@@ -53,8 +48,8 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
   const BARS_INCOME  = generateMockSeries({ points: 8, base: Math.round(avgOrderAmount * 2.2), wave: 16, trend: 2, floor: 35 })
   const BARS_EXPENSE = BARS_INCOME.map((v, i) => Math.max(16, Math.round(v * (0.38 + (i % 3) * 0.04))))
   
-  const MONTHS = ['Mar','Abr','May','Jun','Jul','Ago','Sep','Oct']
-  const WEEK   = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom']
+  const MONTHS = [t('rd.months.mar', { defaultValue: 'Mar' }), t('rd.months.apr', { defaultValue: 'Abr' }), t('rd.months.may', { defaultValue: 'May' }), t('rd.months.jun', { defaultValue: 'Jun' }), t('rd.months.jul', { defaultValue: 'Jul' }), t('rd.months.aug', { defaultValue: 'Ago' }), t('rd.months.sep', { defaultValue: 'Sep' }), t('rd.months.oct', { defaultValue: 'Oct' })]
+  const WEEK   = [t('rd.days.mon', { defaultValue: 'Lun' }), t('rd.days.tue', { defaultValue: 'Mar' }), t('rd.days.wed', { defaultValue: 'Mié' }), t('rd.days.thu', { defaultValue: 'Jue' }), t('rd.days.fri', { defaultValue: 'Vie' }), t('rd.days.sat', { defaultValue: 'Sáb' }), t('rd.days.sun', { defaultValue: 'Dom' })]
   const WEEK_ORDERS = generateMockSeries({ points: 7, base: Math.max(totalOrders * 14, 85), wave: 24, trend: 3, floor: 40 })
   const maxV = Math.max(...WEEK_ORDERS, 1)
 
@@ -96,7 +91,7 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
   }
 
   const categoryData = {
-    labels: [t('rd.main_dishes') || 'Platos Principales', t('rd.drinks') || 'Bebidas', t('rd.starters') || 'Entradas', t('rd.desserts') || 'Postres'],
+    labels: [t('rd.main_dishes'), t('rd.drinks'), t('rd.starters'), t('rd.desserts')],
     datasets: [
       {
         data: [45, 25, 20, 10],
@@ -174,11 +169,10 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
         </div>
       )}
 
-      {/* Tarjetas de Estadísticas Rápidas */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: t('rd.total_orders'), value: totalOrders,                       trend:'+1.58%', icon:'📋' },
-          { label: t('rd.completed'),    value: completedOrders,                    trend:'+0.42%', icon:'✅' },
+          { label: t('rd.total_orders'), value: totalOrders, trend:'+1.58%', icon:'📋' },
+          { label: t('rd.completed'),    value: completedOrders, trend:'+0.42%', icon:'✅' },
           { label: t('rd.income'),       value:`$${totalRevenue.toLocaleString()}`, trend:'+2.36%', icon:'💰' },
         ].map((m,i) => (
           <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 flex items-center gap-4 shadow-sm">
@@ -192,7 +186,6 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
         ))}
       </div>
 
-      {/* Gráfico de Ingresos y Categorías */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
@@ -222,9 +215,9 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
           <div className="grid grid-cols-2 gap-2 mt-4">
             {[
               { label: t('rd.main_dishes') || 'Platos', pct:'45%', color: COLORS.primary },
-              { label: t('rd.drinks') || 'Bebidas',      pct:'25%', color:'#1e293b' },
+              { label: t('rd.drinks'), pct:'25%', color:'#1e293b' },
               { label: t('rd.starters') || 'Entradas',    pct:'20%', color:'#fbbf24' },
-              { label: t('rd.desserts') || 'Postres',    pct:'10%', color:'#e5e7eb' },
+              { label: t('rd.desserts'), pct:'10%', color:'#e5e7eb' },
             ].map((c,i) => (
               <div key={i} className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full inline-block" style={{ background: c.color }} />
@@ -236,7 +229,6 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
         </div>
       </div>
 
-      {/* Órdenes Recientes y Actividad */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">

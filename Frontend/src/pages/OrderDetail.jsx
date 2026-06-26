@@ -1,7 +1,7 @@
-// Archivo: src/pages/OrderDetail.jsx | Comentario: logica principal del modulo.
+// Archivo: src/pages/OrderDetail.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { useOrderStore } from '../store/orderStore';
 import { Loading } from '../components/Loading';
 import { ErrorMessage as ErrorMsg } from '../components/ErrorMessage';
@@ -10,7 +10,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { fetchJson } from '../api/fetchJson';
 
-// ─── Iconos personalizados de Leaflet ──────────────────────
+// Iconos personalizados de Leaflet
 const driverIcon = new L.DivIcon({
   className: '',
   html: `<div style="
@@ -88,7 +88,7 @@ const OrderTrackingMap = ({ order }) => {
   return (
     <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-sm mt-4">
       <h3 className="font-bold text-gray-800 mb-2 flex items-center gap-2 text-base">
-        <i className="fas fa-motorcycle text-[#FF4B3E]" /> Sigue a tu repartidor en tiempo real
+        <i className="fas fa-motorcycle text-[#FF4B3E]" /> {t('order_detail.tracking_title') || 'Sigue a tu repartidor en tiempo real'}
       </h3>
       <div className="w-full h-72 rounded-lg overflow-hidden border border-gray-200 shadow-inner relative">
         <MapContainer
@@ -105,13 +105,13 @@ const OrderTrackingMap = ({ order }) => {
             <>
               <MapAutoCenter center={[driverLocation.lat, driverLocation.lng]} />
               <Marker position={[driverLocation.lat, driverLocation.lng]} icon={driverIcon}>
-                <Popup>🛵 Tu repartidor está aquí</Popup>
+                <Popup>{t('order_detail.driver_here') || '🛵 Tu repartidor está aquí'}</Popup>
               </Marker>
             </>
           )}
           {customerPos && (
             <Marker position={customerPos} icon={customerIcon}>
-              <Popup>🏠 Tu dirección de entrega</Popup>
+              <Popup>{t('order_detail.delivery_address_label') || '🏠 Tu dirección de entrega'}</Popup>
             </Marker>
           )}
         </MapContainer>
@@ -239,11 +239,6 @@ export const OrderDetail = () => {
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">{order.delivery_address}</p>
             </div>
-
-            {/* Tracking de pedido en tiempo real (Deshabilitado temporalmente - Sin repartidores) */}
-            {/* order.status === 'on_the_way' && (
-              <OrderTrackingMap order={order} />
-            ) */}
 
             {/* Notas */}
             {order.notes && (

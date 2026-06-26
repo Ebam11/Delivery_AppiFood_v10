@@ -1,9 +1,9 @@
 import { useTheme } from '../context/ThemeContext';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'; // <- CORREGIDO
 
 export default function ThemeToggle() {
   const { isDark, toggleTheme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // <- CORREGIDO
 
   return (
     <button
@@ -13,13 +13,11 @@ export default function ThemeToggle() {
       title={isDark ? t('app.lightMode', { defaultValue: 'Modo claro' }) : t('app.darkMode', { defaultValue: 'Modo oscuro' })}
     >
       <div className="relative w-5 h-5 flex items-center justify-center">
-        {/* Sun Icon */}
         <i 
           className={`fas fa-sun text-yellow-500 text-lg absolute transition-all duration-500 transform ${
             isDark ? 'rotate-90 scale-0 opacity-0' : 'rotate-0 scale-100 opacity-100'
           }`}
         />
-        {/* Moon Icon */}
         <i 
           className={`fas fa-moon text-indigo-400 text-lg absolute transition-all duration-500 transform ${
             isDark ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-0 opacity-0'
@@ -27,7 +25,6 @@ export default function ThemeToggle() {
         />
       </div>
       
-      {/* Ripple/Glow micro-animation on hover */}
       <span className="absolute inset-0 w-full h-full bg-red-500/5 scale-0 rounded-full group-hover:scale-100 transition-transform duration-300 -z-10" />
     </button>
   );

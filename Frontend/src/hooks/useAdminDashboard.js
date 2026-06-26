@@ -13,9 +13,15 @@ export function useAdminDashboard() {
   const [users, setUsers] = useState([]);
   const [orders, setOrders] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [salesReport, setSalesReport] = useState(null);
+  const [restaurantsReport, setRestaurantsReport] = useState([]);
+  const [usersReport, setUsersReport] = useState(null);
+  const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportsError, setReportsError] = useState(null);
   const [pagination, setPagination] = useState({});
   const [filters, setFilters] = useState({});
   const [toast, setToast] = useState(null);
+
 
   // Función para cargar datos según tab activa
   const loadData = useCallback(async () => {
@@ -49,6 +55,25 @@ export function useAdminDashboard() {
           const response = await adminApi.getReviews(filters);
           setReviews(response.data || []);
           setPagination(response.meta || {});
+          break;
+        }
+        case 'reports': {
+          setReportsLoading(true);
+          setReportsError(null);
+          try {
+            const [sales, restaurants, users] = await Promise.all([
+              adminApi.getSalesReport(),
+              adminApi.getRestaurantsReport(),
+              adminApi.getUsersReport(),
+            ]);
+            setSalesReport(sales.data || sales);
+            setRestaurantsReport(restaurants.data || restaurants);
+            setUsersReport(users.data || users);
+          } catch (err) {
+            setReportsError('Error al cargar los reportes');
+          } finally {
+            setReportsLoading(false);
+          }
           break;
         }
         default:
@@ -215,5 +240,12 @@ export function useAdminDashboard() {
     // CRUD Reviews
     toggleReviewVisibility,
     deleteReview,
+    
+    // Reportes
+    salesReport,
+    restaurantsReport,
+    usersReport,
+    reportsLoading,
+    reportsError,
   };
 }

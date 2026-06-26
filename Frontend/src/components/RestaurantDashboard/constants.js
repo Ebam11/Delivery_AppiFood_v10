@@ -12,9 +12,10 @@ export const COLORS = {
   info: '#3B82F6',
 };
 
+
 export const ACTIVITY = [
-  { icon: '🛒', name: 'Nuevo pedido', action: 'Pedido #1042 recibido', time: 'Hace 5 min' },
-  { icon: '⭐', name: 'Nueva reseña', action: 'Carlos G. dejó 5 estrellas', time: 'Hace 12 min' },
-  { icon: '📦', name: 'Pedido entregado', action: 'Pedido #1039 completado', time: 'Hace 25 min' },
-  { icon: '🍕', name: 'Producto agotado', action: 'Pizza Hawaiana sin stock', time: 'Hace 1h' },
-];
+  { icon: '🛒', nameKey: 'rd.activity.new_order', actionKey: 'rd.activity.order_received', timeKey: 'rd.activity.time_5min' },
+  { icon: '⭐', nameKey: 'rd.activity.new_review', actionKey: 'rd.activity.review_5_stars', timeKey: 'rd.activity.time_12min' },
+  { icon: '📦', nameKey: 'rd.activity.order_delivered', actionKey: 'rd.activity.order_completed', timeKey: 'rd.activity.time_25min' },
+  { icon: '🍕', nameKey: 'rd.activity.product_out_of_stock', actionKey: 'rd.activity.pizza_hawaiana_out', timeKey: 'rd.activity.time_1h' },
+]

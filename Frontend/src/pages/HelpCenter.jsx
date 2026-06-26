@@ -1,30 +1,30 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { supportFaqs, supportShortcuts } from '../utils/supportAssistant'
 
 const topicCards = [
   {
-    title: 'Pedidos y pagos',
-    description: 'Seguimiento, confirmación, cancelaciones y problemas de cobro.',
+    titleKey: 'Pedidos_y_pagos',
+    descriptionKey: 'Pedidos_y_pagos',
     icon: 'fa-receipt',
     path: '/user/orders',
   },
   {
-    title: 'Cuenta y direcciones',
-    description: 'Perfil, contraseña, direcciones guardadas y datos de usuario.',
+    titleKey: 'Cuenta_y_direcciones',
+    descriptionKey: 'Cuenta_y_direcciones',
     icon: 'fa-user-cog',
     path: '/user/profile',
   },
   {
-    title: 'Restaurantes y menú',
-    description: 'Buscar locales, ver el menú y agregar productos al carrito.',
+    titleKey: 'Restaurantes_y_menú',
+    descriptionKey: 'Restaurantes_y_menú',
     icon: 'fa-store',
     path: '/restaurants',
   },
   {
-    title: 'Suscripción y ayuda',
-    description: 'Planes, beneficios, soporte humano y preguntas frecuentes.',
+    titleKey: 'Suscripción_y_ayuda',
+    descriptionKey: 'Suscripción_y_ayuda',
     icon: 'fa-headset',
     path: '/support',
   },
@@ -94,15 +94,19 @@ export default function HelpCenter() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-8">
           {topicCards.map((card) => (
             <Link
-              key={card.title}
+              key={card.titleKey}
               to={card.path}
               className="group bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 hover:shadow-lg hover:-translate-y-0.5 transition"
             >
               <div className="w-12 h-12 rounded-2xl bg-[#fff0ed] dark:bg-red-950/20 text-[#FF4B3E] flex items-center justify-center mb-4">
                 <i className={`fas ${card.icon}`} />
               </div>
-              <h2 className="font-black text-gray-900 dark:text-white text-lg">{card.title}</h2>
-              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400 leading-relaxed">{card.description}</p>
+              <h2 className="font-black text-gray-900 dark:text-white text-lg">
+                {t(`help.topics.${card.titleKey}`, { defaultValue: card.titleKey.replace(/_/g, ' ') })}
+              </h2>
+              <p className="mt-2 text-sm text-gray-500 dark:text-slate-400 leading-relaxed">
+                {t(`help.topics_desc.${card.descriptionKey}`, { defaultValue: card.descriptionKey.replace(/_/g, ' ') })}
+              </p>
             </Link>
           ))}
         </div>
@@ -121,20 +125,27 @@ export default function HelpCenter() {
 
             <div className="space-y-4">
               {filteredFaqs.length > 0 ? (
-                filteredFaqs.map((faq) => (
-                  <article key={`${faq.category}-${faq.question}`} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/20 p-4 sm:p-5">
-                    <div className="flex items-center gap-2 mb-3 flex-wrap">
-                      <span className="px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-bold text-gray-600 dark:text-slate-400">
-                        {faq.category}
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">{faq.question}</h3>
-                    <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 leading-relaxed">{faq.answer}</p>
-                  </article>
-                ))
+                filteredFaqs.map((faq) => {
+                  const key = faq.question.replace(/[¿?]/g, '').trim().replace(/\s/g, '_')
+                  return (
+                    <article key={`${faq.category}-${faq.question}`} className="rounded-2xl border border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/20 p-4 sm:p-5">
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        <span className="px-3 py-1 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-xs font-bold text-gray-600 dark:text-slate-400">
+                          {t(`help.faq_category.${faq.category.replace(/\s/g, '_')}`, { defaultValue: faq.category })}
+                        </span>
+                      </div>
+                      <h3 className="font-bold text-gray-900 dark:text-white text-base sm:text-lg">
+                        {t(`help.faq_q.${key}`, { defaultValue: faq.question })}
+                      </h3>
+                      <p className="mt-2 text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
+                        {t(`help.faq_a.${key}`, { defaultValue: faq.answer })}
+                      </p>
+                    </article>
+                  )
+                })
               ) : (
                 <div className="rounded-2xl border border-dashed border-gray-200 dark:border-slate-800 p-8 text-center text-gray-500 dark:text-slate-500">
-                  {t('help.no_results') || "No encontramos resultados con ese término. Prueba con “pedido”, “pago”, “dirección” o “restaurante”."}
+                  {t('help.no_results') || "No encontramos resultados con ese término. Prueba con \"pedido\", \"pago\", \"dirección\" o \"restaurante\"."}
                 </div>
               )}
             </div>

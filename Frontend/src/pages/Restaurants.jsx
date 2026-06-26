@@ -4,7 +4,7 @@
  * Permite filtrar por categorías, buscar y ver restaurantes cercanos.
  */
 
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { useRestaurants } from '../hooks/useRestaurants'
 import FoodCategoryCarousel from '../components/FoodCategoryCarousel'
 import RestaurantCard from '../components/RestaurantCard'
@@ -33,7 +33,7 @@ export default function RestaurantsPage() {
     setBudgetInput
   } = useRestaurants()
 
-  // Tipos de comida disponibles (Incluyendo categorías locales de Popayán)
+  // Tipos de comida disponibles
   const foodTypes = [
     "Restaurantes Locales", "Comida Casera", "Sopas y Caldos", 
     "Antojitos Payaneses", "Empanadas y Fritos", "Tamales",
@@ -43,7 +43,7 @@ export default function RestaurantsPage() {
 
   return (
     <div className="bg-white dark:bg-slate-950 min-h-screen text-gray-900 dark:text-slate-100 transition-colors duration-300">
-      {/* Cabecera (No pegajosa, se desplaza hacia arriba) */}
+      {/* Cabecera */}
       <section className="pt-8 pb-4">
         <div className="container mx-auto px-6">
           <div className="mb-8">
@@ -55,7 +55,7 @@ export default function RestaurantsPage() {
             </p>
           </div>
 
-          {/* Estadísticas Rápidas (Opcional) */}
+          {/* Estadísticas Rápidas */}
           <div className="flex gap-4 mb-4 overflow-x-auto pb-2 scrollbar-hide">
             <div className="bg-orange-50 dark:bg-orange-950/20 px-6 py-3 rounded-2xl border border-orange-100 dark:border-orange-900/30 flex items-center gap-3 whitespace-nowrap">
               <span className="text-2xl font-black text-red-500">{allRestaurants.length}</span>
@@ -73,11 +73,11 @@ export default function RestaurantsPage() {
         </div>
       </section>
 
-      {/* Sección principal que contiene la barra pegajosa de filtros y resultados */}
+      {/* Sección principal */}
       <section className="relative pb-16">
         <div className="container mx-auto px-6">
           
-          {/* Carrusel de Categorías (Normal, se desplaza con la página) */}
+          {/* Carrusel de Categorías */}
           <div className="mb-6">
             <FoodCategoryCarousel 
               categories={foodTypes} 
@@ -126,7 +126,7 @@ export default function RestaurantsPage() {
                 <option value="45plus">{t("restaurants.filter_rating_45plus") || "Calificación: 4.5+"}</option>
               </select>
 
-              {/* Input de presupuesto manual */}
+              {/* Input de presupuesto */}
               <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 hover:border-[#FF4B3E] transition">
                 <span className="text-xs font-bold text-gray-400">💰</span>
                 <input
@@ -143,7 +143,7 @@ export default function RestaurantsPage() {
                 )}
               </div>
 
-              {/* Botón de limpiar si hay filtros activos */}
+              {/* Botón de limpiar */}
               {(deliveryFilter !== 'all' || timeFilter !== 'all' || ratingFilter !== 'all' || budgetInput !== '') && (
                 <button
                   onClick={() => { 

@@ -1,9 +1,9 @@
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 
 export default function AnalyticsSection({ stats }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
-  const toPercent = (val, max = 100) => `${Math.min(100, Math.max(0, (val / max) * 100))}%`;
+  const toPercent = (val, max = 100) => `${Math.min(100, Math.max(0, (val / max) * 100))}%`
   const MONTHS = [
     t('restaurantDashboard.analytics.months.jan', { defaultValue: 'Ene' }),
     t('restaurantDashboard.analytics.months.feb', { defaultValue: 'Feb' }),
@@ -11,22 +11,22 @@ export default function AnalyticsSection({ stats }) {
     t('restaurantDashboard.analytics.months.apr', { defaultValue: 'Abr' }),
     t('restaurantDashboard.analytics.months.may', { defaultValue: 'May' }),
     t('restaurantDashboard.analytics.months.jun', { defaultValue: 'Jun' })
-  ];
-  const REVENUE_DATA = [1500, 1800, 1650, 2100, 2400, 2800];
+  ]
+  const REVENUE_DATA = [1500, 1800, 1650, 2100, 2400, 2800]
 
-  const totalOrders = stats?.orders?.total || 0;
-  const totalRevenue = stats?.revenue?.total || 0;
-  const avgTicket = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : 0;
-  const avgRating = stats?.rating?.average ? Number(stats.rating.average).toFixed(1) : '0.0';
+  const totalOrders = stats?.orders?.total || 0
+  const totalRevenue = stats?.revenue?.total || 0
+  const avgTicket = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : 0
+  const avgRating = stats?.rating?.average ? Number(stats.rating.average).toFixed(1) : '0.0'
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: t('restaurantDashboard.analytics.totalRevenue', { defaultValue: 'Ingresos Totales' }), value: `$${totalRevenue.toLocaleString()}`, trend: 'Hoy: $' + (stats?.revenue?.today || 0) },
-          { label: t('restaurantDashboard.analytics.orders', { defaultValue: 'Pedidos' }), value: totalOrders, trend: 'Hoy: ' + (stats?.orders?.today || 0) },
-          { label: t('restaurantDashboard.analytics.avgTicket', { defaultValue: 'Ticket Promedio' }), value: `$${avgTicket}`, trend: 'General' },
-          { label: t('restaurantDashboard.analytics.rating', { defaultValue: 'Calificación Prom.' }), value: `⭐ ${avgRating}`, trend: `${stats?.rating?.total || 0} reseñas` },
+          { label: t('rd.total_revenue'), value: `$${totalRevenue.toLocaleString()}`, trend: `${t('rd.today')}: $${(stats?.revenue?.today || 0).toLocaleString()}` },
+          { label: t('rd.orders'), value: totalOrders, trend: `${t('rd.today')}: ${(stats?.orders?.today || 0)}` },
+          { label: t('rd.avg_ticket'), value: `$${avgTicket}`, trend: t('rd.general') || 'General' },
+          { label: t('rd.avg_rating'), value: `⭐ ${avgRating}`, trend: `${stats?.rating?.total || 0} ${t('rd.reviews')}` },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm text-center">
             <p className="text-3xl font-black text-gray-800 dark:text-slate-100">{stat.value}</p>
@@ -39,7 +39,7 @@ export default function AnalyticsSection({ stats }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm">
           <h3 className="font-bold text-gray-800 dark:text-slate-100 mb-6">
-            {t('restaurantDashboard.analytics.revenueChart', { defaultValue: 'Evolución de Ingresos' })}
+            {t('rd.revenue_chart') || 'Evolución de Ingresos'}
           </h3>
           <div className="flex items-end gap-2 h-48 w-full">
             {REVENUE_DATA.map((val, i) => (
@@ -58,19 +58,19 @@ export default function AnalyticsSection({ stats }) {
 
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm">
           <h3 className="font-bold text-gray-800 dark:text-slate-100 mb-6">
-            {t('restaurantDashboard.analytics.topDishes', { defaultValue: 'Platos Más Vendidos' })}
+            {t('rd.top_dishes') || 'Platos Más Vendidos'}
           </h3>
           <div className="space-y-4">
             {[
-              { name: 'Hamburguesa Doble Queso', sales: 342, pct: '100%' },
-              { name: 'Papas Fritas Grandes', sales: 280, pct: '81%' },
-              { name: 'Combo Familiar', sales: 195, pct: '57%' },
-              { name: 'Gaseosa 1.5L', sales: 150, pct: '43%' },
+              { name: t('rd.double_cheese_burger') || 'Hamburguesa Doble Queso', sales: 342, pct: '100%' },
+              { name: t('rd.large_fries') || 'Papas Fritas Grandes', sales: 280, pct: '81%' },
+              { name: t('rd.family_combo') || 'Combo Familiar', sales: 195, pct: '57%' },
+              { name: t('rd.soda_15l') || 'Gaseosa 1.5L', sales: 150, pct: '43%' },
             ].map((d, i) => (
               <div key={i}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-bold text-gray-700 dark:text-slate-300">{i+1}. {d.name}</span>
-                  <span className="text-gray-500 dark:text-slate-400">{d.sales} ventas</span>
+                  <span className="text-gray-500 dark:text-slate-400">{d.sales} {t('rd.sales_short') || 'ventas'}</span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
                   <div className="h-full bg-orange-400 rounded-full" style={{ width: d.pct }} />
@@ -81,5 +81,5 @@ export default function AnalyticsSection({ stats }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

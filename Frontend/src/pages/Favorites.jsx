@@ -1,7 +1,7 @@
-// Archivo: src/pages/Favorites.jsx | Comentario: logica principal del modulo con visualizacion e integracion de imagenes
+// Archivo: src/pages/Favorites.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { useFavoritesStore } from '../store/favoritesStore';
 import Loading from '../components/Loading';
@@ -20,7 +20,6 @@ const normalizeRestaurant = (restaurant) => ({
     : restaurant?.time || '-- min',
 })
 
-// Subcomponente para renderizar la tarjeta con resolución de imagen dinámica
 function FavoriteRestaurantCard({ restaurant, navigate, t, handleRemoveFavorite }) {
   const { image, loading } = useRestaurantImage(restaurant?.name, restaurant?.image);
   
@@ -132,8 +131,8 @@ export default function Favorites() {
               <i className="fas fa-wifi text-amber-600 dark:text-amber-400 text-sm" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">Sin conexión al servidor</p>
-              <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5">Asegúrate de que tu servidor XAMPP esté corriendo y recarga la página.</p>
+              <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">{t('favorites.error_load') || 'Error al cargar favoritos'}</p>
+              <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5">{t('favorites.error_hint') || 'Asegúrate de que tu servidor esté corriendo y recarga la página.'}</p>
             </div>
           </div>
         )}
@@ -156,7 +155,7 @@ export default function Favorites() {
             <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
               {t('favorites.empty') || 'Aún no tienes favoritos'}
             </h3>
-            <p className="text-gray-500 dark:text-slate-400 mb-8">Explora restaurantes y guarda tus favoritos aquí.</p>
+            <p className="text-gray-500 dark:text-slate-400 mb-8">{t('favorites.empty_hint') || 'Explora restaurantes y guarda tus favoritos aquí.'}</p>
             <button 
               onClick={() => navigate('/restaurants')} 
               className="bg-gradient-to-r from-red-500 to-orange-500 text-white font-black py-3 px-10 rounded-2xl hover:scale-105 transition-transform shadow-lg shadow-red-500/30"

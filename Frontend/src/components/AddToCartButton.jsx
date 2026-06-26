@@ -1,8 +1,8 @@
-// Archivo: src/components/AddToCartButton.jsx | Comentario: logica principal del modulo.
+// Archivo: src/components/AddToCartButton.jsx
 import React, { useState } from 'react';
 import { useCartStore } from '../store/cartStore';
 import { ErrorMessage } from './ErrorMessage';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 
 export const AddToCartButton = ({ restaurantId, product, compact = false }) => {
   const { addItemToCart, isLoading, error, clearError } = useCartStore();

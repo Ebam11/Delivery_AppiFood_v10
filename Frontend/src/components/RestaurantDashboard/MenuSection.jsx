@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { COLORS } from './constants'
 
 export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit, onToggle }) {
   const { t } = useTranslation()
   const [showModal, setShowModal] = useState(false)
-  const [catFilter, setCatFilter] = useState('Todos')
+  const [catFilter, setCatFilter] = useState(t('rd.all_categories') || 'Todos')
   const [search, setSearch] = useState('')
   const [editingItem, setEditingItem] = useState(null)
-  const [confirmDelete, setConfirmDelete] = useState(null) // guarda el id a eliminar
+  const [confirmDelete, setConfirmDelete] = useState(null)
   const [form, setForm] = useState({
     name: '', description: '', price: '', category_id: '',
     stock: '', prep_time_minutes: '', img: '', file: null,
@@ -117,7 +117,6 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 className="w-full h-40 object-cover"
                 onError={e => { e.target.src = 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop' }}
               />
-              {/* Badge activo/inactivo — clickeable */}
               <button
                 onClick={() => onToggle(item.id)}
                 className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-semibold cursor-pointer transition
@@ -141,7 +140,6 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 <span className="font-bold" style={{ color: COLORS.primary }}>${Number(item.price).toLocaleString()}</span>
               </div>
               <div className="flex gap-2">
-                {/* Botón editar */}
                 <button
                   onClick={() => openEdit(item)}
                   className="flex-1 py-1.5 rounded-lg text-xs font-semibold border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 hover:bg-gray-50 dark:hover:bg-slate-800 transition"
@@ -166,7 +164,6 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
         )}
       </div>
 
-      {/* Modal — montado en el body via portal para evitar el overflow-y-auto del main */}
       {showModal && createPortal(
         <div
           style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
@@ -177,39 +174,34 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
               {editingItem ? (t('rd.edit_dish') || 'Editar plato') : t('rd.new_dish')}
             </h2>
             <div className="space-y-3">
-              
-
-              {/* Imagen */}
               <div>
-                <label className={labelCls}>Imagen del plato</label>
+                <label className={labelCls}>{t('rd.dish_photo')}</label>
                 <div
                   className="w-full h-32 rounded-xl border-2 border-dashed border-gray-200 dark:border-slate-700 flex items-center justify-center cursor-pointer overflow-hidden bg-gray-50 dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
                   onClick={() => document.getElementById('menu-img-input').click()}
                 >
                   {preview
                     ? <img src={preview} alt="preview" className="w-full h-full object-cover" />
-                    : <span className="text-gray-400 dark:text-slate-500 text-sm">📷 {t('rd.upload_image') || 'Subir imagen'}</span>
+                    : <span className="text-gray-400 dark:text-slate-500 text-sm">📷 {t('rd.photo_upload')}</span>
                   }
                 </div>
                 <input id="menu-img-input" type="file" accept="image/*" className="hidden" onChange={handleImage} />
               </div>
 
-              {/* Nombre */}
               <div>
-                <label className={labelCls}>Nombre del plato *</label>
+                <label className={labelCls}>{t('rd.name')} *</label>
                 <input
-                  placeholder="Ej: Bandeja Paisa"
+                  placeholder={t('rd.name_placeholder') || "Ej: Bandeja Paisa"}
                   value={form.name}
                   className={inputCls}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                 />
               </div>
 
-              {/* Descripción */}
               <div>
-                <label className={labelCls}>Descripción</label>
+                <label className={labelCls}>{t('rd.description')}</label>
                 <textarea
-                  placeholder="Ingredientes o descripción breve..."
+                  placeholder={t('rd.desc_placeholder')}
                   value={form.description}
                   rows={2}
                   className={inputCls + " resize-none"}
@@ -217,11 +209,10 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 />
               </div>
 
-              {/* Precio */}
               <div>
-                <label className={labelCls}>Precio (COP) *</label>
+                <label className={labelCls}>{t('rd.price_label')} *</label>
                 <input
-                  placeholder="Ej: 15000"
+                  placeholder={t('rd.price_placeholder') || "Ej: 15000"}
                   type="text"
                   inputMode="decimal"
                   value={form.price}
@@ -230,27 +221,25 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 />
               </div>
 
-              {/* Categoría */}
               <div>
-                <label className={labelCls}>Categoría *</label>
+                <label className={labelCls}>{t('rd.category')} *</label>
                 <select
                   value={form.category_id}
                   className={inputCls}
                   onChange={e => setForm({ ...form, category_id: e.target.value })}
                 >
-                  <option value="">Seleccionar categoría</option>
+                  <option value="">{t('rd.select_category') || 'Seleccionar categoría'}</option>
                   {categories.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Stock y tiempo */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelCls}>Stock disponible</label>
+                  <label className={labelCls}>{t('rd.stock') || 'Stock disponible'}</label>
                   <input
-                    placeholder="Ej: 20"
+                    placeholder={t('rd.stock_placeholder') || "Ej: 20"}
                     type="number"
                     min="0"
                     value={form.stock}
@@ -259,25 +248,24 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                   />
                 </div>
                 <div>
-                  <label className={labelCls}>Tiempo de preparación</label>
+                  <label className={labelCls}>{t('rd.prep_time') || 'Tiempo de preparación'}</label>
                   <select
                     value={form.prep_time_minutes}
                     className={inputCls}
                     onChange={e => setForm({ ...form, prep_time_minutes: e.target.value })}
                   >
-                    <option value="">Sin especificar</option>
-                    <option value="5">Menos de 5 min</option>
-                    <option value="10">5 – 10 min</option>
-                    <option value="15">10 – 15 min</option>
-                    <option value="20">15 – 20 min</option>
-                    <option value="30">20 – 30 min</option>
-                    <option value="45">30 – 45 min</option>
-                    <option value="60">45 – 60 min</option>
-                    <option value="90">Más de 60 min</option>
+                    <option value="">{t('rd.not_specified') || 'Sin especificar'}</option>
+                    <option value="5">{t('rd.less_than_5') || 'Menos de 5 min'}</option>
+                    <option value="10">{t('rd.between_5_10') || '5 – 10 min'}</option>
+                    <option value="15">{t('rd.between_10_15') || '10 – 15 min'}</option>
+                    <option value="20">{t('rd.between_15_20') || '15 – 20 min'}</option>
+                    <option value="30">{t('rd.between_20_30') || '20 – 30 min'}</option>
+                    <option value="45">{t('rd.between_30_45') || '30 – 45 min'}</option>
+                    <option value="60">{t('rd.between_45_60') || '45 – 60 min'}</option>
+                    <option value="90">{t('rd.more_than_60') || 'Más de 60 min'}</option>
                   </select>
                 </div>
               </div>
-
             </div>
 
             <div className="flex gap-2 mt-5">
@@ -301,7 +289,6 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
         document.body
       )}
 
-      {/* Modal de confirmación de eliminación */}
       {confirmDelete && createPortal(
         <div
           style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}
@@ -314,10 +301,10 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
             <div className="text-center mb-5">
               <p className="text-3xl mb-3">🗑️</p>
               <h3 className="text-base font-bold text-gray-800 dark:text-slate-100 mb-1">
-                ¿Eliminar este plato?
+                {t('rd.confirm_delete')}
               </h3>
               <p className="text-sm text-gray-400 dark:text-slate-500">
-                Esta acción no se puede deshacer.
+                {t('rd.delete_warning') || 'Esta acción no se puede deshacer.'}
               </p>
             </div>
             <div className="flex gap-2">
@@ -325,7 +312,7 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 onClick={() => setConfirmDelete(null)}
                 className="flex-1 py-2.5 text-sm border border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-400 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition"
               >
-                Cancelar
+                {t('rd.cancel')}
               </button>
               <button
                 onClick={() => {
@@ -334,7 +321,7 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 }}
                 className="flex-1 py-2.5 text-sm text-white rounded-xl font-semibold transition hover:opacity-90 bg-red-500"
               >
-                Sí, eliminar
+                {t('rd.delete_confirm') || 'Sí, eliminar'}
               </button>
             </div>
           </div>

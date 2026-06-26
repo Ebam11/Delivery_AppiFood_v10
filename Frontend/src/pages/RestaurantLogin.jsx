@@ -1,7 +1,7 @@
-// Archivo: src/pages/RestaurantLogin.jsx | Comentario: logica principal del modulo.
+// Archivo: src/pages/RestaurantLogin.jsx
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import Footer from '../components/Footer'
 import { ApiError, fetchJson } from '../api/fetchJson'
 

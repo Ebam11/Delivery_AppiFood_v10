@@ -1,11 +1,8 @@
 import { Link } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { getHomePathByRole } from '../../utils/appHelpers'
 import { COLORS } from './constants'
 
-/**
- * Sidebar de navegación para el panel del restaurante y admin.
- */
 export default function Sidebar({ active, onNav, open, onClose, user, onLogout, isAdmin }) {
   const { t } = useTranslation()
   
@@ -64,7 +61,6 @@ export default function Sidebar({ active, onNav, open, onClose, user, onLogout, 
 
   return (
     <>
-      {/* Overlay para móviles */}
       {open && <div className="fixed inset-0 bg-black/40 z-40 md:hidden" onClick={onClose} />}
       
       <aside className={`

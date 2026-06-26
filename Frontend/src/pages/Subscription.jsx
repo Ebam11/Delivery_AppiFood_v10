@@ -1,7 +1,7 @@
-// Archivo: src/pages/Subscription.jsx | Comentario: logica principal del modulo.
+// Archivo: src/pages/Subscription.jsx
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { createSubscription, getCurrentSubscription, getSubscriptionPlans } from '../api/subscriptions'
 import SubscriptionPaymentGateway from '../components/SubscriptionPaymentGateway'
 
@@ -31,34 +31,34 @@ export default function SubscriptionPage({ user, isAuth }) {
   const visiblePlans = [
     {
       id: 'free',
-      name: 'Plan Gratis',
+      name: t('subscription.plan_free_name') || 'Plan Gratis',
       price: '$0',
-      period: '/siempre',
-      description: 'Seguir comprando sin pagar membresía. Perfecto si estás ajustando gastos.',
+      period: t('subscription.plan_free_period') || '/siempre',
+      description: t('subscription.plan_free_desc') || 'Seguir comprando sin pagar membresía. Perfecto si estás ajustando gastos.',
       features: [
-        'Acceso a restaurantes y promociones normales',
-        'Sin costo fijo mensual',
-        'Ideal para presupuestos ajustados',
-        'Pagas solo lo que pides',
+        t('subscription.plan_free_f1') || 'Acceso a restaurantes y promociones normales',
+        t('subscription.plan_free_f2') || 'Sin costo fijo mensual',
+        t('subscription.plan_free_f3') || 'Ideal para presupuestos ajustados',
+        t('subscription.plan_free_f4') || 'Pagas solo lo que pides',
       ],
-      cta: 'Seguir gratis',
+      cta: t('subscription.plan_free_cta') || 'Seguir gratis',
       popular: false,
       isSelected: !isPremium,
     },
     {
       id: 'premium',
-      name: 'Premium Ahorro',
+      name: t('subscription.plan_pro_name') || 'Premium Ahorro',
       price: '$7.900',
-      period: '/mes',
-      description: 'Gasta menos en cada pedido y encuentra ofertas pensadas para cuidar tu bolsillo.',
+      period: t('subscription.plan_pro_period') || '/mes',
+      description: t('subscription.plan_pro_desc') || 'Gasta menos en cada pedido y encuentra ofertas pensadas para cuidar tu bolsillo.',
       features: [
-        'Descuentos exclusivos en comidas seleccionadas',
-        'Beneficios que suelen costar menos que un domicilio',
-        'Prioridad en promociones de bajo costo',
-        'Ahorra más si pides varias veces al mes',
-        'Ideal para comer bien sin gastar de más',
+        t('subscription.plan_pro_f1') || 'Descuentos exclusivos en comidas seleccionadas',
+        t('subscription.plan_pro_f2') || 'Beneficios que suelen costar menos que un domicilio',
+        t('subscription.plan_pro_f3') || 'Prioridad en promociones de bajo costo',
+        t('subscription.plan_pro_f4') || 'Ahorra más si pides varias veces al mes',
+        t('subscription.plan_pro_f5') || 'Ideal para comer bien sin gastar de más',
       ],
-      cta: 'Comprar Premium',
+      cta: t('subscription.plan_pro_cta') || 'Comprar Premium',
       popular: true,
       isSelected: isPremium,
     },
@@ -186,16 +186,16 @@ export default function SubscriptionPage({ user, isAuth }) {
 
         {currentSubscription?.plan && (
           <div className="mb-8 max-w-3xl mx-auto bg-white dark:bg-slate-900 border border-green-200 dark:border-green-900/30 rounded-2xl p-6 shadow-sm">
-            <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">Plan actual</p>
+            <p className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">{t('subscription.current_plan') || 'Plan actual'}</p>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Premium Ahorro</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">{t('subscription.plan_pro_name') || 'Premium Ahorro'}</h3>
                 <p className="text-gray-600 dark:text-slate-400 mt-1">
-                  {isPremium ? 'Activo' : 'Inactivo'} · pensado para pedir más por menos
+                  {isPremium ? t('subscription.active') || 'Activo' : t('subscription.inactive') || 'Inactivo'} · {t('subscription.plan_desc') || 'pensado para pedir más por menos'}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-sm text-gray-500 dark:text-slate-400">Cobro mensual</p>
+                <p className="text-sm text-gray-500 dark:text-slate-400">{t('subscription.monthly_charge') || 'Cobro mensual'}</p>
                 <p className="text-2xl font-bold text-[#FF4B3E]">$7.900</p>
               </div>
             </div>
@@ -216,7 +216,7 @@ export default function SubscriptionPage({ user, isAuth }) {
               {plan.popular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
                   <span className="bg-[#FF4B3E] text-white px-4 py-1 rounded-full text-sm font-bold shadow-md">
-                    Más ahorro por mes
+                    {t('subscription.most_popular') || 'Más ahorro por mes'}
                   </span>
                 </div>
               )}
@@ -253,7 +253,7 @@ export default function SubscriptionPage({ user, isAuth }) {
                   {subscribingPlanId === plan.id ? (
                     <><i className="fas fa-spinner fa-spin mr-2"></i>{t('subscription.processing')}</>
                   ) : plan.isSelected ? (
-                    'Plan actual'
+                    t('subscription.current_plan') || 'Plan actual'
                   ) : (
                     plan.cta
                   )}
@@ -280,13 +280,13 @@ export default function SubscriptionPage({ user, isAuth }) {
 
         {/* Bottom CTA */}
         <div className="mt-16 bg-[#FF4B3E] rounded-2xl p-8 text-white text-center">
-          <h2 className="text-3xl font-bold mb-4">Ahorra sin dejar de comer rico</h2>
-          <p className="text-lg mb-6 opacity-90">El plan Premium está pensado para quien quiere pedir comida sin que el presupuesto se dispare.</p>
+          <h2 className="text-3xl font-bold mb-4">{t('subscription.cta_title') || 'Ahorra sin dejar de comer rico'}</h2>
+          <p className="text-lg mb-6 opacity-90">{t('subscription.cta_subtitle') || 'El plan Premium está pensado para quien quiere pedir comida sin que el presupuesto se dispare.'}</p>
           <button
             onClick={() => handleSubscribe('premium')}
             className="bg-white text-[#FF4B3E] font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition"
           >
-            Comprar Premium
+            {t('subscription.plan_pro_cta') || 'Comprar Premium'}
           </button>
         </div>
       </div>

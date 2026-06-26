@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fetchJson } from '../api/fetchJson'
-import { useTranslate as useTranslation } from './useTranslate'
+import { useTranslation } from 'react-i18next';
 import { isValidName } from '../utils/validation'
 
 /**

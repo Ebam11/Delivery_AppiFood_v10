@@ -4,7 +4,7 @@
  * Organizada en componentes modulares para mejorar la legibilidad y el rendimiento.
  */
 
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { useHomeData } from '../hooks/useHomeData'
 import HeroCarousel from '../components/Home/HeroCarousel'
 import PopularRestaurants from '../components/Home/PopularRestaurants'

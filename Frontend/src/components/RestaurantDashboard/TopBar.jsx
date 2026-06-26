@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useTranslate as useTranslation } from '../../hooks/useTranslate'
+import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'
 import ThemeToggle from '../ThemeToggle'
 import { COLORS } from './constants'
@@ -57,7 +57,6 @@ export default function TopBar({
           />
         </div>
 
-        {/* Bell con dropdown */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowNotifs(v => !v)}
@@ -76,10 +75,9 @@ export default function TopBar({
 
           {showNotifs && (
             <div className="absolute right-0 top-11 w-80 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-xl z-50 overflow-hidden">
-              {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-800">
                 <span className="text-sm font-semibold text-gray-800 dark:text-slate-100">
-                  Notificaciones
+                  {t('rd.notifications_title') || 'Notificaciones'}
                 </span>
                 {unreadCount > 0 && (
                   <button
@@ -87,16 +85,15 @@ export default function TopBar({
                     className="text-xs hover:underline"
                     style={{ color: primaryColor }}
                   >
-                    Marcar todas como leídas
+                    {t('rd.mark_all_read') || 'Marcar todas como leídas'}
                   </button>
                 )}
               </div>
 
-              {/* Lista */}
               <div className="max-h-80 overflow-y-auto divide-y divide-gray-50 dark:divide-slate-800">
                 {notifications.length === 0 ? (
                   <div className="py-10 text-center text-gray-400 dark:text-slate-500 text-sm">
-                    Sin notificaciones
+                    {t('rd.no_notifications') || 'Sin notificaciones'}
                   </div>
                 ) : (
                   notifications.map(n => (
@@ -106,7 +103,7 @@ export default function TopBar({
                     >
                       <div className="flex-1 min-w-0">
                         <p className={`text-xs leading-relaxed ${!n.is_read ? 'font-semibold text-gray-800 dark:text-slate-100' : 'text-gray-600 dark:text-slate-400'}`}>
-                          {n.message || n.data?.message || 'Nueva notificación'}
+                          {n.message || n.data?.message || t('rd.new_notification') || 'Nueva notificación'}
                         </p>
                         <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">
                           {n.created_at ? new Date(n.created_at).toLocaleDateString() : ''}
@@ -117,7 +114,7 @@ export default function TopBar({
                           <button
                             onClick={() => onNotifRead?.(n.id)}
                             className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 text-xs"
-                            title="Marcar como leída"
+                            title={t('rd.mark_read') || 'Marcar como leída'}
                           >
                             ✓
                           </button>
@@ -125,7 +122,7 @@ export default function TopBar({
                         <button
                           onClick={() => onNotifDelete?.(n.id)}
                           className="w-6 h-6 flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-950/20 text-gray-300 hover:text-red-400 text-xs"
-                          title="Eliminar"
+                          title={t('rd.delete_notification') || 'Eliminar'}
                         >
                           ✕
                         </button>

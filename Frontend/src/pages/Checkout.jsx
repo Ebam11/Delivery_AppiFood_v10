@@ -1,7 +1,7 @@
-// Archivo: src/pages/Checkout.jsx | Comentario: logica principal del modulo.
+// Archivo: src/pages/Checkout.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { useCartStore } from '../store/cartStore';
 import { useOrderStore } from '../store/orderStore';
 import { usePaymentStore } from '../store/paymentStore';
@@ -52,7 +52,6 @@ export const Checkout = () => {
           if (isMounted) {
             const list = data?.data || [];
             setSavedAddresses(list);
-            // Si hay una dirección default, ponerla por defecto
             const def = list.find(a => a.is_default);
             if (def) {
               setFormData(prev => ({ ...prev, address: def.address }));
@@ -74,7 +73,7 @@ export const Checkout = () => {
 
   useEffect(() => {
     if (!hasLoadedCart || isCartLoading) return;
-    if (!cart || cart.items?.length === 0) navigate('/cart');
+    if (!cart || cart.items?.length === 0) navigate('/user/cart');
   }, [cart, hasLoadedCart, isCartLoading, navigate]);
 
   useEffect(() => {
@@ -102,7 +101,7 @@ export const Checkout = () => {
       const orderResponse = await createNewOrder(orderData);
       setOrderId(orderResponse.id);
     } catch (err) {
-      const message = err.response?.data?.message || 'Error al crear la orden';
+      const message = err.response?.data?.message || t('checkout.create_error') || 'Error al crear la orden';
       setError(message);
       setIsProcessing(false);
     }
@@ -119,7 +118,7 @@ export const Checkout = () => {
           />
           <button
             type="button"
-            onClick={() => navigate('/cart')}
+            onClick={() => navigate('/user/cart')}
             className="px-4 py-3 bg-[#FF4B3E] text-white font-bold rounded-xl hover:shadow-lg transition"
           >
             {t('checkout.back_to_cart')}
@@ -151,7 +150,7 @@ export const Checkout = () => {
                 {savedAddresses.length > 0 && (
                   <div className="mb-4">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                      Selecciona una dirección guardada:
+                      {t('checkout.select_saved_address') || 'Selecciona una dirección guardada:'}
                     </label>
                     <select
                       onChange={(e) => {
@@ -162,7 +161,7 @@ export const Checkout = () => {
                       value={formData.address}
                       className="w-full px-4 py-3 bg-gray-55 dark:bg-slate-900 border-2 border-gray-200 dark:border-slate-700 text-gray-800 dark:text-white rounded-xl focus:outline-none focus:border-[#FF4B3E] cursor-pointer text-sm"
                     >
-                      <option value="">-- Elige una dirección guardada --</option>
+                      <option value="">-- {t('checkout.select_address_placeholder') || 'Elige una dirección guardada'} --</option>
                       {savedAddresses.map((addr) => (
                         <option key={addr.id} value={addr.address}>
                           {addr.name || 'Dirección sin nombre'} ({addr.address})
@@ -220,7 +219,7 @@ export const Checkout = () => {
               <div className="flex gap-3 pt-6">
                 <button
                   type="button"
-                  onClick={() => navigate('/cart')}
+                  onClick={() => navigate('/user/cart')}
                   className="flex-1 button-outline py-3.5"
                 >
                   {t('checkout.back_to_cart')}

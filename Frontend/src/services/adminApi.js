@@ -69,4 +69,14 @@
         fetchJson(`${API_URL}/admin/reports/restaurants`),
     getUsersReport: () => 
         fetchJson(`${API_URL}/admin/reports/users`),
+
+        // ===== NOTIFICACIONES =====
+    getNotifications: () =>
+        fetchJson(`${API_URL}/notifications`),
+    markNotificationRead: (id) =>
+        fetchJson(`${API_URL}/notifications/${id}/read`, { method: 'PATCH' }),
+    markAllNotificationsRead: () =>
+        fetchJson(`${API_URL}/notifications/read-all`, { method: 'PATCH' }),
+    deleteNotification: (id) =>
+        fetchJson(`${API_URL}/notifications/${id}`, { method: 'DELETE' }),
     };

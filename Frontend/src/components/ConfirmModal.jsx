@@ -1,6 +1,6 @@
 // Archivo: src/components/ConfirmModal.jsx
 import React from 'react';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 
 export default function ConfirmModal({ isOpen, title, message, confirmText, cancelText, onConfirm, onCancel }) {
   const { t } = useTranslation();

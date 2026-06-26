@@ -1,16 +1,12 @@
 import { useState } from 'react'
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { COLORS } from './constants'
 import { Badge } from './Common'
 
-/**
- * Sección de gestión de órdenes con filtros y búsqueda.
- */
-export default function OrdersSection({ orders, onStatusChange, onSelectOrder }) {
+export default function OrdersSection({ orders, onStatusChange, onViewDetails }) {
   const { t } = useTranslation()
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
-  const [viewMode, setViewMode] = useState('table')
 
   const counts = {
     all:        orders.length,
@@ -37,7 +33,6 @@ export default function OrdersSection({ orders, onStatusChange, onSelectOrder })
 
   return (
     <div className="space-y-6">
-      {/* Resumen de estados */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: t('rd.total_orders_col'), value: counts.all,       icon:'📋', color: COLORS.primary },
@@ -55,7 +50,6 @@ export default function OrdersSection({ orders, onStatusChange, onSelectOrder })
         ))}
       </div>
 
-      {/* Controles: Filtros y Búsqueda */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div className="flex flex-wrap gap-1 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-1 shadow-sm">
           {FILTERS.map(f => (
@@ -83,7 +77,6 @@ export default function OrdersSection({ orders, onStatusChange, onSelectOrder })
         </div>
       </div>
 
-      {/* Tabla de Órdenes */}
       <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -96,7 +89,7 @@ export default function OrdersSection({ orders, onStatusChange, onSelectOrder })
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
               {visible.map(o => (
-                <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition cursor-pointer" onClick={() => onSelectOrder && onSelectOrder(o)}>
+                <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition cursor-pointer" onClick={() => onViewDetails && onViewDetails(o)}>
                   <td className="px-5 py-3 font-mono text-xs font-semibold" style={{ color: COLORS.primary }}>{o.id}</td>
                   <td className="px-5 py-3 font-medium text-gray-800 dark:text-slate-200">
                     {typeof o.customer === 'object' && o.customer !== null ? o.customer.name : o.customer}
@@ -119,7 +112,7 @@ export default function OrdersSection({ orders, onStatusChange, onSelectOrder })
               {visible.length === 0 && (
                 <tr>
                   <td colSpan="5" className="px-5 py-12 text-center text-gray-400 dark:text-slate-500">
-                    No se encontraron pedidos.
+                    {t('rd.no_orders_found') || 'No se encontraron pedidos.'}
                   </td>
                 </tr>
               )}

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { resetPassword, sendPasswordResetLink } from '../api/auth'
 import './Auth.css'
 
@@ -58,13 +58,13 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white font-sans">
-      {/* Header Centrado (Mismo que inicio de sesión) */}
+      {/* Header Centrado */}
       <header className="h-[80px] flex items-center justify-center bg-white border-b border-slate-100 z-50">
         <Link to="/" className="logo-satisfy text-4xl text-[#FF4B3E]">AppiFood</Link>
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Sección Izquierda: Imagen Decorativa (Mismo que inicio de sesión) */}
+        {/* Sección Izquierda: Imagen Decorativa */}
         <div className="hidden lg:flex lg:w-1/2 relative">
           <div 
             className="absolute inset-0 bg-cover bg-center transition-transform duration-1000 hover:scale-105"
@@ -80,7 +80,7 @@ export default function ForgotPassword() {
           </div>
         </div>
 
-        {/* Sección Derecha: Formulario (Mismo que inicio de sesión) */}
+        {/* Sección Derecha: Formulario */}
         <div className="flex-1 flex flex-col overflow-y-auto">
           <div className="flex-1 flex items-center justify-center p-6 md:p-12">
             <div className="w-full max-w-md">

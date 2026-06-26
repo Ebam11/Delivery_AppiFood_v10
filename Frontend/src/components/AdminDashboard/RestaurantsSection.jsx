@@ -1,7 +1,7 @@
 // Frontend/src/components/AdminDashboard/RestaurantsSection.jsx
-import { useState } from 'react';
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
-import { Badge } from '../RestaurantDashboard/Common';
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { Badge } from '../RestaurantDashboard/Common'
 
 export default function RestaurantsSection({ 
   restaurants, 
@@ -11,31 +11,30 @@ export default function RestaurantsSection({
   onDelete,
   pagination 
 }) {
-  const { t } = useTranslation();
-  const [filter, setFilter] = useState('all');
-  const [search, setSearch] = useState('');
+  const { t } = useTranslation()
+  const [filter, setFilter] = useState('all')
+  const [search, setSearch] = useState('')
 
-  // Filtros en frontend solo para UI, los datos ya vienen filtrados del backend
   const visible = restaurants.filter(r => {
-    const matchStatus = filter === 'all' || r.status === filter;
+    const matchStatus = filter === 'all' || r.status === filter
     const matchSearch = r.name?.toLowerCase().includes(search.toLowerCase()) || 
-                      r.owner?.name?.toLowerCase().includes(search.toLowerCase());
-    return matchStatus && matchSearch;
-  });
+                      r.owner?.name?.toLowerCase().includes(search.toLowerCase())
+    return matchStatus && matchSearch
+  })
 
   const FILTERS = [
     { key: 'all', label: t('adminDashboard.filter.all', { defaultValue: 'Todos' }) },
     { key: 'active', label: t('adminDashboard.filter.active', { defaultValue: 'Activos' }) },
     { key: 'pending', label: t('adminDashboard.filter.pending', { defaultValue: 'Pendientes' }) },
     { key: 'suspended', label: t('adminDashboard.filter.suspended', { defaultValue: 'Suspendidos' }) },
-  ];
+  ]
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
       </div>
-    );
+    )
   }
 
   return (
@@ -92,8 +91,8 @@ export default function RestaurantsSection({
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
               {visible.map(r => {
-                const status = r.is_active ? 'active' : 'suspended';
-                const isVerified = r.is_verified || false;
+                const status = r.is_active ? 'active' : 'suspended'
+                const isVerified = r.is_verified || false
                 
                 return (
                   <tr key={r.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition group">
@@ -110,7 +109,7 @@ export default function RestaurantsSection({
                             )}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-slate-400">
-                            {r.city || 'Sin ubicación'}
+                            {r.city || t('adminDashboard.no_location') || 'Sin ubicación'}
                           </p>
                         </div>
                       </div>
@@ -125,7 +124,7 @@ export default function RestaurantsSection({
                     <td className="px-6 py-4">
                       <Badge status={status} />
                       {!isVerified && (
-                        <span className="ml-2 text-xs text-orange-500">Pendiente</span>
+                        <span className="ml-2 text-xs text-orange-500">{t('adminDashboard.status.pending')}</span>
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -159,12 +158,12 @@ export default function RestaurantsSection({
                       </div>
                     </td>
                   </tr>
-                );
+                )
               })}
               {visible.length === 0 && (
                 <tr>
                   <td colSpan="5" className="px-6 py-12 text-center text-gray-500 dark:text-slate-400">
-                    No se encontraron restaurantes con los filtros actuales.
+                    {t('adminDashboard.no_restaurants_found') || 'No se encontraron restaurantes con los filtros actuales.'}
                   </td>
                 </tr>
               )}
@@ -173,17 +172,13 @@ export default function RestaurantsSection({
         </div>
       </div>
 
-      {/* Paginación */}
       {pagination && pagination.total > 0 && (
         <div className="flex justify-between items-center text-sm text-gray-500 dark:text-slate-400">
           <span>
-            Mostrando {pagination.from || 0} - {pagination.to || 0} de {pagination.total || 0}
+            {t('adminDashboard.pagination.showing', { defaultValue: 'Mostrando' })} {pagination.from || 0} - {pagination.to || 0} {t('adminDashboard.pagination.of', { defaultValue: 'de' })} {pagination.total || 0}
           </span>
-          <div className="flex gap-2">
-            {/* Aquí irían los botones de paginación */}
-          </div>
         </div>
       )}
     </div>
-  );
+  )
 }

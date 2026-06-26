@@ -1,6 +1,6 @@
 // Archivo: src/components/FoodCategoryCarousel.jsx | Comentario: logica principal del modulo.
 import { useState, useRef } from 'react'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 
 const CATEGORY_THEME = {
   'Restaurantes Locales': { icon: '🍽️', color: '#FF8A3D' },

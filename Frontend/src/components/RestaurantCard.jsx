@@ -1,18 +1,14 @@
-// Archivo: src/components/RestaurantCard.jsx | Comentario: logica principal del modulo.
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next' // <- CORREGIDO
 import { useRestaurantImage } from '../hooks/useImages'
 import { useLazyLoad } from '../hooks/useLazyLoad'
 import { blurhash } from '../utils/blurhash'
 import { useFavoritesStore } from '../store/favoritesStore'
 import ScheduleDisplay, { isRestaurantOpenNow } from './ScheduleDisplay'
 import heroImage from '../assets/hero.png'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
 
-/**
- * Tarjeta de restaurante con imagen dinámica de Unsplash + lazy loading + favoritos
- */
 export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle, showSchedule = true }) {
-  const { t } = useTranslation()
+  const { t } = useTranslation() // <- CORREGIDO
   const { image, loading } = useRestaurantImage(restaurant?.name, restaurant?.img)
   const { ref, src, isLoaded } = useLazyLoad(image, blurhash.restaurant())
   const { isFavorite } = useFavoritesStore()
@@ -37,7 +33,6 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle,
   const ratingLabel = Number(restaurant.rating || 0).toFixed(1)
   const deliveryLabel = restaurant.delivery > 0 ? `$${fmt(restaurant.delivery)}` : (t('restaurantCard.free') || 'Gratis')
   
-  // Calcular si está abierto basado en schedule o is_open flag
   const sched = restaurant.schedule || restaurant.schedules || []
   const hasSchedule = Array.isArray(sched) && sched.length > 0
   const backendOpenFlag = (() => {
@@ -97,7 +92,6 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle,
           )}
         </div>
 
-        {/* Badge de estado abierto/cerrado */}
         {showSchedule && (
         <div className="absolute right-3 top-3 z-10">
           <ScheduleDisplay 
@@ -152,7 +146,6 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle,
           </span>
         </div>
 
-        {/* Horario actual o modal */}
         {showSchedule && hasSchedule && (
           <div className="mt-2.5 text-[10px]">
             <button

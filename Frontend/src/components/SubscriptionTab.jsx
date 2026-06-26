@@ -1,7 +1,7 @@
 // Archivo: src/components/SubscriptionTab.jsx | Comentario: logica principal del modulo.
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import ConfirmModal from './ConfirmModal';
 import {
   cancelSubscription,

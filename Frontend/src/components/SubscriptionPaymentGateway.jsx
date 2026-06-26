@@ -1,6 +1,6 @@
 // Archivo: src/components/SubscriptionPaymentGateway.jsx | Comentario: Pasarela de pago para suscripciones
 import { useEffect, useMemo, useState } from 'react'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { confirmSubscription } from '../api/subscriptions'
 import { getUserPaymentMethods } from '../api/payment'
 

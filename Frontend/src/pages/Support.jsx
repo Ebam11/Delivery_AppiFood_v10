@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import SupportChatbot from '../components/SupportChatbot'
 import { supportFaqs, supportShortcuts } from '../utils/supportAssistant'
 
@@ -67,16 +67,23 @@ export default function Support() {
                   <div key={group.category}>
                     <div className="flex items-center gap-3 mb-3">
                       <span className={`inline-flex px-3 py-1.5 rounded-full text-xs font-bold border ${faqBadgeStyles[group.category] || 'bg-gray-50 text-gray-700 border-gray-100'}`}>
-                        {group.category}
+                        {t(`supportPage.faq_category.${group.category.replace(/\s/g, '_')}`, { defaultValue: group.category })}
                       </span>
                     </div>
                     <div className="space-y-4">
-                      {group.items.map((faq) => (
-                        <div key={faq.question} className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 transition-colors duration-300">
-                          <h3 className="font-bold text-gray-900 dark:text-gray-100 transition-colors duration-300">{faq.question}</h3>
-                          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed transition-colors duration-300">{faq.answer}</p>
-                        </div>
-                      ))}
+                      {group.items.map((faq) => {
+                        const key = faq.question.replace(/[¿?]/g, '').trim().replace(/\s/g, '_')
+                        return (
+                          <div key={faq.question} className="p-4 rounded-2xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 transition-colors duration-300">
+                            <h3 className="font-bold text-gray-900 dark:text-gray-100 transition-colors duration-300">
+                              {t(`supportPage.faq_q.${key}`, { defaultValue: faq.question })}
+                            </h3>
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400 leading-relaxed transition-colors duration-300">
+                              {t(`supportPage.faq_a.${key}`, { defaultValue: faq.answer })}
+                            </p>
+                          </div>
+                        )
+                      })}
                     </div>
                   </div>
                 ))}

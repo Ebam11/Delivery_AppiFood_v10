@@ -1,7 +1,7 @@
-// Archivo: src/pages/Addresses.jsx | Comentario: logica principal del modulo.
+// Archivo: src/pages/Addresses.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore';
 import { api } from '../api/client';
 import Loading from '../components/Loading';
@@ -59,7 +59,7 @@ export default function Addresses() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
           <div>
             <h1 className="text-3xl sm:text-4xl font-black text-gray-900">{t('addresses.title')}</h1>
-            <p className="text-gray-500 text-sm mt-1">Gestiona tus puntos de entrega para pedidos rápidos.</p>
+            <p className="text-gray-500 text-sm mt-1">{t('addresses.subtitle') || 'Gestiona tus puntos de entrega para pedidos rápidos.'}</p>
           </div>
           <button
             onClick={() => navigate('/user/addresses/create')}
@@ -113,7 +113,7 @@ export default function Addresses() {
               <i className="fas fa-map-marker-alt" />
             </div>
             <p className="text-gray-500 font-bold text-lg mb-2">{t('addresses.empty')}</p>
-            <p className="text-gray-400 text-sm mb-6 max-w-sm">No tienes ninguna dirección registrada todavía. Añade una para empezar a pedir.</p>
+            <p className="text-gray-400 text-sm mb-6 max-w-sm">{t('addresses.empty_hint') || 'No tienes ninguna dirección registrada todavía. Añade una para empezar a pedir.'}</p>
             <button
               onClick={() => navigate('/user/addresses/create')}
               className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#FF4B3E] hover:bg-[#e03a2d] text-white rounded-full font-bold transition-all shadow-md shadow-brand/20 text-sm"
@@ -123,29 +123,28 @@ export default function Addresses() {
           </div>
         )}
 
-        {/* Modal de confirmación estilizado */}
         {confirmDeleteId && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[99999] p-4">
             <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-gray-100 animate-scale-up">
               <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 text-2xl mx-auto mb-4">
                 <i className="fas fa-exclamation-triangle" />
               </div>
-              <h3 className="text-xl font-black text-gray-900 text-center mb-2">¿Eliminar dirección?</h3>
+              <h3 className="text-xl font-black text-gray-900 text-center mb-2">{t('addresses.confirm_delete') || '¿Eliminar dirección?'}</h3>
               <p className="text-gray-500 text-center text-sm mb-6">
-                Esta acción no se puede deshacer. Ya no podrás seleccionar este punto de entrega.
+                {t('addresses.delete_warning') || 'Esta acción no se puede deshacer. Ya no podrás seleccionar este punto de entrega.'}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={handleDelete}
                   className="flex-1 py-3 bg-red-500 hover:bg-red-650 active:scale-95 text-white font-bold rounded-2xl transition shadow-lg shadow-red-500/10 text-sm"
                 >
-                  Sí, eliminar
+                  {t('addresses.confirm_delete_btn') || 'Sí, eliminar'}
                 </button>
                 <button
                   onClick={() => setConfirmDeleteId(null)}
                   className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 active:scale-95 text-gray-800 font-bold rounded-2xl transition text-sm"
                 >
-                  Cancelar
+                  {t('addresses.cancel') || 'Cancelar'}
                 </button>
               </div>
             </div>

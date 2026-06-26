@@ -1,16 +1,11 @@
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'; // <- CORREGIDO
 
-/**
- * Pantalla de carga universal para la aplicación.
- */
 export default function LoadingScreen({ message = 'AppiFood' }) {
-  const { t } = useTranslation()
+  const { t } = useTranslation() // <- CORREGIDO
   return (
     <div className="fixed top-16 bottom-0 left-0 right-0 z-40 flex flex-col items-center justify-center bg-white/40 dark:bg-slate-950/40 backdrop-blur-[6px] transition-colors duration-300 overflow-hidden font-sans">
-      {/* Patrón de fondo */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-500/5 via-transparent to-transparent opacity-60 pointer-events-none" />
 
-      {/* Hamburguesa Desarmable Animada */}
       <div className="relative h-28 flex items-center justify-center mb-8">
         <div className="animated-burger-loader">
           <div className="burger-layer burger-bun-top" />

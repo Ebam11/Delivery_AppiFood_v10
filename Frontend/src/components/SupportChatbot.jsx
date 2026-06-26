@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next' // <- CORREGIDO
 import { getAssistantReply, supportShortcuts } from '../utils/supportAssistant'
 import { useCart } from '../context/useCart'
 
@@ -44,7 +44,7 @@ async function resolveAnswer(message, history) {
 }
 
 export default function SupportChatbot({ embedded = false, startOpen = false }) {
-  const { t } = useTranslation()
+  const { t } = useTranslation() // <- CORREGIDO
   const location = useLocation()
   const bottomRef = useRef(null)
   const [open, setOpen] = useState(embedded || startOpen)
@@ -68,7 +68,6 @@ export default function SupportChatbot({ embedded = false, startOpen = false }) 
   const { isOpen: isCartOpen } = useCart()
   const [isNearFooter, setIsNearFooter] = useState(false)
 
-  // Detectar scroll cerca del footer
   useEffect(() => {
     if (embedded) return
     const handleScroll = () => {

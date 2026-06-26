@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 
 /**
@@ -43,7 +43,7 @@ export default function CouponCarousel({ coupons }) {
           className="flex gap-6 overflow-x-auto pb-6 scrollbar-hide snap-x"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {coupons.map((coupon, idx) => (
+          {coupons.map((coupon) => (
             <div 
               key={coupon.code} 
               className="min-w-[300px] md:min-w-[380px] bg-white dark:bg-slate-900 rounded-3xl p-6 border border-red-50 dark:border-slate-800/80 relative overflow-hidden shadow-sm hover:shadow-md transition-all snap-start"

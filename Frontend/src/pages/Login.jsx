@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { ApiError, fetchJson } from '../api/fetchJson'
 import Footer from '../components/Footer'
 import './Auth.css'
@@ -40,12 +40,12 @@ export default function LoginPage({ onLogin }) {
         else if (role === 'restaurant') navigate('/restaurant/dashboard')
         else navigate('/')
       } catch (e) {
-        setError('Error al procesar los datos de sesión.')
+        setError(t('login.error_connection') || 'Error al procesar los datos de sesión.')
       }
     } else if (errorParam) {
-      setError('Error en la autenticación con Google: ' + errorParam)
+      setError(t('login.error_connection') || 'Error en la autenticación con Google: ' + errorParam)
     }
-  }, [navigate, onLogin])
+  }, [navigate, onLogin, t])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -145,7 +145,7 @@ export default function LoginPage({ onLogin }) {
                   <div className="animate-fade-in space-y-5">
                     <div className="relative flex items-center py-2">
                       <div className="flex-grow border-t border-slate-100"></div>
-                      <span className="flex-shrink mx-4 text-xs font-black uppercase tracking-widest text-slate-300">Tus datos</span>
+                      <span className="flex-shrink mx-4 text-xs font-black uppercase tracking-widest text-slate-300">{t('login.your_data') || 'Tus datos'}</span>
                       <div className="flex-grow border-t border-slate-100"></div>
                     </div>
 
@@ -155,7 +155,7 @@ export default function LoginPage({ onLogin }) {
                         <input 
                           type="email" name="email" value={formData.email} onChange={handleChange}
                           className="w-full bg-slate-50 border-2 border-transparent focus:border-red-500/30 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-medium text-slate-700"
-                          placeholder="ejemplo@correo.com" required
+                          placeholder={t('login.placeholder_email') || "ejemplo@correo.com"} required
                         />
                       </div>
 

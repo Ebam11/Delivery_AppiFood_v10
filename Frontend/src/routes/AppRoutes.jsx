@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, Link } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next' // <- CORREGIDO
 import PublicLayout from '../components/layout/PublicLayout'
 import RestaurantLayout from '../components/layout/RestaurantLayout'
 import LoadingScreen from '../components/layout/LoadingScreen'

@@ -1,10 +1,9 @@
 /**
  * Archivo: src/pages/Offers.jsx
  * Página de ofertas y platos con descuento de AppiFood.
- * Carga dinámicamente los platos en promoción desde la API.
  */
 import React, { useState, useEffect } from 'react';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { fetchJson } from '../api/fetchJson';
 import { useFavoritesStore } from '../store/favoritesStore';
 import { useAuthStore } from '../store/authStore';
@@ -69,7 +68,6 @@ export default function OffersPage() {
     const loadOffers = async () => {
       setLoading(true);
       try {
-        // Intentar primero obtener productos con discount_price
         const data = await fetchJson('/products?has_discount=true&paginate=false');
         const items = Array.isArray(data) ? data : data.data || [];
 
@@ -85,7 +83,6 @@ export default function OffersPage() {
             }));
           setProducts(offersList);
         } else {
-          // Fallback: cargar desde restaurantes y usar featured products con descuento
           const resData = await fetchJson('/restaurants?paginate=false');
           const restaurants = Array.isArray(resData) ? resData : resData.data || [];
           const offersList = [];
@@ -106,7 +103,6 @@ export default function OffersPage() {
                 });
             }
           });
-          // Si aún no hay nada, mostrar featured products con descuento simulado
           if (offersList.length === 0) {
             restaurants.forEach(res => {
               if (res.products) {
@@ -130,7 +126,6 @@ export default function OffersPage() {
         }
       } catch (err) {
         console.error('Error loading offers:', err);
-        // Intentar con el endpoint de restaurantes como fallback
         try {
           const resData = await fetchJson('/restaurants?paginate=false');
           const restaurants = Array.isArray(resData) ? resData : resData.data || [];
@@ -172,11 +167,11 @@ export default function OffersPage() {
   };
 
   const filters = [
-    { key: 'all', label: t('offers.all') || 'Todas' },
-    { key: 'burger', label: '🍔 Hamburguesas' },
-    { key: 'pizza', label: '🍕 Pizzas' },
-    { key: 'sushi', label: '🍣 Sushi' },
-    { key: 'pollo', label: '🍗 Pollo' },
+    { key: 'all', label: t('offers.all') || 'All' },
+    { key: 'burger', label: `🍔 ${t('offers.burgers') || 'Burgers'}` },
+    { key: 'pizza', label: `🍕 ${t('offers.pizzas') || 'Pizzas'}` },
+    { key: 'sushi', label: `🍣 ${t('offers.sushi') || 'Sushi'}` },
+    { key: 'pollo', label: `🍗 ${t('offers.chicken') || 'Chicken'}` },
   ];
 
   const filteredProducts = activeFilter === 'all'
@@ -207,17 +202,17 @@ export default function OffersPage() {
             <div className="flex items-center gap-6 mt-6">
               <div className="text-center">
                 <p className="text-3xl font-black">{products.length}+</p>
-                <p className="text-white/70 text-sm">Platos en oferta</p>
+                <p className="text-white/70 text-sm">{t('offers.dishes_on_offer') || 'Platos en oferta'}</p>
               </div>
               <div className="w-px h-10 bg-white/30" />
               <div className="text-center">
                 <p className="text-3xl font-black">25%</p>
-                <p className="text-white/70 text-sm">Descuento máx.</p>
+                <p className="text-white/70 text-sm">{t('offers.max_discount') || 'Descuento máx.'}</p>
               </div>
               <div className="w-px h-10 bg-white/30" />
               <div className="text-center">
                 <p className="text-3xl font-black">⏰</p>
-                <p className="text-white/70 text-sm">Solo hoy</p>
+                <p className="text-white/70 text-sm">{t('offers.today_only') || 'Solo hoy'}</p>
               </div>
             </div>
           </div>
@@ -253,7 +248,6 @@ export default function OffersPage() {
                 onClick={() => setSelectedProduct(p)}
                 className="bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer border border-gray-100 dark:border-slate-800 flex flex-col"
               >
-                {/* Imagen */}
                 <div className="h-48 overflow-hidden relative">
                   <img
                     src={p.image || PLACEHOLDER}
@@ -261,13 +255,11 @@ export default function OffersPage() {
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     onError={e => { e.target.src = PLACEHOLDER; }}
                   />
-                  {/* Badge Descuento */}
                   {p.pct > 0 && (
                     <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full font-black text-xs shadow-lg animate-pulse">
                       -{p.pct}% OFF
                     </div>
                   )}
-                  {/* Botón Favorito */}
                   <button
                     onClick={(e) => handleFavoriteToggle(p.restaurantId || p.restaurant_id, e)}
                     className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-md backdrop-blur-sm
@@ -279,7 +271,6 @@ export default function OffersPage() {
                   </button>
                 </div>
 
-                {/* Info */}
                 <div className="p-5 flex flex-col flex-grow">
                   {p.restaurantName && (
                     <p className="text-red-500 font-bold text-[10px] uppercase tracking-widest mb-1">
@@ -312,14 +303,14 @@ export default function OffersPage() {
           <div className="text-center py-24 bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800">
             <div className="text-7xl mb-4">🔍</div>
             <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">
-              {t('home.no_offers') || 'No hay ofertas disponibles'}
+              {t('offers.no_offers') || 'No hay ofertas disponibles'}
             </h3>
-            <p className="text-gray-500 dark:text-slate-400 mb-6">Vuelve más tarde para ver promociones increíbles.</p>
+            <p className="text-gray-500 dark:text-slate-400 mb-6">{t('offers.no_offers_hint') || 'Vuelve más tarde para ver promociones increíbles.'}</p>
             <button
               onClick={() => navigate('/restaurants')}
               className="bg-red-500 text-white font-bold px-8 py-3 rounded-2xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30"
             >
-              Ver Restaurantes
+              {t('offers.view_restaurants') || 'Ver Restaurantes'}
             </button>
           </div>
         )}
@@ -334,5 +325,5 @@ export default function OffersPage() {
         />
       )}
     </div>
-  );
+  )
 }

@@ -1,8 +1,7 @@
-// Archivo: src/components/Header.jsx | Comentario: logica principal del modulo.
-// src/components/Header.jsx - Versión completa con Dark Mode y Responsive
+// Archivo: src/components/Header.jsx
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from './LanguageSwitcher'
 import ThemeToggle from './ThemeToggle'
 import { useCart } from '../context/useCart'
@@ -13,7 +12,7 @@ const DEFAULT_LOCATION = { lat: 2.4448, lng: -76.6147 }
 export default function Header({ isAuth, user, onLogout, isLoading }) {
   const { t } = useTranslation()
   
-  const [drawerOpen, setDrawerOpen]     = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [addressModalOpen, setAddressModalOpen] = useState(false)
   const [deliveryAddress, setDeliveryAddress] = useState(() => localStorage.getItem('selected_delivery_address') || 'Popayán, Cauca')
@@ -24,11 +23,12 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   const [addressesLoading, setAddressesLoading] = useState(false)
   const [addressesError, setAddressesError] = useState('')
   const [addressSaving, setAddressSaving] = useState(false)
-  const [search, setSearch]             = useState('')
-  const { count, setIsOpen }            = useCart()
-  const navigate  = useNavigate()
-  const location  = useLocation()
-  const userRef   = useRef(null)
+  const [search, setSearch] = useState('')
+  const { count, setIsOpen } = useCart()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const userRef = useRef(null)
+  
   const storedUser = (() => {
     try {
       return JSON.parse(localStorage.getItem('user') || 'null')
@@ -43,10 +43,9 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     (effectiveUser.email || '').toLowerCase().endsWith('@gmail.com') && 
     (!effectiveUser.phone || !effectiveUser.id_number || !effectiveUser.birth_date);
 
-  // FUNCIONES AUXILIARES
   const getUserName = () => {
-    if (!effectiveUser) return 'Usuario'
-    return effectiveUser.name || effectiveUser.nombre || effectiveUser.displayName || effectiveUser.username || 'Usuario'
+    if (!effectiveUser) return t('header.defaultUser')
+    return effectiveUser.name || effectiveUser.nombre || effectiveUser.displayName || effectiveUser.username || t('header.defaultUser')
   }
 
   const getUserEmail = () => {
@@ -260,7 +259,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     { section: isAuth ? (t('header.nav.sectionSubscriptions') || 'SUSCRIPCIONES') : 'MÁS BENEFICIOS' },
     { to:'/subscription', icon:'fa-crown',        label: t('header.nav.subscriptionPlans') || 'Planes de Suscripción', promo:true },
     { section: t('header.nav.sectionOffers') || 'OFERTAS' },
-    { to:'/offers', icon:'fa-fire',           label: t('header.nav.offersOfDay') || 'Ofertas del Día', promo:true },
+    { to:'/offers', icon:'fa-fire',           label: t('header.nav.dailyPromos') || 'Ofertas del Día', promo:true },
     { to:'/coupons', icon:'fa-tag',           label: t('header.nav.coupons') || 'Cupones disponibles', promo:true },
     { section: isAuth ? (t('header.nav.sectionHelp') || 'AYUDA') : 'MÁS INFORMACIÓN' },
     { to:'/help-center', icon:'fa-question-circle', label: t('header.nav.howItWorks') || 'Centro de ayuda', promo:true },
@@ -272,7 +271,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   const linkClasses = (promo) => 
     `flex items-center gap-3 px-5 py-3 text-sm font-semibold transition-all duration-200 text-left w-full hover:bg-gray-50 dark:hover:bg-slate-700 hover:pl-6 ${promo ? 'text-[#FF4B3E]' : 'text-gray-700 dark:text-gray-300 hover:text-[#FF4B3E]'}`;
 
-  // Skeleton loading
   if (isLoading) {
     return (
       <>
@@ -304,19 +302,16 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           
           {/* IZQUIERDA: Hamburguesa + Logo */}
           <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-            {/* Hamburguesa */}
             <button onClick={() => setDrawerOpen(true)}
               className="w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:text-[#FF4B3E] transition flex-shrink-0"
               aria-label="Abrir menú">
               <i className="fas fa-bars text-lg font-bold" />
             </button>
 
-            {/* Logo */}
             <Link to="/" onClick={goHomeTop} className="font-['Satisfy'] text-2xl sm:text-3xl font-bold text-[#FF4B3E] hover:text-[#e03a2d] transition whitespace-nowrap flex-shrink-0">
               AppiFood
             </Link>
 
-            {/* Dirección - solo desktop grande */}
             <button
               onClick={openAddressModal}
               className="hidden lg:flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap border border-gray-200 dark:border-slate-700 rounded-full px-3 py-1.5 hover:border-[#FF4B3E] hover:text-[#FF4B3E] transition ml-1"
@@ -327,7 +322,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
             </button>
           </div>
 
-          {/* CENTRO: Buscador - solo tablet y superior */}
+          {/* CENTRO: Buscador */}
           <div className="hidden md:flex flex-1 justify-center min-w-0 mx-2">
             <div className="w-full max-w-xl">
               <div className="w-full flex items-center gap-2 bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-2 border-2 border-transparent hover:border-[#FF4B3E] transition">
@@ -347,10 +342,8 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
             </div>
           </div>
 
-          {/* DERECHA: Controles + Usuario + Carrito */}
+          {/* DERECHA: Controles */}
           <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0 ml-auto">
-
-
             {!isAuth ? (
               <Link to="/login" className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-full bg-[#FF4B3E] text-white font-bold text-xs sm:text-sm shadow-md hover:bg-[#e03a2d] hover:shadow-lg transition-all transform hover:-translate-y-0.5 whitespace-nowrap">
                 {t('header.login') || "Ingresar"}
@@ -397,7 +390,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
               </div>
             )}
 
-            {/* Carrito */}
             <button onClick={() => setIsOpen(true)}
               className="relative w-10 h-10 rounded-lg bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-[#FF4B3E] flex items-center justify-center transition">
               <i className="fas fa-shopping-cart text-lg" />
@@ -420,7 +412,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
       {/* ── DRAWER ── */}
       <nav className={`fixed top-16 left-0 w-[300px] h-[calc(100vh-64px)] bg-white dark:bg-slate-900 z-[61] flex flex-col overflow-y-auto transform transition-transform duration-300 ease-out ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         
-        {/* Header drawer */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900 z-10">
           <span className="font-satisfy text-2xl text-[#FF4B3E] font-bold">AppiFood</span>
           <button 
@@ -431,7 +422,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           </button>
         </div>
 
-        {/* Perfil auth */}
         {isAuth && effectiveUser && (
           <div className="flex flex-col items-center gap-2 p-6 bg-[#fff5f4] dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
             <div className="w-16 h-16 rounded-full bg-[#FF4B3E] text-white font-black text-2xl flex items-center justify-center flex-shrink-0 mb-2">
@@ -451,9 +441,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           </div>
         )}
 
-        {/* Buscador y dirección para móviles */}
         <div className="p-4 border-b border-gray-100 dark:border-slate-800 md:hidden space-y-3">
-          {/* Buscador */}
           <div className="w-full flex items-center gap-2 bg-gray-100 dark:bg-slate-800 rounded-full px-4 py-2 border border-transparent focus-within:border-[#FF4B3E] transition">
             <input
               type="search"
@@ -469,7 +457,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
             </button>
           </div>
 
-          {/* Dirección */}
           <button
             onClick={() => { setDrawerOpen(false); openAddressModal(); }}
             className="w-full flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2 hover:border-[#FF4B3E] hover:text-[#FF4B3E] transition"
@@ -482,7 +469,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           </button>
         </div>
 
-        {/* Links */}
         <div className="flex-1">
           {NAV_LINKS.map((item, i) => {
             if (item.section) return (
@@ -508,9 +494,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
           })}
         </div>
 
-        {/* Footer drawer */}
         <div className="p-5 border-t border-gray-100 dark:border-slate-800 flex flex-col gap-2.5">
-
           {!isAuth ? (
             <Link 
               to="/login" 
@@ -606,7 +590,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         </div>
       )}
 
-      {/* Espacio para header fijo */}
       <div style={{ height: isGmailUserMissingInfo ? 116 : 64 }} />
     </>
   )

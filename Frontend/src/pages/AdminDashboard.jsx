@@ -1,20 +1,20 @@
 // Frontend/src/pages/AdminDashboard.jsx
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
-import { useAdminDashboard } from '../hooks/useAdminDashboard';
-import Sidebar from '../components/RestaurantDashboard/Sidebar';
-import TopBar from '../components/RestaurantDashboard/TopBar';
-import DashboardSection from '../components/AdminDashboard/DashboardSection';
-import RestaurantsSection from '../components/AdminDashboard/RestaurantsSection';
-import UsersSection from '../components/AdminDashboard/UsersSection';
-import OrdersSection from '../components/AdminDashboard/OrdersSection';
-import ReviewsSection from '../components/AdminDashboard/ReviewsSection';
-import NotificationsSection from '../components/AdminDashboard/NotificationsSection';
-import ReportsSection from '../components/AdminDashboard/ReportsSection';
-import SettingsSection from '../components/AdminDashboard/SettingsSection';
-import '../styles/AdminDashboard.css';
+import { useTranslation } from 'react-i18next'
+import { useAdminDashboard } from '../hooks/useAdminDashboard'
+import Sidebar from '../components/RestaurantDashboard/Sidebar'
+import TopBar from '../components/RestaurantDashboard/TopBar'
+import DashboardSection from '../components/AdminDashboard/DashboardSection'
+import RestaurantsSection from '../components/AdminDashboard/RestaurantsSection'
+import UsersSection from '../components/AdminDashboard/UsersSection'
+import OrdersSection from '../components/AdminDashboard/OrdersSection'
+import ReviewsSection from '../components/AdminDashboard/ReviewsSection'
+import NotificationsSection from '../components/AdminDashboard/NotificationsSection'
+import ReportsSection from '../components/AdminDashboard/ReportsSection'
+import SettingsSection from '../components/AdminDashboard/SettingsSection'
+import '../styles/AdminDashboard.css'
 
 export default function AdminDashboard({ user, onLogout }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   const {
     activeTab,
     setActiveTab,
@@ -38,12 +38,12 @@ export default function AdminDashboard({ user, onLogout }) {
     deleteOrder,
     toggleReviewVisibility,
     deleteReview,
-  } = useAdminDashboard();
+  } = useAdminDashboard()
 
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <DashboardSection stats={stats} loading={loading} />;
+        return <DashboardSection stats={stats} loading={loading} />
       case 'restaurants':
         return (
           <RestaurantsSection
@@ -54,7 +54,7 @@ export default function AdminDashboard({ user, onLogout }) {
             onDelete={deleteRestaurant}
             pagination={pagination}
           />
-        );
+        )
       case 'users':
         return (
           <UsersSection
@@ -64,7 +64,7 @@ export default function AdminDashboard({ user, onLogout }) {
             onDelete={deleteUser}
             pagination={pagination}
           />
-        );
+        )
       case 'orders':
         return (
           <OrdersSection
@@ -74,7 +74,7 @@ export default function AdminDashboard({ user, onLogout }) {
             onDelete={deleteOrder}
             pagination={pagination}
           />
-        );
+        )
       case 'reviews':
         return (
           <ReviewsSection
@@ -84,23 +84,23 @@ export default function AdminDashboard({ user, onLogout }) {
             onDelete={deleteReview}
             pagination={pagination}
           />
-        );
+        )
       case 'notifications':
-        return <NotificationsSection showToast={showToast} />;
+        return <NotificationsSection showToast={showToast} />
       case 'reports':
-        return <ReportsSection />;
+        return <ReportsSection />
       case 'settings':
-        return <SettingsSection showToast={showToast} />;
+        return <SettingsSection showToast={showToast} />
       default:
         return (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400">
             <span className="text-6xl mb-4">🚧</span>
-            <p className="text-xl font-bold">Próximamente</p>
-            <p className="text-sm">Sección en desarrollo.</p>
+            <p className="text-xl font-bold">{t('adminDashboard.coming_soon') || 'Próximamente'}</p>
+            <p className="text-sm">{t('adminDashboard.in_development') || 'Sección en desarrollo.'}</p>
           </div>
-        );
+        )
     }
-  };
+  }
 
   return (
     <div className="ad-container flex min-h-screen bg-orange-50/30 dark:bg-slate-950 text-gray-800 dark:text-slate-100 transition-colors duration-250">
@@ -135,5 +135,5 @@ export default function AdminDashboard({ user, onLogout }) {
         </div>
       )}
     </div>
-  );
+  )
 }

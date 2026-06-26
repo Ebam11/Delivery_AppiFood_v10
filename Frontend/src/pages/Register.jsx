@@ -5,10 +5,9 @@
 
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next'
 import { ApiError, fetchJson } from '../api/fetchJson'
 import { isValidName } from '../utils/validation'
-import Footer from '../components/Footer'
 import './Auth.css'
 
 export default function RegisterPage({ onLogin }) {
@@ -52,7 +51,7 @@ export default function RegisterPage({ onLogin }) {
       return setError(t('validation.name_special_chars'))
     }
     if (formData.password !== formData.confirm_password) {
-      return setError(t('register.error_passwords_match') || "Las contraseñas no coinciden")
+      return setError(t('register.error_password_match') || "Las contraseñas no coinciden")
     }
 
     setLoading(true)
@@ -76,7 +75,7 @@ export default function RegisterPage({ onLogin }) {
       navigate('/')
       
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('register.error_generic'))
+      setError(err instanceof ApiError ? err.message : t('register.error_connection'))
     } finally {
       setLoading(false)
     }
@@ -144,7 +143,7 @@ export default function RegisterPage({ onLogin }) {
                   <div className="animate-fade-in space-y-4">
                     <div className="relative flex items-center py-2">
                       <div className="flex-grow border-t border-slate-100"></div>
-                      <span className="flex-shrink mx-4 text-xs font-black uppercase tracking-widest text-slate-300">Tus datos</span>
+                      <span className="flex-shrink mx-4 text-xs font-black uppercase tracking-widest text-slate-300">{t('register.your_data') || 'Tus datos'}</span>
                       <div className="flex-grow border-t border-slate-100"></div>
                     </div>
 
@@ -159,7 +158,7 @@ export default function RegisterPage({ onLogin }) {
                                 ? 'border-red-500 bg-red-50/20 focus:border-red-500' 
                                 : 'border-transparent bg-slate-50 focus:border-red-500/30 focus:bg-white'
                             }`}
-                            placeholder="Tu nombre completo" required
+                            placeholder={t('register.placeholder_name') || "Tu nombre completo"} required
                           />
                         </div>
 
@@ -168,7 +167,7 @@ export default function RegisterPage({ onLogin }) {
                           <input 
                             type="email" name="email" value={formData.email} onChange={handleChange}
                             className="w-full bg-slate-50 border-2 border-transparent focus:border-red-500/30 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-medium text-slate-700"
-                            placeholder="ejemplo@correo.com" required
+                            placeholder={t('register.placeholder_email') || "ejemplo@correo.com"} required
                           />
                         </div>
 
@@ -178,7 +177,7 @@ export default function RegisterPage({ onLogin }) {
                             <input 
                               type="password" name="password" value={formData.password} onChange={handleChange}
                               className="w-full bg-slate-50 border-2 border-transparent focus:border-red-500/30 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-medium text-slate-700"
-                              placeholder="••••••••" required
+                              placeholder={t('register.placeholder_password') || "••••••••"} required
                             />
                           </div>
 
@@ -187,7 +186,7 @@ export default function RegisterPage({ onLogin }) {
                             <input 
                               type="password" name="confirm_password" value={formData.confirm_password} onChange={handleChange}
                               className="w-full bg-slate-50 border-2 border-transparent focus:border-red-500/30 focus:bg-white rounded-2xl px-6 py-4 outline-none transition-all font-medium text-slate-700"
-                              placeholder="••••••••" required
+                              placeholder={t('register.placeholder_confirm_password') || "••••••••"} required
                             />
                           </div>
                         </div>
@@ -208,7 +207,7 @@ export default function RegisterPage({ onLogin }) {
                               </div>
 
                               <div className="flex items-center gap-1.5 text-xs font-bold">
-                                <span className="text-slate-400">Seguridad:</span>
+                                <span className="text-slate-400">{t('register.strength') || 'Seguridad:'}</span>
                                 <span className={`px-2.5 py-1 rounded-full text-white ${pwdInfo.color}`}>
                                   {pwdInfo.text}
                                 </span>
@@ -240,7 +239,7 @@ export default function RegisterPage({ onLogin }) {
               </div>
 
               <p className="text-center mt-8 text-slate-500 font-bold">
-                ¿Ya tienes cuenta? <Link to="/login" className="text-red-500 hover:underline">Inicia sesión</Link>
+                {t('register.has_account')} <Link to="/login" className="text-red-500 hover:underline">{t('register.login_link')}</Link>
               </p>
             </div>
           </div>

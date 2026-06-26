@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../store/authStore'
 import { useRestaurantDetail } from '../hooks/useRestaurantDetail'
 import { useRestaurantImage } from '../hooks/useImages'
@@ -142,7 +142,7 @@ export const RestaurantDetail = () => {
           {/* Menú */}
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-8 pb-4 border-b">
-              <h2 className="text-3xl font-black text-gray-900">Nuestro Menú</h2>
+              <h2 className="text-3xl font-black text-gray-900">{t('restaurant_detail.menu_title') || 'Nuestro Menú'}</h2>
               <span className="text-gray-400 font-bold">{products.length} platos</span>
             </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { useProfile } from '../hooks/useProfile'
 import { fetchJson } from '../api/fetchJson'
 import SubscriptionTab from '../components/SubscriptionTab'
@@ -25,18 +25,17 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
   const [emailVerified, setEmailVerified] = useState(user?.email_verified || false)
   const [phoneVerified, setPhoneVerified] = useState(user?.phone_verified || false)
   const [verifyMsg, setVerifyMsg] = useState(null)
-  const [verifyLoading, setVerifyLoading] = useState(null) // 'email' | 'phone' | null
+  const [verifyLoading, setVerifyLoading] = useState(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('verified') === 'email') {
       setEmailVerified(true);
-      setVerifyMsg({ type: 'success', text: '✅ ¡Tu correo electrónico ha sido verificado con éxito!' });
+      setVerifyMsg({ type: 'success', text: t('profile.email_verified_success') || '✅ ¡Tu correo electrónico ha sido verificado con éxito!' });
       setActiveTab('security');
-      // Limpiar el parámetro de la URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [setActiveTab]);
+  }, [setActiveTab, t]);
 
   const handleVerifyEmail = async () => {
     setVerifyLoading('email')
@@ -46,12 +45,12 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
       if (res.data) {
         setEmailVerified(true)
         onUpdateProfile?.(res.data)
-        setVerifyMsg({ type: 'success', text: '✅ Correo verificado correctamente.' })
+        setVerifyMsg({ type: 'success', text: t('profile.email_verified_success') || '✅ Correo verificado correctamente.' })
       } else {
-        setVerifyMsg({ type: 'success', text: '📩 Te hemos enviado un enlace de confirmación a tu correo electrónico.' })
+        setVerifyMsg({ type: 'success', text: t('profile.email_verification_sent') || '📩 Te hemos enviado un enlace de confirmación a tu correo electrónico.' })
       }
     } catch (err) {
-      setVerifyMsg({ type: 'error', text: err.message || 'Error al enviar el correo de verificación.' })
+      setVerifyMsg({ type: 'error', text: err.message || t('profile.verification_error') || 'Error al enviar el correo de verificación.' })
     } finally {
       setVerifyLoading(null)
     }
@@ -64,9 +63,9 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
       const res = await fetchJson('/profile/verify-phone', { method: 'POST' })
       setPhoneVerified(true)
       onUpdateProfile?.(res.data || res)
-      setVerifyMsg({ type: 'success', text: '✅ Teléfono verificado correctamente.' })
+      setVerifyMsg({ type: 'success', text: t('profile.phone_verified_success') || '✅ Teléfono verificado correctamente.' })
     } catch (err) {
-      setVerifyMsg({ type: 'error', text: err.message || 'Error al verificar el teléfono.' })
+      setVerifyMsg({ type: 'error', text: err.message || t('profile.verification_error') || 'Error al verificar el teléfono.' })
     } finally {
       setVerifyLoading(null)
     }
@@ -97,11 +96,11 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                 <div className="flex items-center gap-2 mt-1">
                   {emailVerified ? (
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-full">
-                      <i className="fas fa-check-circle" /> {t('profile.email_verified') || 'Verificado'}
+                      <i className="fas fa-check-circle" /> {t('profile.verified') || 'Verificado'}
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full">
-                      <i className="fas fa-exclamation-circle" /> {t('profile.email_not_verified') || 'No verificado'}
+                      <i className="fas fa-exclamation-circle" /> {t('profile.not_verified') || 'No verificado'}
                     </span>
                   )}
                 </div>
@@ -155,19 +154,17 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                 )}
 
                 <form onSubmit={handleUpdate} className="space-y-6">
-                  {/* Nombre y Apellido */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="profile-input-group">
                       <label className="profile-label">{t('profile.first_name') || 'Nombre'}</label>
-                      <input name="first_name" value={formData.first_name} onChange={handleChange} className="profile-input" placeholder="Tu nombre" />
+                      <input name="first_name" value={formData.first_name} onChange={handleChange} className="profile-input" placeholder={t('profile.placeholder_first_name') || 'Tu nombre'} />
                     </div>
                     <div className="profile-input-group">
                       <label className="profile-label">{t('profile.last_name') || 'Apellido'}</label>
-                      <input name="last_name" value={formData.last_name} onChange={handleChange} className="profile-input" placeholder="Tu apellido" />
+                      <input name="last_name" value={formData.last_name} onChange={handleChange} className="profile-input" placeholder={t('profile.placeholder_last_name') || 'Tu apellido'} />
                     </div>
                   </div>
 
-                  {/* Email y Teléfono con badges */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="profile-input-group">
                       <label className="profile-label flex items-center gap-2">
@@ -178,7 +175,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                           </span>
                         ) : (
                           <button type="button" className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-full normal-case tracking-normal hover:bg-amber-100 dark:hover:bg-amber-900/50 transition">
-                            <i className="fas fa-paper-plane" /> {t('profile.verify_email') || 'Verificar'}
+                            <i className="fas fa-paper-plane" /> {t('profile.verify') || 'Verificar'}
                           </button>
                         )}
                       </label>
@@ -193,15 +190,14 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                           </span>
                         ) : formData.phone ? (
                           <button type="button" className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 dark:bg-amber-900/30 px-1.5 py-0.5 rounded-full normal-case tracking-normal hover:bg-amber-100 dark:hover:bg-amber-900/50 transition">
-                            <i className="fas fa-paper-plane" /> {t('profile.verify_phone') || 'Verificar'}
+                            <i className="fas fa-paper-plane" /> {t('profile.verify') || 'Verificar'}
                           </button>
                         ) : null}
                       </label>
-                      <input name="phone" value={formData.phone} onChange={handleChange} className="profile-input" placeholder="+57 300 000 0000" />
+                      <input name="phone" value={formData.phone} onChange={handleChange} className="profile-input" placeholder={t('profile.placeholder_phone') || '+57 300 000 0000'} />
                     </div>
                   </div>
 
-                  {/* Documento de identidad */}
                   <div>
                     <h4 className="text-sm font-black text-gray-700 dark:text-gray-300 mb-4 flex items-center gap-2">
                       <i className="fas fa-id-card text-gray-400" />
@@ -220,12 +216,11 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                       </div>
                       <div className="profile-input-group">
                         <label className="profile-label">{t('profile.id_number') || 'Número de documento'}</label>
-                        <input name="id_number" value={formData.id_number} onChange={handleChange} className="profile-input" placeholder="1234567890" />
+                        <input name="id_number" value={formData.id_number} onChange={handleChange} className="profile-input" placeholder={t('profile.placeholder_id') || '1234567890'} />
                       </div>
                     </div>
                   </div>
 
-                  {/* Fecha de nacimiento y Género */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="profile-input-group">
                       <label className="profile-label">{t('profile.birth_date') || 'Fecha de nacimiento'}</label>
@@ -264,7 +259,6 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
               <div className="animate-fade-in">
                 <h3 className="text-2xl font-black text-gray-900 dark:text-gray-100 mb-8">{t('profile.security') || 'Seguridad'}</h3>
 
-                {/* Mensaje de feedback verificación */}
                 {verifyMsg && (
                   <div className={`mb-4 p-4 rounded-2xl text-sm font-bold flex items-center gap-3 border ${
                     verifyMsg.type === 'success'
@@ -278,7 +272,6 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                   </div>
                 )}
 
-                {/* Verificación de email */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 mb-6">
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
@@ -301,13 +294,12 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                         className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition shadow-sm flex-shrink-0 disabled:opacity-60 flex items-center gap-2"
                       >
                         {verifyLoading === 'email' ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-paper-plane" />}
-                        {verifyLoading === 'email' ? 'Enviando...' : (t('profile.send_verification') || 'Verificar ahora')}
+                        {verifyLoading === 'email' ? t('profile.sending') || 'Enviando...' : (t('profile.verify_now') || 'Verificar ahora')}
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Verificación de teléfono */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6 mb-6">
                   <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                     <div className="flex items-center gap-4">
@@ -319,7 +311,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                         <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{formData.phone || t('profile.no_phone') || 'No registrado'}</p>
                         {!formData.phone && (
                           <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 font-semibold">
-                            <i className="fas fa-info-circle mr-1" />Agrega un teléfono en la pestaña de información primero.
+                            <i className="fas fa-info-circle mr-1" />{t('profile.add_phone_hint') || 'Agrega un teléfono en la pestaña de información primero.'}
                           </p>
                         )}
                       </div>
@@ -335,13 +327,12 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                         className="px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 flex items-center gap-2"
                       >
                         {verifyLoading === 'phone' ? <i className="fas fa-spinner fa-spin" /> : <i className="fas fa-mobile-alt" />}
-                        {verifyLoading === 'phone' ? 'Verificando...' : (t('profile.send_code') || 'Verificar teléfono')}
+                        {verifyLoading === 'phone' ? t('profile.verifying') || 'Verificando...' : (t('profile.verify_phone') || 'Verificar teléfono')}
                       </button>
                     )}
                   </div>
                 </div>
 
-                {/* Cambiar contraseña */}
                 <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 p-6">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 flex-shrink-0">
@@ -362,8 +353,8 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
             {activeTab === 'orders' && (
                <div className="text-center py-20">
                   <div className="text-6xl mb-4">📦</div>
-                  <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t('profile.no_orders', { defaultValue: 'Aún no tienes pedidos' })}</h4>
-                  <p className="text-gray-500 dark:text-gray-400">{t('profile.orders_hint', { defaultValue: 'Tus compras aparecerán aquí.' })}</p>
+                  <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{t('profile.no_orders') || 'Aún no tienes pedidos'}</h4>
+                  <p className="text-gray-500 dark:text-gray-400">{t('profile.orders_hint') || 'Tus compras aparecerán aquí.'}</p>
                </div>
             )}
           </main>

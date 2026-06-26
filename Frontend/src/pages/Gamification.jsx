@@ -1,12 +1,10 @@
 /**
  * Archivo: src/pages/Gamification.jsx
  * Sistema de gamificación y programa de lealtad para clientes de AppiFood.
- * Muestra el nivel actual (Bronce, Plata, Oro, Diamante), barra de progreso,
- * historial de misiones/puntos y permite redimir puntos por cupones.
  */
 import React, { useState, useEffect } from 'react';
 import { fetchJson } from '../api/fetchJson';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import LoadingScreen from '../components/layout/LoadingScreen';
 import '../styles/Gamification.css';
 
@@ -23,7 +21,6 @@ export default function Gamification() {
       const res = await fetchJson('/api/profile');
       const userData = res?.data || res;
       setUser(userData);
-      // Actualizar localStorage para sincronizar puntos en la barra de navegación
       const localUserStr = localStorage.getItem('user');
       if (localUserStr) {
         try {
@@ -48,7 +45,6 @@ export default function Gamification() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Determinar nivel y progreso
   const getLevelInfo = (points) => {
     if (points < 150) {
       return {
@@ -85,7 +81,7 @@ export default function Gamification() {
         level: t('gamification.levels.diamond', { defaultValue: 'Diamante' }),
         icon: '💎',
         min: 800,
-        max: 99999, // Max nivel
+        max: 99999,
         color: 'from-cyan-400 to-blue-600',
         nextLevel: t('gamification.max_level', { defaultValue: '¡Nivel Máximo!' }),
         desc: t('gamification.levels.desc_diamond', { defaultValue: '¡Eres una leyenda gastronómica de AppiFood!' })
@@ -103,7 +99,6 @@ export default function Gamification() {
       });
       showToast(res.message || t('gamification.coupon_claimed', { defaultValue: '¡Cupón redimido!' }), 'success');
       setRedeemedCoupon(res.data);
-      // Recargar perfil para actualizar puntos
       await fetchUserProfile();
     } catch (err) {
       showToast(err.message || t('gamification.error_redeem', { defaultValue: 'Error al redimir puntos' }), 'error');
@@ -120,7 +115,6 @@ export default function Gamification() {
   const levelInfo = getLevelInfo(points);
   const isMaxLevel = levelInfo.level === t('gamification.levels.diamond', { defaultValue: 'Diamante' });
 
-  // Progreso en porcentaje para la barra
   const range = levelInfo.max - levelInfo.min;
   const currentProgress = points - levelInfo.min;
   const progressPercent = isMaxLevel ? 100 : Math.min(100, Math.max(0, (currentProgress / range) * 100));
@@ -167,7 +161,6 @@ export default function Gamification() {
   return (
     <div className="gf-container">
       <div className="gf-wrapper">
-        {/* Header de Gamificación */}
         <header className="gf-header">
           <div className="gf-header-bg" />
           <div className="gf-header-content">
@@ -176,7 +169,6 @@ export default function Gamification() {
           </div>
         </header>
 
-        {/* Nivel y Progreso */}
         <div className="gf-level-card">
           <div className="gf-level-info">
             <div className="gf-level-badge-container">
@@ -192,7 +184,6 @@ export default function Gamification() {
             </div>
           </div>
 
-          {/* Barra de progreso */}
           <div className="gf-progress-container">
             <div className="gf-progress-labels">
               <span>{levelInfo.min} pts</span>
@@ -209,7 +200,6 @@ export default function Gamification() {
           </div>
         </div>
 
-        {/* Recompensa reclamada (Modal o Banner flotante de éxito) */}
         {redeemedCoupon && (
           <div className="gf-coupon-alert animate-bounce">
             <div className="gf-coupon-alert-inner">
@@ -239,7 +229,6 @@ export default function Gamification() {
           </div>
         )}
 
-        {/* Cupones disponibles */}
         <section className="gf-rewards-section">
           <h2 className="gf-section-title">{t('gamification.redeem_rewards', { defaultValue: '🎁 Redimir Recompensas' })}</h2>
           <div className="gf-rewards-grid">
@@ -278,7 +267,6 @@ export default function Gamification() {
         </section>
       </div>
 
-      {/* Toast Notification */}
       {toast && (
         <div className={`gf-toast ${toast.type}`}>
           {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'} {toast.message}

@@ -1,39 +1,42 @@
-import { useState, useEffect } from 'react';
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
-import { adminApi } from '../../services/adminApi';
+import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
+import { adminApi } from '../../services/adminApi'
 
 export default function ReportsSection() {
-  const { t } = useTranslation();
-  const [salesData, setSalesData] = useState(null);
-  const [restaurantsData, setRestaurantsData] = useState([]);
-  const [usersData, setUsersData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { t } = useTranslation()
+  const [salesData, setSalesData] = useState(null)
+  const [restaurantsData, setRestaurantsData] = useState([])
+  const [usersData, setUsersData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null) // FIX 2: Estado de error
 
-  const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  const MONTHS = [t('adminDashboard.months.jan'), t('adminDashboard.months.feb'), t('adminDashboard.months.mar'), t('adminDashboard.months.apr'), t('adminDashboard.months.may'), t('adminDashboard.months.jun'), t('adminDashboard.months.jul'), t('adminDashboard.months.aug'), t('adminDashboard.months.sep'), t('adminDashboard.months.oct'), t('adminDashboard.months.nov'), t('adminDashboard.months.dec')]
 
   useEffect(() => {
     const loadReports = async () => {
-      setLoading(true);
+      setLoading(true)
+      setError(null) // Resetear error al recargar
       try {
         const [sales, restaurants, users] = await Promise.all([
           adminApi.getSalesReport(),
           adminApi.getRestaurantsReport(),
           adminApi.getUsersReport(),
-        ]);
-        setSalesData(sales?.data || null);
-        setRestaurantsData(restaurants?.data || []);
-        setUsersData(users?.data || null);
+        ])
+        setSalesData(sales?.data || null)
+        setRestaurantsData(restaurants?.data || [])
+        setUsersData(users?.data || null)
       } catch (error) {
-        console.error('Error cargando reportes:', error);
+        console.error('Error cargando reportes:', error)
+        setError('No se pudieron cargar los reportes. Verifica la conexión con el servidor.') // FIX 2: Error visible
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    loadReports();
-  }, []);
+    }
+    loadReports()
+  }, [])
 
-  const fmt = n => Number(n || 0).toLocaleString('es-CO');
-  const fmtCOP = n => `$${fmt(n)}`;
+  const fmt = n => Number(n || 0).toLocaleString('es-CO')
+  const fmtCOP = n => `$${fmt(n)}`
 
   if (loading) {
     return (
@@ -42,47 +45,63 @@ export default function ReportsSection() {
           <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 h-32" />
         ))}
       </div>
-    );
+    )
   }
 
-  // Preparar datos de ventas por día para la gráfica
-  const byDay = salesData?.by_day || [];
-  const maxRevenue = Math.max(...byDay.map(d => Number(d.revenue)), 1);
+  // FIX 2: Mostrar error si existe
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 text-center max-w-md">
+          <p className="text-red-500 dark:text-red-400 font-semibold">⚠️ {error}</p>
+        </div>
+      </div>
+    )
+  }
 
-  // Preparar datos de usuarios por mes
-  const newPerMonth = usersData?.new_per_month || [];
-  const maxUsers = Math.max(...newPerMonth.map(d => Number(d.total)), 1);
+  const byDay = salesData?.by_day || []
+  // FIX 1: maxRevenue con fallback seguro
+  const maxRevenue = byDay.length > 0
+    ? Math.max(...byDay.map(d => Number(d.revenue) || 0))
+    : 1
 
-  // Top restaurante para calcular porcentajes
-  const maxOrders = Math.max(...restaurantsData.map(r => r.total_orders), 1);
+  const newPerMonth = usersData?.new_per_month || []
+  // FIX 1: maxUsers con fallback seguro
+  const maxUsers = newPerMonth.length > 0
+    ? Math.max(...newPerMonth.map(d => Number(d.total) || 0))
+    : 1
+
+  // FIX 1: maxOrders con fallback seguro
+  const maxOrders = restaurantsData.length > 0
+    ? Math.max(...restaurantsData.map(r => Number(r.total_orders) || 0))
+    : 1
 
   return (
     <div className="space-y-6 animate-fade-in">
 
-      {/* KPIs principales */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           {
-            label: 'Ingresos del mes',
+            label: t('adminDashboard.reports.monthlyRevenue') || 'Ingresos del mes',
             value: fmtCOP(salesData?.total_revenue),
-            sub: `${fmt(salesData?.total_orders)} pedidos entregados`,
+            sub: `${fmt(salesData?.total_orders)} ${t('adminDashboard.reports.ordersLabel') || 'pedidos entregados'}`,
           },
           {
-            label: 'Usuarios totales',
+            label: t('adminDashboard.reports.totalUsers') || 'Usuarios totales',
             value: fmt(usersData?.total),
-            sub: `+${fmt(usersData?.new_this_month)} este mes`,
+            sub: `+${fmt(usersData?.new_this_month)} ${t('adminDashboard.reports.this_month') || 'este mes'}`,
           },
           {
-            label: 'Restaurantes top',
+            label: t('adminDashboard.reports.topRestaurants') || 'Restaurantes top',
             value: fmt(restaurantsData.length),
-            sub: 'por volumen de ventas',
+            sub: t('adminDashboard.reports.by_volume') || 'por volumen de ventas',
           },
           {
-            label: 'Ingreso promedio',
+            label: t('adminDashboard.reports.avgOrder') || 'Ingreso promedio',
             value: salesData?.total_orders > 0
               ? fmtCOP(salesData.total_revenue / salesData.total_orders)
               : '$0',
-            sub: 'por pedido entregado',
+            sub: t('adminDashboard.reports.per_order') || 'por pedido entregado',
           },
         ].map((kpi, i) => (
           <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm text-center">
@@ -95,17 +114,16 @@ export default function ReportsSection() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        {/* Gráfica de ingresos por día */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-800 dark:text-slate-100 mb-1">Ingresos del mes</h3>
+          <h3 className="font-bold text-gray-800 dark:text-slate-100 mb-1">{t('adminDashboard.reports.monthlyRevenue') || 'Ingresos del mes'}</h3>
           <p className="text-xs text-gray-400 mb-6">
             {salesData?.period?.from
               ? `${salesData.period.from} → ${salesData.period.to}`
-              : 'Mes actual'}
+              : t('adminDashboard.reports.current_month') || 'Mes actual'}
           </p>
           {byDay.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
-              Sin pedidos entregados en este período
+              {t('adminDashboard.reports.no_data') || 'Sin pedidos entregados en este período'}
             </div>
           ) : (
             <div className="flex items-end gap-1 h-48 w-full overflow-x-auto">
@@ -123,7 +141,8 @@ export default function ReportsSection() {
                     />
                   </div>
                   <span className="text-[10px] text-gray-400 dark:text-slate-500">
-                    {new Date(d.date).getDate()}
+                    {/* FIX 3: Fecha sin desfase de zona horaria */}
+                    {d.date?.split('-')[2]}
                   </span>
                 </div>
               ))}
@@ -131,13 +150,12 @@ export default function ReportsSection() {
           )}
         </div>
 
-        {/* Gráfica de nuevos usuarios por mes */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm">
-          <h3 className="font-bold text-gray-800 dark:text-slate-100 mb-1">Nuevos usuarios por mes</h3>
-          <p className="text-xs text-gray-400 mb-6">Año {new Date().getFullYear()}</p>
+          <h3 className="font-bold text-gray-800 dark:text-slate-100 mb-1">{t('adminDashboard.reports.userGrowth') || 'Nuevos usuarios por mes'}</h3>
+          <p className="text-xs text-gray-400 mb-6">{t('adminDashboard.reports.this_year') || 'Año'} {new Date().getFullYear()}</p>
           {newPerMonth.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-gray-400 text-sm">
-              Sin datos de registro este año
+              {t('adminDashboard.reports.no_data') || 'Sin datos de registro este año'}
             </div>
           ) : (
             <div className="flex items-end gap-2 h-48 w-full">
@@ -164,13 +182,12 @@ export default function ReportsSection() {
         </div>
       </div>
 
-      {/* Top restaurantes por pedidos */}
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm">
         <h3 className="font-bold text-gray-800 dark:text-slate-100 mb-4">
-          Top restaurantes por pedidos
+          {t('adminDashboard.reports.topRestaurants') || 'Top restaurantes por pedidos'}
         </h3>
         {restaurantsData.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-8">Sin datos de restaurantes</p>
+          <p className="text-sm text-gray-400 text-center py-8">{t('adminDashboard.reports.no_data') || 'Sin datos de restaurantes'}</p>
         ) : (
           <div className="space-y-4">
             {restaurantsData.map((r, i) => (
@@ -180,7 +197,7 @@ export default function ReportsSection() {
                     {i + 1}. {r.name}
                   </span>
                   <span className="text-gray-500 dark:text-slate-400">
-                    {fmt(r.total_orders)} pedidos · {fmtCOP(r.revenue)}
+                    {fmt(r.total_orders)} {t('adminDashboard.reports.ordersLabel') || 'pedidos'} · {fmtCOP(r.revenue)}
                   </span>
                 </div>
                 <div className="h-2 w-full bg-gray-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -196,5 +213,5 @@ export default function ReportsSection() {
       </div>
 
     </div>
-  );
+  )
 }

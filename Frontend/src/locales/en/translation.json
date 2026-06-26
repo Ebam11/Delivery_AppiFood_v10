@@ -3,7 +3,10 @@
     "loading": "Loading...",
     "loggingOut": "Logging out...",
     "pageNotFound": "Page not found",
-    "backToHome": "Back to home"
+    "backToHome": "Back to home",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
+    "dismiss": "Dismiss"
   },
   "validation": {
     "name_special_chars": "The name cannot contain numbers or special characters.",
@@ -36,6 +39,7 @@
     "continue_email": "Continue with my email",
     "save": "SAVE",
     "viewAllOffers": "View all offers",
+    "no_offers": "No offers available",
     "hero": {
       "limited_offer": "Limited offer — only",
       "stats_restaurants": "Restaurants",
@@ -58,9 +62,11 @@
     }
   },
   "login": {
-    "title": "Log in to AppiFood",
-    "subtitle": "Discover, order and enjoy the best food in your city, all in one place.",
-    "heading": "Log in",
+    "title": "Welcome",
+    "subtitle": "Manage your orders and favorites quickly.",
+    "heading": "Sign in or register to continue",
+    "hero_text": "The best food in your city, delivered to your door.",
+    "secure_access": "Secure Access",
     "email": "Email address",
     "password": "Password",
     "remember": "Remember me",
@@ -72,14 +78,17 @@
     "loading": "Logging in...",
     "no_account": "Don't have an account?",
     "register_link": "Sign up for free",
-    "error_credentials": "Login failed.",
-    "error_connection": "Connection error. Try again.",
-    "placeholder_email": "youremail@email.com"
+    "error_credentials": "Invalid credentials.",
+    "error_connection": "Connection error. Please try again.",
+    "placeholder_email": "youremail@email.com",
+    "your_data": "Your data"
   },
   "register": {
-    "title": "Join AppiFood",
-    "subtitle": "Create your free account and start ordering your favorite food in minutes.",
-    "heading": "Create account",
+    "title": "Join",
+    "subtitle": "Create your account and start enjoying today.",
+    "heading": "Sign up now",
+    "hero_text": "Join the largest food network and start enjoying.",
+    "secure_registration": "Secure Registration",
     "name": "Full name",
     "doc_type": "Document type",
     "doc_number": "Document number",
@@ -94,7 +103,7 @@
     "has_account": "Already have an account?",
     "login_link": "Log in",
     "error_password_match": "Passwords do not match.",
-    "error_connection": "Connection error. Try again.",
+    "error_connection": "Connection error. Please try again.",
     "placeholder_name": "Your name",
     "id_cc": "Citizen ID",
     "id_ti": "Identity Card",
@@ -103,7 +112,9 @@
     "placeholder_id": "123456789",
     "placeholder_email": "youremail@email.com",
     "placeholder_password": "Minimum 8 characters",
-    "placeholder_confirm_password": "Repeat your password"
+    "placeholder_confirm_password": "Repeat your password",
+    "your_data": "Your data",
+    "strength": "Strength:"
   },
   "restaurants": {
     "title": "Restaurants near me",
@@ -154,7 +165,7 @@
     "searching_for": "Searching"
   },
   "language": {
-    "es": "Español",
+    "es": "Spanish",
     "en": "English"
   },
   "profile": {
@@ -197,7 +208,7 @@
     "placeholder_first_name": "Your name",
     "placeholder_last_name": "Your last name",
     "placeholder_email": "email@example.com",
-    "placeholder_phone": "1234567890",
+    "placeholder_phone": "3001234567",
     "id_cc": "Citizen ID",
     "id_ti": "Identity Card",
     "id_ce": "Foreigner ID",
@@ -210,6 +221,24 @@
     "identity_document": "Identity document",
     "email_verified": "Verified",
     "email_not_verified": "Not verified",
+    "email_verified_success": "✅ Your email has been verified successfully!",
+    "email_verification_sent": "📩 We have sent a confirmation link to your email address.",
+    "phone_verified_success": "✅ Phone verified successfully.",
+    "verification_error": "Error sending verification email.",
+    "not_verified": "Not verified",
+    "verify": "Verify",
+    "verify_now": "Verify now",
+    "sending": "Sending...",
+    "verifying": "Verifying...",
+    "verify_phone": "Verify phone",
+    "no_phone": "Not registered",
+    "add_phone_hint": "Add a phone number in the information tab first.",
+    "email_verification": "Email verification",
+    "phone_verification": "Phone number verification",
+    "security": "Security",
+    "change_password": "Change password",
+    "password_hint": "Update your access password",
+    "orders_hint": "Your purchases will appear here.",
     "id_nit": "NIT"
   },
   "orders": {
@@ -225,7 +254,10 @@
     "status_delivered": "Delivered",
     "status_cancelled": "Cancelled",
     "products": "product",
-    "products_plural": "products"
+    "products_plural": "products",
+    "connection_error": "Connection error",
+    "connection_hint": "Make sure your server is running and reload the page.",
+    "no_orders_hint": "Order your favorite dish now!"
   },
   "order_detail": {
     "title": "Order #",
@@ -243,7 +275,10 @@
     "cancel_order": "Cancel Order",
     "cancel_confirm": "Are you sure you want to cancel this order?",
     "cancel_success": "Order cancelled successfully",
-    "cancel_error": "Error cancelling order"
+    "cancel_error": "Error cancelling order",
+    "tracking_title": "Track your driver in real time",
+    "driver_here": "🛵 Your driver is here",
+    "delivery_address_label": "🏠 Your delivery address"
   },
   "cartPage": {
     "title": "Shopping Cart",
@@ -262,9 +297,9 @@
     "title": "Confirm your order",
     "step": "Step 1 of 2 — Delivery details",
     "address_label": "📍 Delivery address",
-    "address_placeholder": "E.g: 123 Main St, Apt 201",
+    "address_placeholder": "Ex: Cra 1 #123-45, Apt 201",
     "notes_label": "📝 Special notes (Optional)",
-    "notes_placeholder": "E.g: No spicy, no onions...",
+    "notes_placeholder": "Ex: No spicy, no onions...",
     "order_summary": "🛒 Order Summary",
     "items": "Items",
     "shipping": "Shipping",
@@ -279,14 +314,20 @@
     "total_to_pay_2": "Total to Pay",
     "modify_address": "← Modify delivery details",
     "payment_failure": "Payment was declined. Please try again.",
-    "payment_pending": "Your payment is pending confirmation. We will notify you when it is completed."
+    "payment_pending": "Your payment is pending confirmation. We will notify you when it is completed.",
+    "create_error": "Error creating order",
+    "cart_load_error": "Could not load cart.",
+    "select_saved_address": "Select a saved address:",
+    "select_address_placeholder": "Choose a saved address"
   },
   "favorites": {
     "title": "My Favorite Restaurants",
     "error_load": "Error loading favorites",
+    "error_hint": "Make sure your server is running and reload the page.",
     "error_remove": "Error removing favorite",
     "view": "View",
     "empty": "You have no favorite restaurants yet",
+    "empty_hint": "Explore restaurants and save your favorites here.",
     "discover": "Discover Restaurants"
   },
   "addresses": {
@@ -294,13 +335,19 @@
     "add": "Add Address",
     "error_load": "Error loading addresses",
     "error_delete": "Error deleting address",
-    "confirm_delete": "Are you sure you want to delete this address?",
+    "confirm_delete": "Delete address?",
+    "delete_warning": "This action cannot be undone. You will no longer be able to select this delivery point.",
+    "confirm_delete_btn": "Yes, delete",
+    "cancel": "Cancel",
     "default_label": "Home",
     "default_badge": "Default",
     "edit": "Edit",
     "delete": "Delete",
     "empty": "You have no saved addresses",
-    "add_first": "Add first address"
+    "empty_hint": "You don't have any addresses registered yet. Add one to start ordering.",
+    "add_first": "Add first address",
+    "back": "Back to my addresses",
+    "subtitle": "Manage your delivery points for fast orders."
   },
   "address_form": {
     "title_edit": "Edit Address",
@@ -310,13 +357,23 @@
     "label": "Label (Home, Work, etc.)",
     "label_placeholder": "Home",
     "address": "Address *",
-    "address_placeholder": "123 Main St",
+    "address_placeholder": "123 Main St, # 45-67",
     "reference": "Reference (floor, apartment, etc.)",
     "reference_placeholder": "Apartment 302",
     "is_default": "Set as default address",
     "saving": "Saving...",
     "save": "Save Address",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "location_detect": "Do you want to auto-detect your location?",
+    "location_hint": "The system can complete latitude and longitude for you via GPS.",
+    "location_detected": "Location detected successfully.",
+    "location_error": "Could not get access to geolocation.",
+    "gps_not_supported": "Your browser does not support geolocation.",
+    "get_location": "Get current location",
+    "lat_label": "Latitude (Optional)",
+    "lat_placeholder": "Ex: 2.4448",
+    "lng_label": "Longitude (Optional)",
+    "lng_placeholder": "Ex: -76.6147"
   },
   "subscription": {
     "title": "Subscription Plans",
@@ -324,29 +381,28 @@
     "most_popular": "Most Popular",
     "processing": "Processing...",
     "faq_title": "Frequently Asked Questions",
-    "cta_title": "Questions? We are here to help you",
-    "cta_subtitle": "Contact our support team at any time",
+    "cta_title": "Save without giving up good food",
+    "cta_subtitle": "The Premium plan is designed for those who want to order food without breaking the budget.",
     "cta_button": "Contact Support",
     "plan_free_name": "Free",
     "plan_free_price": "$0",
     "plan_free_period": "Forever",
-    "plan_free_desc": "Perfect to get started",
-    "plan_free_cta": "You are already here",
-    "plan_free_f1": "Access to the entire restaurant network",
-    "plan_free_f2": "Real-time menu and price lookup",
-    "plan_free_f3": "Access to coupons and promotions",
-    "plan_free_f4": "Email support",
-    "plan_pro_name": "AppiPro",
-    "plan_pro_price": "$24.990",
-    "plan_pro_period": "per month",
-    "plan_pro_desc": "For frequent users",
-    "plan_pro_cta": "Upgrade to AppiPro",
-    "plan_pro_f1": "All Free benefits",
-    "plan_pro_f2": "Unlimited orders",
-    "plan_pro_f3": "10% discount on all your orders",
-    "plan_pro_f4": "Free shipping on orders over $20.000",
-    "plan_pro_f5": "Priority support 24/7",
-    "plan_pro_f6": "Access to exclusive offers",
+    "plan_free_desc": "Keep ordering without paying a membership fee. Perfect if you're on a budget.",
+    "plan_free_cta": "Stay free",
+    "plan_free_f1": "Access to restaurants and regular promotions",
+    "plan_free_f2": "No monthly fixed cost",
+    "plan_free_f3": "Ideal for tight budgets",
+    "plan_free_f4": "Pay only for what you order",
+    "plan_pro_name": "Premium Saver",
+    "plan_pro_price": "$7,900",
+    "plan_pro_period": "/month",
+    "plan_pro_desc": "Spend less on each order and find offers designed to save you money.",
+    "plan_pro_cta": "Buy Premium",
+    "plan_pro_f1": "Exclusive discounts on selected meals",
+    "plan_pro_f2": "Benefits that often cost less than delivery",
+    "plan_pro_f3": "Priority access to low-cost promotions",
+    "plan_pro_f4": "Save more if you order multiple times a month",
+    "plan_pro_f5": "Ideal for eating well without overspending",
     "faq_1_q": "Can I change plans at any time?",
     "faq_1_a": "Yes, you can upgrade or downgrade your plan at any time. Changes will take effect on the next billing cycle.",
     "faq_2_q": "What payment methods do you accept?",
@@ -355,7 +411,13 @@
     "faq_3_a": "Yes, all our paid plans include a 7-day free trial with no commitment.",
     "faq_4_q": "How do I cancel my subscription?",
     "faq_4_a": "You can cancel your subscription at any time from your profile. There are no penalties or additional charges.",
-    "error": "Error processing subscription"
+    "error": "Error processing subscription",
+    "current_plan": "Current plan",
+    "active": "Active",
+    "inactive": "Inactive",
+    "plan_desc": "designed to order more for less",
+    "monthly_charge": "Monthly charge",
+    "current_plan_label": "Current plan"
   },
   "payment_confirmation": {
     "checking": "Checking payment status...",
@@ -371,7 +433,18 @@
     "failed_title": "Payment Not Processed",
     "failed_message": "The payment was rejected. Please try again.",
     "try_again": "Try Again",
-    "back_to_cart": "Back to Cart"
+    "back_to_cart": "Back to Cart",
+    "back_to_home": "Back to home",
+    "secure_transaction": "Secure transaction verified",
+    "order_label": "Order",
+    "restaurant_label": "Restaurant",
+    "products_label": "Products",
+    "subtotal_label": "Subtotal",
+    "shipping_label": "Shipping",
+    "discount_label": "Discount",
+    "total_paid_label": "Total paid",
+    "delivery_address_label": "Delivered to",
+    "encrypted_data": "Encrypted Data"
   },
   "register_restaurant": {
     "title": "Register your restaurant",
@@ -424,9 +497,12 @@
     "available": "Available",
     "login_to_buy": "Login to buy",
     "no_products": "This restaurant doesn't have products available yet",
-    "error_loading": "Error loading restaurant"
+    "error_loading": "Error loading restaurant",
+    "uncategorized": "General"
   },
   "rd": {
+    "opening_time": "Opening time",
+    "closing_time": "Closing time",
     "logout": "Log out",
     "search": "Search...",
     "restaurant_label": "Restaurant",
@@ -492,7 +568,7 @@
     "order_list": "Order List",
     "item": "Item",
     "price": "Price",
-    "total_amount": "Total Amount",
+    "total_amount": "Total",
     "customer_col": "Customer",
     "address": "📍 Address",
     "type_col": "📋 Type",
@@ -598,7 +674,7 @@
     "times": "times",
     "new_promo_title": "New Promotion",
     "promo_title": "Title",
-    "promo_title_ph": "E.g: 2x1 on Tacos on Tuesdays",
+    "promo_title_ph": "Ex: 2x1 on Tacos on Tuesdays",
     "discount_pct": "Discount (%)",
     "min_order_label": "Min. order ($)",
     "start_date": "Start date",
@@ -652,13 +728,187 @@
     "breadcrumb_reviews": "Reviews",
     "breadcrumb_restaurant": "General Information",
     "language": "Language",
-    "loading_data": "Loading restaurant data..."
+    "loading_data": "Loading restaurant data...",
+    "main_group": "Main",
+    "management_group": "Management",
+    "admin_group": "Administration",
+    "no_orders_found": "No orders found.",
+    "schedule_saved": "Schedule saved successfully ✓",
+    "schedule_error": "Error saving schedule",
+    "loading_schedule": "Loading schedule...",
+    "schedule_hint": "Set the opening hours for each day of the week",
+    "closed": "Closed",
+    "open": "Open",
+    "save_schedule": "Save Schedule",
+    "view_as_customer": "View as customer",
+    "visual_identity": "Visual Identity",
+    "visual_identity_hint": "Logo and cover image your customers will see",
+    "logo": "Restaurant Logo",
+    "upload_logo": "Upload logo",
+    "upload_banner": "Upload cover image",
+    "uploading": "Uploading...",
+    "change": "Change",
+    "banner": "Cover image",
+    "settings": "Operational Settings",
+    "restaurant_active_hint": "Allow customers to see your restaurant and place orders",
+    "delivery_available_hint": "Offer delivery through the platform",
+    "theme": "Visual Theme",
+    "theme_hint": "Switch between light and dark mode",
+    "logo_updated": "Logo updated successfully.",
+    "logo_error": "Error uploading logo.",
+    "banner_updated": "Cover image updated.",
+    "banner_error": "Error uploading cover image.",
+    "info_save_error": "Error saving changes.",
+    "loading": "Loading...",
+    "no_results": "No results",
+    "order_message": "Hi, I just placed an order. Here's the summary:",
+    "order_details_hint": "See details in Orders section",
+    "reply_pending": "Hello! We received your order and are reviewing it. We'll confirm shortly.",
+    "reply_confirmed": "Order confirmed! We are now preparing your order.",
+    "reply_preparing": "👨‍🍳 Your order is being prepared with care.",
+    "reply_on_the_way": "🛵 Your order is on its way! It will arrive soon.",
+    "reply_delivered": "Order delivered! We hope you enjoyed it. 😊",
+    "reply_default": "Thank you for contacting us.",
+    "select_order": "Select an order",
+    "select_order_hint": "You will see the conversation details here",
+    "closed_day": "Closed this day",
+    "activate": "Activate",
+    "pause": "Pause",
+    "inactive": "Inactive",
+    "unlimited": "Unlimited",
+    "expires": "Expires",
+    "new_coupon": "New Coupon",
+    "code": "Code",
+    "discount_type": "Discount Type",
+    "percentage": "Percentage (%)",
+    "fixed_amount": "Fixed Amount ($)",
+    "value": "Value",
+    "max_uses": "Max Uses",
+    "expiration_date": "Expiration Date",
+    "coupon_description_placeholder": "Special discount for new customers",
+    "saving": "Saving...",
+    "create_coupon_btn": "Create Coupon",
+    "loading_coupons": "Loading coupons...",
+    "no_coupons": "You have no coupons created.",
+    "create_first_coupon": "Create your first promotion to attract more customers.",
+    "coupon_created": "Coupon created successfully ✓",
+    "coupon_create_error": "Error creating coupon",
+    "coupon_paused": "Coupon paused",
+    "coupon_activated": "Coupon activated",
+    "coupon_update_error": "Error updating coupon",
+    "coupons_promotions": "Coupons & Promotions",
+    "coupons_registered": "coupons registered",
+    "create_coupon": "Create Coupon",
+    "inventory_control": "Inventory Control",
+    "inventory_hint": "Activate or deactivate products from your menu",
+    "loading_inventory": "Loading inventory...",
+    "no_products": "You have no products registered.",
+    "go_to_menu": "Go to the Menu section to add products.",
+    "product": "Product",
+    "product_unavailable": "Product marked as unavailable",
+    "product_available": "Product marked as available",
+    "product_update_error": "Error updating product",
+    "in_stock": "In Stock",
+    "out_of_stock": "Out of Stock",
+    "total_products": "Total Products",
+    "unavailable": "Unavailable",
+    "not_specified": "Not specified",
+    "less_than_5": "Less than 5 min",
+    "between_5_10": "5 – 10 min",
+    "between_10_15": "10 – 15 min",
+    "between_15_20": "15 – 20 min",
+    "between_20_30": "20 – 30 min",
+    "between_30_45": "30 – 45 min",
+    "between_45_60": "45 – 60 min",
+    "more_than_60": "More than 60 min",
+    "stock": "Stock available",
+    "stock_placeholder": "Ex: 20",
+    "prep_time": "Preparation time",
+    "name_placeholder": "Ex: Bandeja Paisa",
+    "price_placeholder": "Ex: 15000",
+    "select_category": "Select category",
+    "delete_confirm": "Yes, delete",
+    "delete_warning": "This action cannot be undone.",
+    "edit_dish": "Edit dish",
+    "save_changes": "Save changes",
+    "revenue_chart": "Revenue Evolution",
+    "top_dishes_label": "Top Selling Dishes",
+    "general": "General",
+    "avg_ticket": "Average Ticket",
+    "reviews_plural": "reviews",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    },
+    "days": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+        "activity": {
+      "new_order": "New order",
+      "order_received": "Order #1042 received",
+      "time_5min": "5 min ago",
+      "new_review": "New review",
+      "review_5_stars": "Carlos G. left 5 stars",
+      "time_12min": "12 min ago",
+      "order_delivered": "Order delivered",
+      "order_completed": "Order #1039 completed",
+      "time_25min": "25 min ago",
+      "product_out_of_stock": "Product out of stock",
+      "pizza_hawaiana_out": "Hawaiian Pizza out of stock",
+      "time_1h": "1 hour ago"
+    },
+    "double_cheese_burger": "Double Cheese Burger",
+    "large_fries": "Large French Fries",
+    "family_combo": "Family Combo",
+    "soda_15l": "1.5L Soda",
+    "sales_short": "sales",
+    "avg_rating": "Average Rating",
+    "total_reviews": "Total Reviews",
+    "answered": "Answered",
+    "your_reply": "Your reply",
+    "no_reviews": "No reviews in this category.",
+    "reviews_hint": "Your customers' reviews will appear here!",
+    "user": "User",
+    "waiting_confirmation": "Waiting for confirmation",
+    "in_progress": "In progress",
+    "loading_reviews": "Loading reviews...",
+    "notifications_title": "Notifications",
+    "mark_all_read": "Mark all as read",
+    "no_notifications": "No notifications",
+    "new_notification": "New notification",
+    "mark_read": "Mark as read",
+    "delete_notification": "Delete",
+    "no_location": "No location"
   },
   "adminDashboard": {
     "defaultAdmin": "Administrator",
     "searchPlaceholder": "Search...",
     "logout": "Log Out",
     "showing": "Showing {{visible}} of {{total}} {{entity}}",
+    "coming_soon": "Coming soon",
+    "in_development": "Section in development.",
+    "no_data": "No data available",
+    "no_location": "No location",
+    "no_phone": "No phone",
+    "no_restaurants_found": "No restaurants found with the current filters.",
+    "no_users_found": "No users found.",
+    "no_orders_found": "No orders found.",
     "nav": {
       "dashboard": "Dashboard",
       "restaurants": "Restaurants",
@@ -701,13 +951,17 @@
       "suspended": "Suspended",
       "completed": "Completed",
       "onProcess": "In Progress",
-      "cancelled": "Cancelled"
+      "cancelled": "Cancelled",
+      "verified": "verified",
+      "inactive": "Inactive"
     },
     "filter": {
       "all": "All",
       "active": "Active",
       "pending": "Pending",
-      "suspended": "Suspended"
+      "suspended": "Suspended",
+      "visible": "Visible",
+      "hidden": "Hidden"
     },
     "actions": {
       "approve": "Approve",
@@ -720,7 +974,9 @@
       "edit": "Edit",
       "delete": "Delete",
       "cancel": "Cancel",
-      "send": "Send"
+      "send": "Send",
+      "hide": "Hide",
+      "show": "Show"
     },
     "kpi": {
       "activeRestaurants": "Active Restaurants",
@@ -729,7 +985,10 @@
       "platformRevenue": "Platform Revenue",
       "trend3month": "+3 this month",
       "trend12month": "+12% this month",
-      "trend8day": "+8% vs yesterday"
+      "trend8day": "+8% vs yesterday",
+      "new_today": "new today",
+      "today": "today",
+      "this_month": "this month"
     },
     "chart": {
       "totalEarnings": "Total Earnings",
@@ -783,13 +1042,19 @@
       "subscription": "Subscription",
       "orders": "Orders",
       "registered": "Registered",
-      "actions": "Actions"
+      "actions": "Actions",
+      "role": "Role"
     },
     "userStats": {
       "total": "Total users",
       "active": "Active",
       "suspended": "Suspended",
-      "premium": "Premium"
+      "premium": "Premium",
+      "admin": "Administrators"
+    },
+    "userTypes": {
+      "customers": "customers",
+      "restaurants": "restaurants"
     },
     "userDetail": {
       "title": "User Profile",
@@ -811,7 +1076,8 @@
       "type": "Type",
       "qty": "Qty",
       "amount": "Amount",
-      "status": "Status"
+      "status": "Status",
+      "actions": "Actions"
     },
     "reviews": {
       "total": "Total reviews",
@@ -831,12 +1097,14 @@
       "statusAnswered": "Answered",
       "confirmDelete": "Delete this review?",
       "modalTitle": "Reply to Review",
-      "responsePlaceholder": "Write your reply here..."
+      "responsePlaceholder": "Write your reply here...",
+      "visible": "Visible",
+      "hidden": "Hidden"
     },
     "notifications": {
       "sendTitle": "Send Notification",
       "subject": "Subject",
-      "subjectPlaceholder": "E.g.: System maintenance",
+      "subjectPlaceholder": "Ex.: System maintenance",
       "message": "Message",
       "messagePlaceholder": "Write the message to be sent...",
       "recipients": "Recipients",
@@ -847,7 +1115,9 @@
       "sendBtn": "Send Notification",
       "historyTitle": "Notification History",
       "fillAll": "Please fill in all fields",
-      "sent": "Notification sent to {{recipients}}"
+      "sent": "Notification sent to {{recipients}}",
+      "history1": "New restaurants in your area!",
+      "history2": "Terms update"
     },
     "reports": {
       "annualRevenue": "Annual Revenue",
@@ -859,7 +1129,14 @@
       "userGrowth": "User Growth",
       "topRestaurants": "Top Restaurants by Orders",
       "ordersLabel": "orders",
-      "monthlyOrders": "Monthly Orders"
+      "monthlyOrders": "Monthly Orders",
+      "this_month": "this month",
+      "by_volume": "by order volume",
+      "avgOrder": "Average order value",
+      "per_order": "per delivered order",
+      "current_month": "Current month",
+      "no_data": "No data",
+      "this_year": "Year"
     },
     "settings": {
       "adminFunctionsTitle": "Administration Functions",
@@ -898,7 +1175,12 @@
       "dangerZoneDesc": "These actions affect the entire system and are irreversible. Only proceed if you are completely sure.",
       "fullBackup": "Full Backup",
       "maintenanceMode": "Maintenance Mode",
-      "maintenanceConfirm": "Activate maintenance mode? The system will be inaccessible."
+      "maintenanceConfirm": "Activate maintenance mode? The system will be inaccessible.",
+      "backup_confirm": "Generate database backup?",
+      "themeTitle": "Interface Preference",
+      "themeSub": "Customize the visual appearance of the panel",
+      "themeLabel": "Visual Theme",
+      "themeDesc": "Switch between light and dark mode"
     },
     "toast": {
       "restApproved": "Restaurant approved",
@@ -914,7 +1196,24 @@
       "reportsSaved": "Report configuration saved",
       "backupDone": "Backup generated successfully",
       "maintenanceOn": "Maintenance mode activated"
-    }
+    },
+    "reviewEmpty": "No reviews found.",
+    "reviewSearch": "Search review...",
+    "reviewStats": {
+      "total": "Total",
+      "visible": "Visible",
+      "hidden": "Hidden",
+      "avgRating": "Average Rating"
+    },
+    "reviewStatus": {
+      "visible": "Visible",
+      "hidden": "Hidden"
+    },
+    "pagination": {
+      "showing": "Showing",
+      "of": "of"
+    },
+    "admin_label": "Administrator"
   },
   "header": {
     "defaultUser": "User",
@@ -1049,7 +1348,8 @@
     "add_fav": "Add to favorites",
     "selected_by": "Selected by customers",
     "view_full_schedule": "View full schedule",
-    "view_schedule": "View schedule"
+    "view_schedule": "View schedule",
+    "new": "NEW"
   },
   "categoryNav": {
     "ariaLabel": "Filter by category",
@@ -1145,7 +1445,11 @@
       "name": "Mastercard Credit Card",
       "description": "Secure payment with encryption",
       "info": "Your card is protected by PayU"
-    }
+    },
+    "savedMethods": "Saved methods",
+    "loadingMethods": "Loading saved methods...",
+    "noSavedMethods": "You have no saved methods. You can add them from your profile.",
+    "savedCard": "Saved card"
   },
   "addToCart": {
     "success": "Added to cart",
@@ -1212,7 +1516,41 @@
     "quick_support_desc": "If the answer you are looking for is not here, open the smart chat or enter the corresponding module.",
     "open_chatbot": "Open chatbot",
     "review_orders": "Review orders",
-    "shortcuts": "Shortcuts"
+    "shortcuts": "Shortcuts",
+    "topics": {
+      "Pedidos_y_pagos": "Orders and payments",
+      "Cuenta_y_direcciones": "Account and addresses",
+      "Restaurantes_y_menú": "Restaurants and menu",
+      "Suscripción_y_ayuda": "Subscription and help"
+    },
+    "topics_desc": {
+      "Pedidos_y_pagos": "Tracking, confirmation, cancellations and billing issues.",
+      "Cuenta_y_direcciones": "Profile, password, saved addresses and user data.",
+      "Restaurantes_y_menú": "Find locations, view the menu and add products to cart.",
+      "Suscripción_y_ayuda": "Plans, benefits, human support and FAQs."
+    },
+    "faq_category": {
+      "Pedidos_y_pagos": "Orders and payments",
+      "Cuenta_y_direcciones": "Account and addresses",
+      "Restaurantes_y_pedidos": "Restaurants and orders",
+      "Suscripción_y_ayuda": "Subscription and help"
+    },
+    "faq_q": {
+      "¿Cuánto_tiempo_t": "How long does an order take?",
+      "¿Puedo_cancelar": "Can I cancel an order?",
+      "¿Qué_métodos_de": "What payment methods do you accept?",
+      "¿Cómo_cambio_mi": "How do I change my address?",
+      "¿Qué_hago_si_mi": "What if my order is wrong?",
+      "¿Cómo_funciona_": "How does the AppiFood Pro subscription work?"
+    },
+    "faq_a": {
+      "¿Cuánto_tiempo_t": "Delivery time varies by restaurant and your location, usually taking between 30 and 45 minutes.",
+      "¿Puedo_cancelar": "You can cancel before the restaurant accepts it. Once in preparation, you must contact support.",
+      "¿Qué_métodos_de": "We accept credit cards, debit cards, PSE, and cash.",
+      "¿Cómo_cambio_mi": "You can add or modify your addresses from your profile or during checkout.",
+      "¿Qué_hago_si_mi": "Use the chat in the order details to report the problem and we will help you immediately.",
+      "¿Cómo_funciona_": "For a monthly fee, you get free delivery on selected restaurants and exclusive promotions."
+    }
   },
   "paymentMethodsTab": {
     "loading": "Loading...",
@@ -1242,7 +1580,6 @@
     "edit": "Edit",
     "delete": "Delete"
   },
-
   "schedule": {
     "closed": "Closed",
     "opening_hours": "Opening Hours"
@@ -1378,6 +1715,9 @@
     "redeem_now": "Redeem now",
     "pts_missing": "Missing {{count}} pts",
     "loading_rewards": "Loading your rewards...",
+    "copied_toast": "Coupon code copied to clipboard",
+    "points_count": "Points",
+    "error_redeem": "Error redeeming points",
     "levels": {
       "bronze": "Bronze",
       "silver": "Silver",
@@ -1398,5 +1738,71 @@
       "diamond_title": "Diamond Coupon",
       "diamond_desc": "Our ultimate reward for AppiFood legends."
     }
+  },
+  "offers": {
+    "all": "All",
+    "burgers": "Burgers",
+    "pizzas": "Pizzas",
+    "sushi": "Sushi",
+    "no_offers": "No offers available",
+    "no_offers_hint": "Come back later to see amazing promotions.",
+    "view_restaurants": "View Restaurants",
+    "dishes_on_offer": "Dishes on offer",
+    "max_discount": "Max discount",
+    "today_only": "Today only"
+  },
+  "pwa": {
+    "install_title": "Install AppiFood",
+    "install_desc": "Access faster and place your orders instantly directly from your home screen.",
+    "install_later": "Later",
+    "install_now": "Install now"
+  },
+  "modal": {
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "driver": {
+    "app_name": "AppiFood Driver",
+    "online": "Online",
+    "driver": "Driver",
+    "driver_role": "Driver",
+    "available": "Available",
+    "active": "In Progress",
+    "history": "History",
+    "deliveries_today": "Deliveries today",
+    "total_deliveries": "Total deliveries",
+    "earnings_today": "Earnings today",
+    "active_orders": "Active orders",
+    "active_order": "Active Order",
+    "customer": "Customer",
+    "address": "Address",
+    "total": "Total",
+    "mark_delivered": "Mark as Delivered",
+    "your_location": "📍 Your current location",
+    "available_orders": "Available Orders",
+    "no_available_orders": "No available orders",
+    "no_orders_hint": "New orders will appear here automatically. Stay tuned!",
+    "restaurant": "Restaurant",
+    "delivery_address": "Delivery address",
+    "accept_order": "Accept Order",
+    "active_orders_title": "Orders in Progress",
+    "no_active_orders": "You have no active orders",
+    "no_active_hint": "Accept an order from the \"Available\" tab to start delivering.",
+    "deliver": "Deliver",
+    "waiting_restaurant": "Waiting for restaurant preparation",
+    "delivery_history": "Delivery History",
+    "no_history": "No deliveries yet",
+    "no_history_hint": "Your delivery history will appear here once you complete orders.",
+    "order_id": "Order",
+    "status": "Status",
+    "date": "Date",
+    "order_accepted": "Order accepted! Head to the restaurant.",
+    "accept_error": "Error accepting order",
+    "delivery_completed": "Delivery completed!",
+    "points_earned": "The customer earned",
+    "points": "points.",
+    "complete_error": "Error completing order",
+    "loading": "Loading driver panel...",
+    "notes": "Notes"
   }
 }

@@ -1,64 +1,61 @@
 // Frontend/src/components/AdminDashboard/DashboardSection.jsx
-import { useTranslate as useTranslation } from '../../hooks/useTranslate';
-import { Badge } from '../RestaurantDashboard/Common';
+import { useTranslation } from 'react-i18next'
+import { Badge } from '../RestaurantDashboard/Common'
 
 export default function DashboardSection({ stats, loading }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-red-500 border-t-transparent"></div>
       </div>
-    );
+    )
   }
 
   if (!stats) {
     return (
       <div className="text-center py-20 text-gray-500">
-        No hay datos disponibles
+        {t('adminDashboard.no_data') || 'No hay datos disponibles'}
       </div>
-    );
+    )
   }
 
-  // DATOS REALES
   const kpis = [
     {
       label: t('adminDashboard.kpi.activeRestaurants', { defaultValue: 'Restaurantes' }),
       value: stats.restaurants?.total || 0,
-      detail: `${stats.restaurants?.active || 0} activos • ${stats.restaurants?.pending || 0} pendientes`,
+      detail: `${stats.restaurants?.active || 0} ${t('adminDashboard.status.active')} • ${stats.restaurants?.pending || 0} ${t('adminDashboard.status.pending')}`,
       icon: '🏪',
-      trend: `${stats.restaurants?.verified || 0} verificados`
+      trend: `${stats.restaurants?.verified || 0} ${t('adminDashboard.status.verified') || 'verificados'}`
     },
     {
       label: t('adminDashboard.kpi.activeUsers', { defaultValue: 'Usuarios' }),
       value: stats.users?.total || 0,
-      detail: `${stats.users?.customers || 0} clientes • ${stats.users?.restaurants || 0} restaurantes`,
+      detail: `${stats.users?.customers || 0} ${t('adminDashboard.userTypes.customers') || 'clientes'} • ${stats.users?.restaurants || 0} ${t('adminDashboard.userTypes.restaurants') || 'restaurantes'}`,
       icon: '👥',
-      trend: `${stats.users?.new_today || 0} nuevos hoy`
+      trend: `${stats.users?.new_today || 0} ${t('adminDashboard.kpi.new_today') || 'nuevos hoy'}`
     },
     {
       label: t('adminDashboard.kpi.totalOrders', { defaultValue: 'Órdenes' }),
       value: stats.orders?.total || 0,
-      detail: `${stats.orders?.pending || 0} pendientes • ${stats.orders?.delivered || 0} entregadas`,
+      detail: `${stats.orders?.pending || 0} ${t('adminDashboard.status.pending')} • ${stats.orders?.delivered || 0} ${t('orders.status_delivered')}`,
       icon: '📦',
-      trend: `${stats.orders?.today || 0} hoy`
+      trend: `${stats.orders?.today || 0} ${t('adminDashboard.kpi.today') || 'hoy'}`
     },
     {
       label: t('adminDashboard.kpi.platformRevenue', { defaultValue: 'Ingresos' }),
       value: `$${Number(stats.revenue?.total || 0).toFixed(2)}`,
-      detail: `$${Number(stats.revenue?.today || 0).toFixed(2)} hoy`,
+      detail: `$${Number(stats.revenue?.today || 0).toFixed(2)} ${t('adminDashboard.kpi.today') || 'hoy'}`,
       icon: '💰',
-      trend: `$${Number(stats.revenue?.this_month || 0).toFixed(2)} este mes`
+      trend: `$${Number(stats.revenue?.this_month || 0).toFixed(2)} ${t('adminDashboard.kpi.this_month') || 'este mes'}`
     }
-  ];
+  ]
 
-  // Últimas órdenes (si las tienes en stats)
-  const recentOrders = stats.recent_orders || [];
+  const recentOrders = stats.recent_orders || []
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, i) => (
           <div key={i} className="ad-stat-card bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-6 shadow-sm">
@@ -85,7 +82,6 @@ export default function DashboardSection({ stats, loading }) {
         ))}
       </div>
 
-      {/* Tabla de órdenes recientes */}
       {recentOrders.length > 0 && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800">
@@ -140,5 +136,5 @@ export default function DashboardSection({ stats, loading }) {
         </div>
       )}
     </div>
-  );
+  )
 }

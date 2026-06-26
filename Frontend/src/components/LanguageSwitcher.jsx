@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
-
-const languages = [
-  { code: 'es', label: 'Español' },
-  { code: 'en', label: 'English' },
-];
+import { useTranslation } from 'react-i18next';
 
 export default function LanguageSwitcher() {
-  const { currentLang: currentLangCode, changeLang } = useTranslation();
+  const { i18n, t } = useTranslation(); // ✅ t() definida DENTRO del componente
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  const currentLang = i18n.language || 'es';
+
+  // ✅ languages definido DENTRO del componente, después de t()
+  const languages = [
+    { code: 'es', label: t('language.es') || 'Español' },
+    { code: 'en', label: t('language.en') || 'English' },
+  ];
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -20,6 +23,12 @@ export default function LanguageSwitcher() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const changeLanguage = (langCode) => {
+    i18n.changeLanguage(langCode);
+    localStorage.setItem('i18nextLng', langCode);
+    setIsOpen(false);
+  };
 
   return (
     <div className="relative inline-block text-left" ref={dropdownRef}>
@@ -37,19 +46,16 @@ export default function LanguageSwitcher() {
             {languages.map((lang) => (
               <button
                 key={lang.code}
-                onClick={() => {
-                  changeLang(lang.code);
-                  setIsOpen(false);
-                }}
+                onClick={() => changeLanguage(lang.code)}
                 className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors ${
-                  currentLangCode === lang.code
+                  currentLang === lang.code
                     ? 'bg-red-50 dark:bg-red-950/30 text-[#FF4B3E] font-bold border-l-2 border-[#FF4B3E]'
                     : 'text-gray-600 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800 hover:text-[#FF4B3E] border-l-2 border-transparent'
                 }`}
               >
                 <span className="uppercase text-xs font-black opacity-60 w-6 text-center">{lang.code}</span>
                 <span>{lang.label}</span>
-                {currentLangCode === lang.code && (
+                {currentLang === lang.code && (
                   <i className="fas fa-check ml-auto text-[10px]"></i>
                 )}
               </button>
@@ -59,4 +65,4 @@ export default function LanguageSwitcher() {
       )}
     </div>
   );
-}
+}

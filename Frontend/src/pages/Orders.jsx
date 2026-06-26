@@ -1,7 +1,7 @@
-// Archivo: src/pages/Orders.jsx | Comentario: logica principal del modulo.
+// Archivo: src/pages/Orders.jsx
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslate as useTranslation } from '../hooks/useTranslate';
+import { useTranslation } from 'react-i18next';
 import { useOrderStore } from '../store/orderStore';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { Loading } from '../components/Loading';
@@ -55,8 +55,8 @@ export const Orders = () => {
               <i className="fas fa-wifi text-amber-600 dark:text-amber-400 text-sm" />
             </div>
             <div className="flex-1">
-              <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">Sin conexión al servidor</p>
-              <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5">Asegúrate de que tu servidor XAMPP esté corriendo y recarga la página.</p>
+              <p className="font-bold text-amber-800 dark:text-amber-300 text-sm">{t('orders.connection_error') || 'Sin conexión al servidor'}</p>
+              <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5">{t('orders.connection_hint') || 'Asegúrate de que tu servidor esté corriendo y recarga la página.'}</p>
             </div>
             <button onClick={clearError} className="text-amber-400 hover:text-amber-600">
               <i className="fas fa-times" />
@@ -70,7 +70,7 @@ export const Orders = () => {
             <h3 className="text-2xl font-black text-gray-900 dark:text-white mb-2">
               {t('orders.no_orders') || 'No tienes pedidos aún'}
             </h3>
-            <p className="text-gray-500 dark:text-slate-400 mb-8">¡Pide tu primer plato favorito ahora!</p>
+            <p className="text-gray-500 dark:text-slate-400 mb-8">{t('orders.no_orders_hint') || '¡Pide tu primer plato favorito ahora!'}</p>
             <button
               onClick={() => navigate('/restaurants')}
               className="bg-gradient-to-r from-red-500 to-orange-500 text-white font-black py-3 px-10 rounded-2xl hover:scale-105 transition-transform shadow-lg shadow-red-500/30"
