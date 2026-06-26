@@ -160,6 +160,42 @@ export default function RestaurantsPage() {
             </div>
           </div>
 
+                    {/* Chips de filtros activos */}
+          {(deliveryFilter !== 'all' || timeFilter !== 'all' || ratingFilter !== 'all' || budgetInput !== '' || selectedCategory) && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {selectedCategory && (
+                <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
+                  🍽️ {selectedCategory}
+                  <button onClick={() => setSelectedCategory(null)} className="hover:text-red-700 ml-0.5">✕</button>
+                </span>
+              )}
+              {deliveryFilter !== 'all' && (
+                <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
+                  🛵 {deliveryFilter === 'free' ? 'Envío gratis' : 'Envío &lt; $3.000'}
+                  <button onClick={() => setDeliveryFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
+                </span>
+              )}
+              {timeFilter !== 'all' && (
+                <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
+                  ⏱️ {timeFilter === 'fast' ? 'Menos de 30 min' : 'Menos de 45 min'}
+                  <button onClick={() => setTimeFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
+                </span>
+              )}
+              {ratingFilter !== 'all' && (
+                <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
+                  ⭐ {ratingFilter === '4plus' ? '4.0 o más' : '4.5 o más'}
+                  <button onClick={() => setRatingFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
+                </span>
+              )}
+              {budgetInput !== '' && (
+                <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
+                  💰 Hasta ${Number(budgetInput).toLocaleString('es-CO')}
+                  <button onClick={() => setBudgetInput('')} className="hover:text-red-700 ml-0.5">✕</button>
+                </span>
+              )}
+            </div>
+)}
+
           {/* Grilla de Resultados */}
           <div className="py-12">
             <div className="flex items-center justify-between mb-10">

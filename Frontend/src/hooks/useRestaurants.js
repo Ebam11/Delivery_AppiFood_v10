@@ -65,54 +65,55 @@ export function useRestaurants() {
   }, [location.search])
 
   // Filtrado
-  const filteredRestaurants = useMemo(() => {
-    return restaurants.filter(r => {
-      // Filtros rápidos superiores
-      if (filter === 'promo' && r.delivery > 0) return false // Envio gratis para promo
-      if (filter === 'rating' && r.rating < 4.5) return false
-      if (filter === 'favorites' && !favorites.includes(r.id)) return false
-      
-      // Filtro de Categoría
-      if (selectedCategory) {
-        const sel = selectedCategory.toLowerCase()
-        if (!r.categories.some(c => c.toLowerCase().includes(sel))) return false
-      }
-      
-      // Búsqueda de Texto
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase()
-        if (!r.name.toLowerCase().includes(q) && !r.description?.toLowerCase().includes(q)) return false
-      }
+// Filtrado
+const filteredRestaurants = useMemo(() => {
+  return restaurants.filter(r => {
+    // Filtros rápidos superiores
+    if (filter === 'promo' && r.delivery > 0) return false
+    if (filter === 'rating' && r.rating < 4.5) return false
+    if (filter === 'favorites' && !favorites.includes(r.id)) return false
 
-      // Filtro Avanzado de Costo de Envío
-      if (deliveryFilter === 'free' && r.delivery > 0) return false
-      if (deliveryFilter === 'cheap' && r.delivery > 3000) return false
+    // Filtro de Categoría
+    if (selectedCategory) {
+      const sel = selectedCategory.toLowerCase()
+      if (!r.categories.some(c => c.toLowerCase().includes(sel))) return false
+    }
 
-      // Filtro Avanzado de Tiempo de Entrega
-      if (timeFilter === 'fast') {
-        const maxTime = r.delivery_time_max || (r.delivery_time_min ? r.delivery_time_min + 10 : 30)
-        if (maxTime > 30) return false
-      }
-      if (timeFilter === 'under45') {
-        const maxTime = r.delivery_time_max || (r.delivery_time_min ? r.delivery_time_min + 10 : 45)
-        if (maxTime > 45) return false
-      }
+    // Búsqueda de Texto
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      if (!r.name.toLowerCase().includes(q) && !r.description?.toLowerCase().includes(q)) return false
+    }
 
-      // Filtro Avanzado de Calificación
-      if (ratingFilter === '4plus' && r.rating < 4.0) return false
-      if (ratingFilter === '45plus' && r.rating < 4.5) return false
-      
-      return true
-    })
+    // Filtro Avanzado de Costo de Envío
+    if (deliveryFilter === 'free' && r.delivery > 0) return false
+    if (deliveryFilter === 'cheap' && r.delivery > 3000) return false
 
-      // Filtro de presupuesto por minimum_order
-// Filtro de presupuesto manual
-      if (budgetInput && !isNaN(Number(budgetInput))) {
-        const budget = Number(budgetInput)
-        const minOrder = r.minimum_order ?? 0
-        if (minOrder > budget) return false
-      }
-      }, [restaurants, filter, selectedCategory, searchQuery, favorites, deliveryFilter, timeFilter, ratingFilter, budgetInput])
+    // Filtro Avanzado de Tiempo de Entrega
+    if (timeFilter === 'fast') {
+      const maxTime = r.delivery_time_max || (r.delivery_time_min ? r.delivery_time_min + 10 : 30)
+      if (maxTime > 30) return false
+    }
+    if (timeFilter === 'under45') {
+      const maxTime = r.delivery_time_max || (r.delivery_time_min ? r.delivery_time_min + 10 : 45)
+      if (maxTime > 45) return false
+    }
+
+    // Filtro Avanzado de Calificación
+    if (ratingFilter === '4plus' && r.rating < 4.0) return false
+    if (ratingFilter === '45plus' && r.rating < 4.5) return false
+
+    // Filtro de presupuesto por minimum_order
+    if (budgetInput && !isNaN(Number(budgetInput))) {
+      const budget = Number(budgetInput)
+      const minOrder = Number(r.minimum_order ?? 0)
+      if (minOrder > budget) return false
+    }
+
+    return true
+  })
+}, [restaurants, filter, selectedCategory, searchQuery, favorites, deliveryFilter, timeFilter, ratingFilter, budgetInput])
+
 
   const handleFavoriteToggle = async (id) => {
     if (!token) return navigate('/login')
