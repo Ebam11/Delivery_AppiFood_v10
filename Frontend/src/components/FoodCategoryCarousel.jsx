@@ -1,6 +1,7 @@
 // Archivo: src/components/FoodCategoryCarousel.jsx | Comentario: logica principal del modulo.
-import { useState, useRef } from 'react'
-import { useTranslation } from 'react-i18next';
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import useEmblaCarousel from 'embla-carousel-react'
 
 const CATEGORY_THEME = {
   'Restaurantes Locales': { icon: '🍽️', color: '#FF8A3D' },
@@ -40,15 +41,17 @@ const DEFAULT_CATEGORIES = [
 
 export default function FoodCategoryCarousel({ onSelectCategory, selectedCategory, categories = DEFAULT_CATEGORIES }) {
   const { t } = useTranslation()
+  const [emblaRef, emblaApi] = useEmblaCarousel({ dragFree: true, containScroll: 'trimSnaps' })
   const containerRef = useRef(null)
-  const dragRef = useRef({ isDragging: false, startX: 0, scrollLeft: 0, moved: false })
   const itemRefs = useRef({})
+  const dragStartedRef = useRef(false)
   const [mousePos, setMousePos] = useState({ x: null, y: null })
   const [isHovered, setIsHovered] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
+  const [canScrollPrev, setCanScrollPrev] = useState(false)
+  const [canScrollNext, setCanScrollNext] = useState(true)
 
   const foodCategories = categories.map((name) => {
-    const theme = CATEGORY_THEME[name] || { icon: '<i className="fas fa-utensils mr-1"></i>', color: '#8884FF' }
+    const theme = CATEGORY_THEME[name] || { icon: '🍽️', color: '#8884FF' }
     return {
       id: name,
       name,
@@ -57,54 +60,51 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
     }
   })
 
-  const handlePointerDown = (e) => {
-    if (!containerRef.current || e.button !== 0) return
+  const updateScrollButtons = useCallback(() => {
+    if (!emblaApi) return
+    setCanScrollPrev(emblaApi.canScrollPrev())
+    setCanScrollNext(emblaApi.canScrollNext())
+  }, [emblaApi])
 
-    dragRef.current = {
-      isDragging: true,
-      startX: e.clientX,
-      scrollLeft: containerRef.current.scrollLeft,
-      moved: false,
+  useEffect(() => {
+    if (!emblaApi) return
+    updateScrollButtons()
+    emblaApi.on('select', updateScrollButtons)
+    emblaApi.on('reInit', updateScrollButtons)
+    emblaApi.on('scroll', updateScrollButtons)
+    return () => {
+      emblaApi.off('select', updateScrollButtons)
+      emblaApi.off('reInit', updateScrollButtons)
+      emblaApi.off('scroll', updateScrollButtons)
     }
-    setIsDragging(true)
-    containerRef.current.setPointerCapture?.(e.pointerId)
-  }
+  }, [emblaApi, updateScrollButtons])
 
-  const handlePointerMove = (e) => {
-    // Si arrastra el mouse, actualizar posición del mouse para la lupa también
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect()
-      setMousePos({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      })
+  useEffect(() => {
+    if (!emblaApi) return
+    const onPointerDown = () => { dragStartedRef.current = false }
+    const onScroll = () => { dragStartedRef.current = true }
+    const onPointerUp = () => {
+      window.setTimeout(() => {
+        dragStartedRef.current = false
+      }, 0)
     }
-
-    if (!containerRef.current || !dragRef.current.isDragging) return
-
-    const walk = e.clientX - dragRef.current.startX
-
-    if (Math.abs(walk) > 5) {
-      dragRef.current.moved = true
+    emblaApi.on('pointerDown', onPointerDown)
+    emblaApi.on('scroll', onScroll)
+    emblaApi.on('pointerUp', onPointerUp)
+    return () => {
+      emblaApi.off('pointerDown', onPointerDown)
+      emblaApi.off('scroll', onScroll)
+      emblaApi.off('pointerUp', onPointerUp)
     }
+  }, [emblaApi])
 
-    containerRef.current.scrollLeft = dragRef.current.scrollLeft - walk
-  }
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
 
-  const handlePointerUp = (e) => {
-    dragRef.current.isDragging = false
-    containerRef.current?.releasePointerCapture?.(e.pointerId)
-
-    window.setTimeout(() => {
-      setIsDragging(false)
-      dragRef.current.moved = false
-    }, 0)
-  }
-
-  const handleCategoryClick = (categoryId) => {
-    if (dragRef.current.moved) return
+  const handleCategoryClick = useCallback((categoryId) => {
+    if (dragStartedRef.current) return
     onSelectCategory(categoryId)
-  }
+  }, [onSelectCategory])
 
   // Lógica del efecto macOS Dock Magnification
   const handleMouseMove = (e) => {
@@ -125,6 +125,7 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
     setMousePos({ x: null, y: null })
   }
 
+  // Calcular la escala de cada botón basándose en la distancia horizontal al cursor
   const getScaleAndMargin = (catId) => {
     const el = itemRefs.current[catId]
     if (!el || !isHovered || mousePos.x === null) return { scale: 1, margin: 0 }
@@ -138,8 +139,8 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
 
     if (distance < maxDistance) {
       const factor = Math.cos((distance / maxDistance) * (Math.PI / 2))
-      const scale = 1 + factor * 0.22 // Escala de magnificación ideal
-      const margin = factor * 6 // Espacio dinámico para que no colisionen
+      const scale = 1 + factor * 0.25
+      const margin = factor * 8
       return { scale, margin }
     }
 
@@ -148,91 +149,106 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
 
   return (
     <div className="component-food-category-carousel relative w-full mb-8">
-      {/* Carousel Container */}
+      {/* Degradado izquierdo */}
+      {canScrollPrev && (
+        <div className="pointer-events-none absolute left-0 top-4 bottom-8 w-10 z-10 bg-gradient-to-r from-white dark:from-slate-950 to-transparent" />
+      )}
+      {/* Flecha izquierda */}
+      {canScrollPrev && (
+        <button
+          type="button"
+          onClick={scrollPrev}
+          aria-label={t('foodCarousel.scrollLeft', { defaultValue: 'Anterior' })}
+          className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-md flex items-center justify-center text-gray-600 dark:text-slate-400 hover:text-red-500 transition-all"
+        >
+          <i className="fas fa-chevron-left text-xs" />
+        </button>
+      )}
+      {/* Viewport Embla */}
       <div
-        id="category-carousel"
-        ref={containerRef}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
-        onPointerCancel={handlePointerUp}
+        ref={emblaRef}
+        className="overflow-hidden pt-4 pb-8 px-10 md:px-11"
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className={`flex gap-6 overflow-x-auto scroll-smooth pt-4 pb-8 px-11 md:px-12 transition-all ${
-          isDragging ? 'cursor-grabbing' : 'cursor-grab'
-        }`}
-        style={{
-          scrollBehavior: 'smooth',
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          userSelect: isDragging ? 'none' : 'auto',
-          touchAction: 'pan-y',
-        }}
       >
-        <style>{`#category-carousel::-webkit-scrollbar { display: none; }`}</style>
+        <div ref={containerRef} className="flex gap-6 items-center">
+          {foodCategories.map((category) => {
+            const isSelected = selectedCategory === category.id
+            const { scale, margin } = getScaleAndMargin(category.id)
 
-        {foodCategories.map((category) => {
-          const isSelected = selectedCategory === category.id
-          const { scale, margin } = getScaleAndMargin(category.id)
-          return (
-            <div
-              key={category.id}
-              ref={(el) => { itemRefs.current[category.id] = el }}
-              className="flex-shrink-0 transition-all duration-150 ease-out"
-              style={{
-                transform: `scale(${scale})`,
-                marginLeft: `${margin}px`,
-                marginRight: `${margin}px`,
-                transformOrigin: 'bottom center', // Efecto dock
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => handleCategoryClick(category.id)}
-                className={`transition-all duration-300`}
+            return (
+              <div
+                key={category.id}
+                ref={(el) => { itemRefs.current[category.id] = el }}
+                className="flex-shrink-0 transition-all duration-150 ease-out"
+                style={{
+                  transform: `scale(${scale})`,
+                  marginLeft: `${margin}px`,
+                  marginRight: `${margin}px`,
+                  transformOrigin: 'bottom center',
+                }}
               >
-                <div
-                  className={`w-28 h-28 rounded-3xl transition-all cursor-pointer flex flex-col items-center justify-center p-4 relative group ${
-                    isSelected 
-                      ? 'text-white' 
-                      : 'text-gray-700 dark:text-slate-350 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:bg-slate-100/70 dark:hover:bg-slate-700/60 shadow-sm'
-                  }`}
-                  style={{
-                    background: isSelected 
-                      ? 'linear-gradient(135deg, #FF4B3E 0%, #FF6B5C 100%)' 
-                      : undefined,
-                    borderColor: isSelected ? '#FF4B3E' : undefined,
-                    boxShadow: isSelected 
-                      ? '0 12px 20px rgba(255, 75, 62, 0.25)' 
-                      : undefined,
-                    transform: isSelected
-                      ? 'translateY(-2px)'
-                      : 'translateY(0)',
-                  }}
+                <button
+                  type="button"
+                  onClick={() => handleCategoryClick(category.id)}
+                  className={`transition-all duration-300`}
                 >
                   <div
-                    className="text-4xl mb-2 transition-transform duration-300 group-hover:scale-110"
+                    className={`w-28 h-28 rounded-3xl transition-all cursor-pointer flex flex-col items-center justify-center p-4 relative group ${
+                      isSelected
+                        ? 'text-white'
+                        : 'text-gray-700 dark:text-slate-350 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:bg-slate-100/70 dark:hover:bg-slate-700/60 shadow-sm'
+                    }`}
                     style={{
-                      filter: isSelected ? 'drop-shadow(0 4px 6px rgba(255,255,255,0.2))' : 'none',
+                      background: isSelected
+                        ? 'linear-gradient(135deg, #FF4B3E 0%, #FF6B5C 100%)'
+                        : undefined,
+                      borderColor: isSelected ? '#FF4B3E' : undefined,
+                      boxShadow: isSelected
+                        ? '0 12px 20px rgba(255, 75, 62, 0.25)'
+                        : undefined,
+                      transform: isSelected ? 'translateY(-2px)' : 'translateY(0)',
                     }}
                   >
-                    {category.icon}
-                  </div>
+                    <div
+                      className="text-4xl mb-2 transition-transform duration-300 group-hover:scale-110"
+                      style={{
+                        filter: isSelected ? 'drop-shadow(0 4px 6px rgba(255,255,255,0.2))' : 'none',
+                      }}
+                    >
+                      {category.icon}
+                    </div>
 
-                  <span
-                    className={`text-[10px] font-black text-center leading-tight tracking-wide ${
-                      isSelected ? 'text-white' : 'text-gray-600 dark:text-slate-300'
-                    }`}
-                  >
-                    {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
-                  </span>
-                </div>
-              </button>
-            </div>
-          )
-        })}
+                    <span
+                      className={`text-[10px] font-black text-center leading-tight tracking-wide ${
+                        isSelected ? 'text-white' : 'text-gray-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {t(`foodCarousel.categories.${category.name}`, { defaultValue: category.name })}
+                    </span>
+                  </div>
+                </button>
+              </div>
+            )
+          })}
+        </div>
       </div>
+      {/* Degradado derecho */}
+      {canScrollNext && (
+        <div className="pointer-events-none absolute right-0 top-4 bottom-8 w-10 z-10 bg-gradient-to-l from-white dark:from-slate-950 to-transparent" />
+      )}
+      {/* Flecha derecha */}
+      {canScrollNext && (
+        <button
+          type="button"
+          onClick={scrollNext}
+          aria-label={t('foodCarousel.scrollRight', { defaultValue: 'Siguiente' })}
+          className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-md flex items-center justify-center text-gray-600 dark:text-slate-400 hover:text-red-500 transition-all"
+        >
+          <i className="fas fa-chevron-right text-xs" />
+        </button>
+      )}
     </div>
   )
 }
