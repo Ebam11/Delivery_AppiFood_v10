@@ -21,7 +21,7 @@ import '../styles/RestaurantDashboard.css'
 
 export default function RestaurantDashboard({ user, onLogout }) {
   const { t } = useTranslation()
-  
+
   const {
     activeTab,
     setActiveTab,
@@ -46,6 +46,8 @@ export default function RestaurantDashboard({ user, onLogout }) {
     handleEditProduct,
     handleToggleAvailability,
     restaurantProfile,
+    searchQuery,
+    setSearchQuery,
   } = useRestaurantDashboard(user)
 
   const renderContent = () => {
@@ -54,43 +56,52 @@ export default function RestaurantDashboard({ user, onLogout }) {
         return <DashboardSection stats={stats} orders={orders} menu={menu} />
       case 'orders':
         return (
-          <OrdersSection 
-            orders={orders} 
-            onViewDetails={setSelectedOrder} 
-            onUpdateStatus={handleStatusChange} 
+          <OrdersSection
+            orders={orders}
+            onViewDetails={setSelectedOrder}
+            onUpdateStatus={handleStatusChange}
+            externalSearch={searchQuery}
           />
         )
       case 'menu':
         return (
-          <MenuSection 
-            menu={menu} 
+          <MenuSection
+            menu={menu}
             categories={categories}
             onAdd={handleAddProduct}
             onDelete={handleDeleteProduct}
             onEdit={handleEditProduct}
             onToggleAvailability={handleToggleAvailability}
+            externalSearch={searchQuery}
           />
         )
-      case 'analytics': return <AnalyticsSection stats={stats} />
-      case 'promotions': return <PromotionsSection />
-      case 'inventory': return (
-        <InventorySection
-          menu={menu}
-          categories={categories}
-          onEdit={handleEditProduct}
-          onToggleAvailability={handleToggleAvailability}
-        />
-      )
-      case 'calendar': return <CalendarSection />
-      case 'messages': return <MessagesSection />
-      case 'reviews': return <ReviewsSection />
+      case 'analytics':
+        return <AnalyticsSection stats={stats} />
+      case 'promotions':
+        return <PromotionsSection />
+      case 'inventory':
+        return (
+          <InventorySection
+            menu={menu}
+            categories={categories}
+            onEdit={handleEditProduct}
+            onToggleAvailability={handleToggleAvailability}
+            externalSearch={searchQuery}
+          />
+        )
+      case 'calendar':
+        return <CalendarSection />
+      case 'messages':
+        return <MessagesSection />
+      case 'reviews':
+        return <ReviewsSection externalSearch={searchQuery} />
       case 'restaurant-info':
-  return (
-    <RestaurantInfoSection
-      restaurant={restaurantProfile || user?.restaurant}
-      restaurantId={restaurantProfile?.id || user?.restaurant?.id}
-    />
-  )
+        return (
+          <RestaurantInfoSection
+            restaurant={restaurantProfile || user?.restaurant}
+            restaurantId={restaurantProfile?.id || user?.restaurant?.id}
+          />
+        )
       default:
         return <DashboardSection stats={stats} orders={orders} menu={menu} />
     }
@@ -98,22 +109,20 @@ export default function RestaurantDashboard({ user, onLogout }) {
 
   return (
     <div className="rd-container flex min-h-screen bg-slate-50 dark:bg-slate-950 text-gray-800 dark:text-slate-100 transition-colors duration-250">
-      <Sidebar 
-        active={activeTab} 
-        onNav={setActiveTab} 
-        open={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
+      <Sidebar
+        active={activeTab}
+        onNav={setActiveTab}
+        open={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
         user={user}
         onLogout={onLogout}
       />
 
       <div className="flex-1 flex flex-col min-w-0 md:pl-[220px]">
         <TopBar
-          title={
-            activeTab === 'dashboard' && restaurantProfile?.name
-              ? restaurantProfile.name
-              : t(`rd.${activeTab.replace('-', '_')}`)
-          }
+          title={activeTab === 'dashboard' && restaurantProfile?.name
+            ? restaurantProfile.name
+            : t(`rd.${activeTab.replace('-', '_')}`)}
           onMenuOpen={() => setIsSidebarOpen(true)}
           user={user}
           notifications={notifications}
@@ -121,6 +130,9 @@ export default function RestaurantDashboard({ user, onLogout }) {
           onNotifRead={handleNotifRead}
           onNotifDelete={handleNotifDelete}
           onNotifMarkAll={handleNotifMarkAll}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          activeTab={activeTab}
         />
 
         <main className="flex-1 p-6 overflow-y-auto">
@@ -135,9 +147,9 @@ export default function RestaurantDashboard({ user, onLogout }) {
       )}
 
       {selectedOrder && (
-        <OrderDetailModal 
-          order={selectedOrder} 
-          onClose={() => setSelectedOrder(null)} 
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
           onStatusChange={handleStatusChange}
         />
       )}

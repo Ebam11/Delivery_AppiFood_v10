@@ -7,7 +7,8 @@ import { COLORS } from './constants'
 export default function TopBar({
   title, breadcrumb, onMenuOpen, user, isAdmin,
   notifications = [], unreadCount = 0,
-  onNotifRead, onNotifDelete, onNotifMarkAll
+  onNotifRead, onNotifDelete, onNotifMarkAll,
+  searchQuery = '', onSearchChange, activeTab
 }) {
   const { t } = useTranslation()
   const primaryColor = isAdmin ? '#e71d1d' : COLORS.primary
@@ -51,12 +52,26 @@ export default function TopBar({
       <div className="flex items-center gap-3">
 
         {/* Buscador */}
-        <div className="hidden sm:flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2">
+        <div className="hidden sm:flex items-center gap-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 transition-all focus-within:border-red-400">
           <i className="fas fa-search text-gray-400 dark:text-slate-500 text-sm" />
           <input
-            placeholder={t('rd.search')}
-            className="bg-transparent text-sm outline-none w-32 text-gray-600 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500"
+            placeholder={
+              activeTab === 'orders' ? 'Buscar pedido...' :
+              activeTab === 'menu' ? 'Buscar plato...' :
+              activeTab === 'reviews' ? 'Buscar reseña...' :
+              activeTab === 'inventory' ? 'Buscar producto...' :
+              'Buscar...'
+            }
+            value={searchQuery}
+            onChange={e => onSearchChange?.(e.target.value)}
+            onKeyDown={e => e.key === 'Escape' && onSearchChange?.('')}
+            className="bg-transparent text-sm outline-none w-36 text-gray-600 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500"
           />
+          {searchQuery && (
+            <button onClick={() => onSearchChange?.('')} className="text-gray-300 hover:text-red-400 transition">
+              <i className="fas fa-xmark text-xs" />
+            </button>
+          )}
         </div>
 
         {/* Notificaciones */}

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchJson } from '../../api/fetchJson'
 
-export default function ReviewsSection() {
+export default function ReviewsSection({ externalSearch = '' }) {
   const { t } = useTranslation()
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
@@ -47,8 +47,14 @@ export default function ReviewsSection() {
   }
 
   const visible = reviews.filter(r => {
-    if (filter === 'pending') return !r.restaurant_reply
-    if (filter === 'answered') return !!r.restaurant_reply
+    if (filter === 'pending' && r.restaurant_reply) return false
+    if (filter === 'answered' && !r.restaurant_reply) return false
+    if (externalSearch) {
+      const q = externalSearch.toLowerCase()
+      return r.user?.name?.toLowerCase().includes(q) ||
+            r.comment?.toLowerCase().includes(q) ||
+            r.text?.toLowerCase().includes(q)
+    }
     return true
   })
 

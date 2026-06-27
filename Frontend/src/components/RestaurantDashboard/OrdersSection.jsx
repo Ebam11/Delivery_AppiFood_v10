@@ -1,12 +1,16 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { COLORS } from './constants'
 import { Badge } from './Common'
 
-export default function OrdersSection({ orders, onStatusChange, onViewDetails }) {
+export default function OrdersSection({ orders, onViewDetails, onUpdateStatus, externalSearch = '' }) {
   const { t } = useTranslation()
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
+  useEffect(() => {
+    setSearch(externalSearch)
+  }, [externalSearch])
+  
 
   const counts = {
     all:        orders.length,

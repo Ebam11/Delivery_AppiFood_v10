@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { fetchJson } from '../../api/fetchJson'
 
-export default function InventorySection() {
+export default function InventorySection({ externalSearch = '' }) {
   const { t } = useTranslation()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -110,7 +110,9 @@ export default function InventorySection() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 dark:divide-slate-800">
-                {products.map(product => (
+              {products
+                .filter(p => !externalSearch || p.name.toLowerCase().includes(externalSearch.toLowerCase()))
+                .map(product => (
                   <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/40 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">

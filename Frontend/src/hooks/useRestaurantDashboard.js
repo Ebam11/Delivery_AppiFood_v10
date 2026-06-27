@@ -17,6 +17,7 @@ export function useRestaurantDashboard(user) {
   const [loading, setLoading]             = useState(true)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [toast, setToast]                 = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount]     = useState(0)
   const [restaurantProfile, setRestaurantProfile] = useState(null)
@@ -302,5 +303,7 @@ const handleToggleAvailability = async (id) => {
     handleEditProduct,
     handleToggleAvailability,
     restaurantProfile,
+    searchQuery,
+    setSearchQuery,
   }
 }
