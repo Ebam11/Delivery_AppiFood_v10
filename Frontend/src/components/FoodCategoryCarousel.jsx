@@ -1,4 +1,3 @@
-// Archivo: src/components/FoodCategoryCarousel.jsx | Comentario: logica principal del modulo.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import useEmblaCarousel from 'embla-carousel-react'
@@ -149,25 +148,23 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
 
   return (
     <div className="component-food-category-carousel relative w-full mb-8">
-      {/* Degradado izquierdo */}
       {canScrollPrev && (
-        <div className="pointer-events-none absolute left-0 top-4 bottom-8 w-10 z-10 bg-gradient-to-r from-white dark:from-slate-950 to-transparent" />
+        <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-14 z-10 bg-gradient-to-r from-white dark:from-slate-950 to-transparent" />
       )}
-      {/* Flecha izquierda */}
       {canScrollPrev && (
         <button
           type="button"
           onClick={scrollPrev}
           aria-label={t('foodCarousel.scrollLeft', { defaultValue: 'Anterior' })}
-          className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-md flex items-center justify-center text-gray-600 dark:text-slate-400 hover:text-red-500 transition-all"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-lg flex items-center justify-center text-gray-600 dark:text-slate-400 hover:text-[#FF4B3E] hover:border-[#FF4B3E]/30 transition-all"
+          style={{ marginTop: '-16px' }}
         >
           <i className="fas fa-chevron-left text-xs" />
         </button>
       )}
-      {/* Viewport Embla */}
       <div
         ref={emblaRef}
-        className="overflow-hidden pt-4 pb-8 px-10 md:px-11"
+        className="overflow-hidden pt-4 pb-8 px-12 md:px-14"
         onMouseMove={handleMouseMove}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -234,17 +231,16 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
           })}
         </div>
       </div>
-      {/* Degradado derecho */}
       {canScrollNext && (
-        <div className="pointer-events-none absolute right-0 top-4 bottom-8 w-10 z-10 bg-gradient-to-l from-white dark:from-slate-950 to-transparent" />
+        <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-14 z-10 bg-gradient-to-l from-white dark:from-slate-950 to-transparent" />
       )}
-      {/* Flecha derecha */}
       {canScrollNext && (
         <button
           type="button"
           onClick={scrollNext}
           aria-label={t('foodCarousel.scrollRight', { defaultValue: 'Siguiente' })}
-          className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-md flex items-center justify-center text-gray-600 dark:text-slate-400 hover:text-red-500 transition-all"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-9 h-9 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 shadow-lg flex items-center justify-center text-gray-600 dark:text-slate-400 hover:text-[#FF4B3E] hover:border-[#FF4B3E]/30 transition-all"
+          style={{ marginTop: '-16px' }}
         >
           <i className="fas fa-chevron-right text-xs" />
         </button>

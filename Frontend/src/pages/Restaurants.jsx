@@ -1,8 +1,3 @@
-/**
- * Archivo: src/pages/Restaurants.jsx
- * Página de exploración de restaurantes.
- * Permite filtrar por categorías, buscar y ver restaurantes cercanos.
- */
 
 import { useTranslation } from 'react-i18next'
 import { useRestaurants } from '../hooks/useRestaurants'
@@ -34,7 +29,6 @@ export default function RestaurantsPage() {
     userLocationLabel
   } = useRestaurants()
 
-  // Tipos de comida disponibles
   const foodTypes = [
     "Restaurantes Locales", "Comida Casera", "Sopas y Caldos", 
     "Antojitos Payaneses", "Empanadas y Fritos", "Tamales",
@@ -44,10 +38,9 @@ export default function RestaurantsPage() {
 
   return (
     <div className="bg-white dark:bg-slate-950 min-h-screen text-gray-900 dark:text-slate-100 transition-colors duration-300">
-      {/* Cabecera */}
       <section className="pt-8 pb-4">
         <div className="container mx-auto px-6">
-          <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div className="mb-8 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
                 {t("restaurants.title") || "Explora Restaurantes"}
@@ -56,27 +49,25 @@ export default function RestaurantsPage() {
                 {t("restaurants.subtitle") || "Descubre los mejores sabores de la ciudad."}
               </p>
             </div>
-          </div>
-
-          {/* Estadísticas Rápidas */}
-          <div className="flex gap-4 mb-4 overflow-x-auto pb-2 scrollbar-hide">
-            <div className="bg-orange-50 dark:bg-orange-950/20 px-6 py-3 rounded-2xl border border-orange-100 dark:border-orange-900/30 flex items-center gap-3 whitespace-nowrap">
-              <span className="text-2xl font-black text-red-500">{allRestaurants.length}</span>
-              <span className="text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
-                {t("restaurants.count") || "Locales"}
-              </span>
-            </div>
-            <div className="bg-green-50 dark:bg-green-950/20 px-6 py-3 rounded-2xl border border-green-100 dark:border-green-900/30 flex items-center gap-3 whitespace-nowrap">
-              <span className="text-2xl font-black text-green-600">{allRestaurants.filter(r => r.isOpen).length}</span>
-              <span className="text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
-                {t("restaurants.open") || "Abiertos"}
-              </span>
+            {/* Chips de estadísticas — esquina derecha del título */}
+            <div className="flex gap-3 flex-shrink-0 mt-1">
+              <div className="bg-orange-50 dark:bg-orange-950/20 px-5 py-2.5 rounded-2xl border border-orange-100 dark:border-orange-900/30 flex items-center gap-2.5">
+                <span className="text-xl font-black text-red-500">{allRestaurants.length}</span>
+                <span className="text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                  {t("restaurants.count") || "Restaurantes"}
+                </span>
+              </div>
+              <div className="bg-green-50 dark:bg-green-950/20 px-5 py-2.5 rounded-2xl border border-green-100 dark:border-green-900/30 flex items-center gap-2.5">
+                <span className="text-xl font-black text-green-600">{allRestaurants.filter(r => r.isOpen).length}</span>
+                <span className="text-xs font-bold text-gray-600 dark:text-slate-400 uppercase tracking-wider">
+                  {t("restaurants.open") || "Abiertos"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Sección principal */}
       <section className="relative pb-16">
         <div className="container mx-auto px-6">
           
@@ -96,7 +87,6 @@ export default function RestaurantsPage() {
                 {t("restaurants.filter_label") || "Filtros:"}
               </span>
               
-              {/* Selector de Envío */}
               <select
                 value={deliveryFilter}
                 onChange={e => setDeliveryFilter(e.target.value)}
@@ -107,7 +97,6 @@ export default function RestaurantsPage() {
                 <option value="cheap">{t("restaurants.filter_delivery_cheap") || "Envío: Menos de $3.000"}</option>
               </select>
 
-              {/* Selector de Tiempo */}
               <select
                 value={timeFilter}
                 onChange={e => setTimeFilter(e.target.value)}
@@ -118,7 +107,6 @@ export default function RestaurantsPage() {
                 <option value="under45">{t("restaurants.filter_time_under45") || "Tiempo: Menos de 45 min"}</option>
               </select>
 
-              {/* Selector de Calificación */}
               <select
                 value={ratingFilter}
                 onChange={e => setRatingFilter(e.target.value)}
@@ -129,7 +117,6 @@ export default function RestaurantsPage() {
                 <option value="45plus">{t("restaurants.filter_rating_45plus") || "Calificación: 4.5+"}</option>
               </select>
 
-              {/* Input de presupuesto */}
               <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 hover:border-[#FF4B3E] transition">
                 <span className="text-xs font-bold text-gray-400"><i className="fas fa-coins"></i></span>
                 <input
@@ -146,7 +133,6 @@ export default function RestaurantsPage() {
                 )}
               </div>
 
-              {/* Botón de limpiar */}
               {(deliveryFilter !== 'all' || timeFilter !== 'all' || ratingFilter !== 'all' || budgetInput !== '') && (
                 <button
                   onClick={() => { 
@@ -163,7 +149,6 @@ export default function RestaurantsPage() {
             </div>
           </div>
 
-                    {/* Chips de filtros activos */}
           {(deliveryFilter !== 'all' || timeFilter !== 'all' || ratingFilter !== 'all' || budgetInput !== '' || selectedCategory) && (
             <div className="flex flex-wrap gap-2 mt-3">
               {selectedCategory && (
@@ -199,7 +184,6 @@ export default function RestaurantsPage() {
             </div>
 )}
 
-          {/* Grilla de Resultados */}
           <div className="py-12">
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

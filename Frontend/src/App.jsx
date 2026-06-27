@@ -1,22 +1,40 @@
-/**
- * Archivo: src/App.jsx
- * Punto de entrada principal de la aplicación Frontend.
- */
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter, useLocation } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
 import { useAppInit } from './hooks/useAppInit'
 import AppRoutes from './routes/AppRoutes'
 import LoadingScreen from './components/layout/LoadingScreen'
 import ErrorBoundary from './components/ErrorBoundary'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
 import PWAInstallPrompt from './components/PWAInstallPrompt'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import './i18n.js'
 
-import { useState } from 'react'
 import { useCart } from './context/useCart'
+
+// Rutas donde NO aparecen los widgets flotantes (chatbot, traductor)
+const AUTH_ROUTES = ['/login', '/register', '/register-restaurant', '/restaurant/login', '/forgot-password']
+
+/**
+ * Widget flotante del traductor — vive dentro del BrowserRouter para poder usar useLocation.
+ */
+function FloatingWidgets({ isCartOpen, isNearFooter, loading, isLoggingOut }) {
+  const location = useLocation()
+  const isAuthPage = AUTH_ROUTES.some(r => location.pathname.startsWith(r))
+  const shouldHideWidgets = loading || isAuthPage || isLoggingOut
+  const shouldHideFloating = isCartOpen || isNearFooter || shouldHideWidgets
+
+  if (shouldHideWidgets) return null
+
+  return (
+    <div
+      className={`fixed bottom-4 right-5 sm:right-8 z-[9999] flex items-center gap-2 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-1 py-1 rounded-full shadow-lg border border-gray-100 dark:border-slate-800/80 transition-all duration-300 hover:scale-105 hover:bg-white dark:hover:bg-slate-900 ${shouldHideFloating ? 'opacity-0 pointer-events-none scale-90 translate-y-4' : 'opacity-100'}`}
+    >
+      <LanguageSwitcher />
+    </div>
+  )
+}
 
 function AppContent() {
   const { t } = useTranslation()
@@ -24,14 +42,14 @@ function AppContent() {
   const { isOpen: isCartOpen } = useCart()
   const [isNearFooter, setIsNearFooter] = useState(false)
 
-  const { 
-    user, 
-    loading, 
-    isLoggingOut, 
-    handleLogin, 
-    handleLogout, 
+  const {
+    user,
+    loading,
+    isLoggingOut,
+    handleLogin,
+    handleLogout,
     isAuth,
-    setUser 
+    setUser
   } = useAppInit()
 
   useEffect(() => {
@@ -50,7 +68,7 @@ function AppContent() {
       const threshold = 180
       const totalHeight = document.documentElement.scrollHeight
       const currentScroll = window.innerHeight + window.scrollY
-      
+
       if (totalHeight - currentScroll < threshold) {
         setIsNearFooter(true)
       } else {
@@ -66,25 +84,24 @@ function AppContent() {
     return <LoadingScreen message={t('app.loggingOut', { defaultValue: 'Cerrando sesión...' })} />
   }
 
-  const shouldHideFloating = isCartOpen || isNearFooter
-
   return (
     <ErrorBoundary name="App">
-      <BrowserRouter> {/* <--- ÚNICO ROUTER */}
-        <AppRoutes 
-          user={user} 
-          isAuth={isAuth} 
-          loading={loading} 
-          handleLogin={handleLogin} 
+      <BrowserRouter>
+        <AppRoutes
+          user={user}
+          isAuth={isAuth}
+          loading={loading}
+          handleLogin={handleLogin}
           handleLogout={handleLogout}
           setUser={setUser}
         />
         <PWAInstallPrompt />
-        <div 
-          className={`fixed bottom-4 right-5 sm:right-8 z-[9999] flex items-center gap-2 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md px-1 py-1 rounded-full shadow-lg border border-gray-100 dark:border-slate-800/80 transition-all duration-300 hover:scale-105 hover:bg-white dark:hover:bg-slate-900 ${shouldHideFloating ? 'opacity-0 pointer-events-none scale-90 translate-y-4' : 'opacity-100'}`}
-        >
-          <LanguageSwitcher />
-        </div>
+        <FloatingWidgets
+          isCartOpen={isCartOpen}
+          isNearFooter={isNearFooter}
+          loading={loading}
+          isLoggingOut={isLoggingOut}
+        />
       </BrowserRouter>
     </ErrorBoundary>
   )
@@ -94,7 +111,7 @@ export default function App() {
   return (
     <ThemeProvider>
       <CartProvider>
-        <AppContent /> {/* <--- SIN ROUTER AQUÍ */}
+        <AppContent />
       </CartProvider>
     </ThemeProvider>
   )

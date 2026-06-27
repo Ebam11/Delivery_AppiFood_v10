@@ -152,12 +152,6 @@ export default function RegisterRestaurant({ onLogin }) {
         />
         <header className="fixed top-0 left-0 right-0 h-[68px] bg-white shadow-md flex items-center justify-center px-8 z-50">
           <Link to="/" className="font-['Satisfy'] text-3xl text-[#FF4B3E]">AppiFood</Link>
-          <Link
-            to="/restaurant/login"
-            className="absolute right-8 px-4 py-2 rounded-full border-2 border-[#FF4B3E] text-[#FF4B3E] font-bold text-xs hover:bg-red-50 transition"
-          >
-            {t('register_restaurant.login_button')}
-          </Link>
         </header>
 
         <div className="relative z-10 w-full max-w-[1300px] mx-auto px-[10%] py-24 flex items-center justify-between gap-10 flex-wrap min-h-screen">
