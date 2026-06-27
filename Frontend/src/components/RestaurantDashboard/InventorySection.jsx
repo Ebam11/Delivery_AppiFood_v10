@@ -62,13 +62,13 @@ export default function InventorySection() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: t('rd.in_stock') || 'Disponibles', value: available.length, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-950/30', icon: '<i className="fas fa-check-circle mr-1"></i>' },
-          { label: t('rd.out_of_stock') || 'No disponibles', value: unavailable.length, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-950/30', icon: '<i className="fas fa-times-circle mr-1"></i>' },
-          { label: t('rd.total_products') || 'Total de Productos', value: products.length, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30', icon: '📦' },
+          { label: t('rd.in_stock') || 'Disponibles', value: available.length, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-950/30', icon: 'fa-circle-check' },
+          { label: t('rd.out_of_stock') || 'No disponibles', value: unavailable.length, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-950/30', icon: 'fa-circle-xmark' },
+          { label: t('rd.total_products') || 'Total de Productos', value: products.length, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30', icon: 'fa-boxes-stacked' },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${stat.bg}`}>
-              {stat.icon}
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg}`}>
+            <i className={`fas ${stat.icon} text-lg`} />
             </div>
             <div>
               <p className={`text-3xl font-black ${stat.color}`}>{stat.value}</p>
@@ -90,12 +90,12 @@ export default function InventorySection() {
 
         {loading ? (
           <div className="py-16 text-center text-gray-400 dark:text-slate-500">
-            <div className="text-4xl mb-3">⏳</div>
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-red-500 border-t-transparent mx-auto mb-3" />
             <p className="font-semibold">{t('rd.loading_inventory') || 'Cargando inventario...'}</p>
           </div>
         ) : products.length === 0 ? (
           <div className="py-16 text-center text-gray-400 dark:text-slate-500">
-            <div className="text-5xl mb-3">📦</div>
+            <i className="fas fa-boxes-stacked text-5xl text-gray-300 dark:text-slate-600 mb-3 block" />
             <p className="font-semibold text-gray-600 dark:text-slate-300">{t('rd.no_products') || 'No tienes productos registrados.'}</p>
             <p className="text-sm mt-1">{t('rd.go_to_menu') || 'Ve a la sección de Menú para añadir productos.'}</p>
           </div>
@@ -133,7 +133,10 @@ export default function InventorySection() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${product.is_available ? 'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400'}`}>
-                        {product.is_available ? '<i className="fas fa-check-circle mr-1"></i> ' + t('rd.available') : '<i className="fas fa-times-circle mr-1"></i> ' + t('rd.unavailable')}
+                      {product.is_available
+                        ? <><i className="fas fa-circle-check text-green-500 mr-1" />{t('rd.available')}</>
+                        : <><i className="fas fa-circle-xmark text-red-400 mr-1" />{t('rd.unavailable')}</>
+                  }
                       </span>
                     </td>
                     <td className="px-6 py-4">

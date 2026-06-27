@@ -192,7 +192,7 @@ export default function PromotionsSection() {
 
       {loading ? (
         <div className="py-16 text-center text-gray-400">
-          <div className="text-4xl mb-3">⏳</div>
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-red-500 border-t-transparent mx-auto mb-3" />
           <p className="font-semibold">{t('rd.loading_coupons') || 'Cargando cupones...'}</p>
         </div>
       ) : coupons.length === 0 ? (

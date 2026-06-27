@@ -171,12 +171,14 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { label: t('rd.total_orders'), value: totalOrders, trend:'+1.58%', icon:'📋' },
-          { label: t('rd.completed'),    value: completedOrders, trend:'+0.42%', icon:'<i className="fas fa-check-circle mr-1"></i>' },
-          { label: t('rd.income'),       value:`$${totalRevenue.toLocaleString()}`, trend:'+2.36%', icon:'<i className="fas fa-coins mr-1"></i>' },
+          { label: t('rd.total_orders'), value: totalOrders,     trend:'+1.58%', icon:'fa-bag-shopping' },
+          { label: t('rd.completed'),    value: completedOrders, trend:'+0.42%', icon:'fa-circle-check' },
+          { label: t('rd.income'),       value:`$${totalRevenue.toLocaleString()}`, trend:'+2.36%', icon:'fa-money-bill-trend-up' },
         ].map((m,i) => (
           <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 p-5 flex items-center gap-4 shadow-sm">
-            <div className="w-12 h-12 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: COLORS.primaryLight }}>{m.icon}</div>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: COLORS.primaryLight }}>
+            <i className={`fas ${m.icon} text-xl`} style={{ color: COLORS.primary }} />
+            </div>
             <div>
               <p className="text-xs text-gray-400 font-medium">{m.label}</p>
               <p className="text-2xl font-bold text-gray-800 dark:text-white mt-0.5">{m.value}</p>

@@ -73,7 +73,14 @@ export default function RestaurantDashboard({ user, onLogout }) {
         )
       case 'analytics': return <AnalyticsSection stats={stats} />
       case 'promotions': return <PromotionsSection />
-      case 'inventory': return <InventorySection />
+      case 'inventory': return (
+        <InventorySection
+          menu={menu}
+          categories={categories}
+          onEdit={handleEditProduct}
+          onToggleAvailability={handleToggleAvailability}
+        />
+      )
       case 'calendar': return <CalendarSection />
       case 'messages': return <MessagesSection />
       case 'reviews': return <ReviewsSection />

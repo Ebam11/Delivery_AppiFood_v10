@@ -35,14 +35,16 @@ export default function OrdersSection({ orders, onStatusChange, onViewDetails })
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: t('rd.total_orders_col'), value: counts.all,       icon:'📋', color: COLORS.primary },
-          { label: t('orders.status_pending'), value: counts.pending,   icon:'⏳', color:'#f59e0b' },
-          { label: t('orders.status_preparing'), value: counts.preparing, icon:'<i className="fas fa-user-tie mr-1"></i>', color:'#a855f7' },
-          { label: t('orders.status_delivered'), value: counts.delivered, icon:'<i className="fas fa-check-circle mr-1"></i>', color:'#10b981' },
+          { label: t('rd.total_orders_col'),     value: counts.all,       icon:'fa-bag-shopping',  color: COLORS.primary },
+          { label: t('orders.status_pending'),   value: counts.pending,   icon:'fa-clock',         color:'#f59e0b' },
+          { label: t('orders.status_preparing'), value: counts.preparing, icon:'fa-fire-burner',   color:'#a855f7' },
+          { label: t('orders.status_delivered'), value: counts.delivered, icon:'fa-circle-check',  color:'#10b981' },
         ].map((s,i) => (
           <div key={i} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between">
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center text-base" style={{ background:`${s.color}20` }}>{s.icon}</div>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background:`${s.color}20` }}>
+                <i className={`fas ${s.icon} text-base`} style={{ color: s.color }} />
+              </div>
             </div>
             <p className="text-2xl font-bold text-gray-800 dark:text-slate-100 mt-2">{s.value}</p>
             <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">{s.label}</p>

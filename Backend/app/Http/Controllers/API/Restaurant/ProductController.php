@@ -13,9 +13,9 @@ class ProductController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $products = Product::included()->filter()->sort()
-            ->where('restaurant_id', $request->user()->restaurant->id)
-            ->getOrPaginate();
+        $products = Product::with('category')->included()->filter()->sort()
+        ->where('restaurant_id', $request->user()->restaurant->id)
+        ->getOrPaginate();
 
         return response()->json(
             ProductResource::collection($products)->response()->getData(true)
