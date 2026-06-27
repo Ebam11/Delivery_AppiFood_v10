@@ -37,8 +37,8 @@ export default function OrdersSection({ orders, onStatusChange, onViewDetails })
         {[
           { label: t('rd.total_orders_col'), value: counts.all,       icon:'📋', color: COLORS.primary },
           { label: t('orders.status_pending'), value: counts.pending,   icon:'⏳', color:'#f59e0b' },
-          { label: t('orders.status_preparing'), value: counts.preparing, icon:'👨‍🍳', color:'#a855f7' },
-          { label: t('orders.status_delivered'), value: counts.delivered, icon:'✅', color:'#10b981' },
+          { label: t('orders.status_preparing'), value: counts.preparing, icon:'<i className="fas fa-user-tie mr-1"></i>', color:'#a855f7' },
+          { label: t('orders.status_delivered'), value: counts.delivered, icon:'<i className="fas fa-check-circle mr-1"></i>', color:'#10b981' },
         ].map((s,i) => (
           <div key={i} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between">

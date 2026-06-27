@@ -24,7 +24,7 @@ export default function ProductModal({ product, onClose }) {
         <div className="relative">
           <img src={product.img} alt={product.name}
             className="w-full h-56 object-cover"
-            onError={e => { e.target.src = 'https://via.placeholder.com/400x200/f3f3f3/ccc?text=🍔' }} />
+            onError={e => { e.target.src = 'https://via.placeholder.com/400x200/f3f3f3/ccc?text=<i className="fas fa-hamburger mr-1"></i>' }} />
           <button onClick={onClose}
             className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-600 hover:text-[#FF4B3E] hover:bg-red-50 transition font-bold text-lg">
             <i className="fas fa-times"></i>

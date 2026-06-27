@@ -5,7 +5,7 @@ import { confirmSubscription } from '../api/subscriptions'
 import { getUserPaymentMethods } from '../api/payment'
 
 const PAYMENT_CHOICES = [
-  { id: 'card', label: 'Tarjeta', icon: '💳', description: 'Crédito o débito' },
+  { id: 'card', label: 'Tarjeta', icon: '<i className="fas fa-credit-card mr-1"></i>', description: 'Crédito o débito' },
   { id: 'wallet', label: 'Nequi', icon: '🟣', description: 'Billetera digital' },
   { id: 'transfer', label: 'Bancolombia', icon: '🏦', description: 'Cuenta bancaria / transferencia' },
   { id: 'pse', label: 'PSE', icon: '🌐', description: 'Pago seguro por banco' },
@@ -28,7 +28,7 @@ const getSavedMethodMeta = (method) => {
   }
 
   return {
-    icon: provider === 'mastercard' ? '🟠' : provider === 'amex' ? '🔷' : provider === 'diners' ? '⭐' : '💳',
+    icon: provider === 'mastercard' ? '🟠' : provider === 'amex' ? '🔷' : provider === 'diners' ? '<i className="fas fa-star mr-1"></i>' : '<i className="fas fa-credit-card mr-1"></i>',
     title: 'Tarjeta',
     description: `${provider.toUpperCase() || 'CARD'} •••• ${method.last_four || '0000'}`,
   }

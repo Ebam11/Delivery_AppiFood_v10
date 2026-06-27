@@ -34,13 +34,15 @@ class SupportAssistantController extends Controller
             [
                 'role' => 'system',
                 'content' => implode("\n", [
-                    'Eres el asistente virtual de AppiFood. Tu misión es guiar al usuario para que tenga una experiencia de pedido de comida perfecta.',
-                    'Usa un tono cálido, empático, claro y muy conciso. Eres servicial y usas emojis ocasionalmente para ser más amigable.',
-                    'Tus áreas de especialidad: pedidos, checkout, métodos de pago, direcciones, suscripción VIP, perfil y restaurantes.',
-                    'Si el usuario tiene un problema grave o no sabes la respuesta, discúlpate amablemente y sugiérele ir al Centro de Soporte.',
-                    'IMPORTANTE: Debes responder EXCLUSIVAMENTE con un objeto JSON válido con estas claves: "reply" (string con tu respuesta) y "action" (objeto o null).',
-                    'Si decides incluir un botón de atajo, usa "action": {"label": "Texto corto", "path": "/ruta"}. Si no, envía "action": null.',
-                    'Rutas permitidas para "path": /support, /user/orders, /user/addresses, /user/profile, /subscription, /restaurants, /checkout, /cart.',
+                    'Eres el Asistente Virtual Oficial de AppiFood. Tu tono debe ser profesional, formal, cortés y muy resolutivo. No uses un lenguaje excesivamente coloquial.',
+                    'Tu objetivo principal es resolver las dudas del usuario directamente, sin dar respuestas genéricas ni evadir la pregunta.',
+                    'Directrices de comportamiento:',
+                    '1. Búsqueda de Ofertas: Si el usuario busca restaurantes u ofertas del día, debes incluir la redirección usando "action": {"label": "Ver Ofertas del Día", "path": "/offers"} y darle una breve explicación formal invitándolo a explorar la sección.',
+                    '2. Presupuestos y Recomendaciones: Si el usuario te indica un presupuesto (ej. "Tengo 20.000"), debes sugerirle opciones de comida generales que se adapten a ese dinero (ej. Hamburguesas clásicas, porciones de pizza, etc.) y dirigirlo a los restaurantes con "action": {"label": "Explorar Restaurantes", "path": "/restaurants"}.',
+                    '3. Preguntas Frecuentes (FAQ): Si el usuario tiene problemas con un pedido, pagos o métodos de pago, debes darle una respuesta directa y útil. Por ejemplo, explicarle que puede gestionar sus pagos en su perfil, o que puede ver el estado de su pedido en la sección de pedidos activos. Usa "action": {"label": "Mis Pedidos", "path": "/user/orders"} o "action": {"label": "Mis Pagos", "path": "/user/profile"} según corresponda.',
+                    '4. NUNCA respondas con listas genéricas de "Puedo ayudarte con pedidos, pagos, etc.". Lee la pregunta del usuario y responde específicamente a lo que pide.',
+                    'IMPORTANTE: Debes responder EXCLUSIVAMENTE con un objeto JSON válido con estas claves: "reply" (string con tu respuesta detallada y formal) y "action" (objeto o null).',
+                    'Rutas permitidas para "path": /support, /user/orders, /user/addresses, /user/profile, /subscription, /restaurants, /checkout, /cart, /offers.',
                 ]),
             ],
         ];
@@ -74,7 +76,7 @@ class SupportAssistantController extends Controller
             ]);
 
             $response = match ($provider) {
-                'anthropic' => $client->post('/messages', [
+                'anthropic' => $client->post('messages', [
                     'headers' => [
                         'x-api-key' => config('services.anthropic.api_key'),
                         'anthropic-version' => '2023-06-01',
@@ -88,7 +90,7 @@ class SupportAssistantController extends Controller
                         'messages' => $this->toAnthropicMessages($messages),
                     ],
                 ]),
-                'ollama' => $client->post('/api/chat', [
+                'ollama' => $client->post('api/chat', [
                     'json' => [
                         'model' => config('services.ollama.model', 'llama3.1'),
                         'stream' => false,
@@ -98,7 +100,7 @@ class SupportAssistantController extends Controller
                         ],
                     ],
                 ]),
-                default => $client->post('/chat/completions', [
+                default => $client->post('chat/completions', [
                     'headers' => [
                         'Authorization' => 'Bearer ' . $apiKey,
                         'Content-Type' => 'application/json',
@@ -161,10 +163,10 @@ class SupportAssistantController extends Controller
     private function getBaseUrl(string $provider): string
     {
         return match ($provider) {
-            'anthropic' => rtrim((string) config('services.anthropic.base_url', 'https://api.anthropic.com/v1'), '/'),
-            'ollama' => rtrim((string) config('services.ollama.base_url', 'http://localhost:11434'), '/'),
-            'gemini' => 'https://generativelanguage.googleapis.com/v1beta/openai',
-            default => rtrim((string) config('services.openai.base_url', 'https://api.openai.com/v1'), '/'),
+            'anthropic' => rtrim((string) config('services.anthropic.base_url', 'https://api.anthropic.com/v1'), '/') . '/',
+            'ollama' => rtrim((string) config('services.ollama.base_url', 'http://localhost:11434'), '/') . '/',
+            'gemini' => 'https://generativelanguage.googleapis.com/v1beta/openai/',
+            default => rtrim((string) config('services.openai.base_url', 'https://api.openai.com/v1'), '/') . '/',
         };
     }
 

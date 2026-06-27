@@ -30,7 +30,8 @@ export default function RestaurantsPage() {
     ratingFilter,
     setRatingFilter,
     budgetInput,
-    setBudgetInput
+    setBudgetInput,
+    userLocationLabel
   } = useRestaurants()
 
   // Tipos de comida disponibles
@@ -46,13 +47,15 @@ export default function RestaurantsPage() {
       {/* Cabecera */}
       <section className="pt-8 pb-4">
         <div className="container mx-auto px-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
-              {t("restaurants.title") || "Explora Restaurantes"}
-            </h1>
-            <p className="text-gray-500 dark:text-slate-400">
-              {t("restaurants.subtitle") || "Descubre los mejores sabores de la ciudad."}
-            </p>
+          <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-black text-gray-900 dark:text-white mb-2">
+                {t("restaurants.title") || "Explora Restaurantes"}
+              </h1>
+              <p className="text-gray-500 dark:text-slate-400 text-sm">
+                {t("restaurants.subtitle") || "Descubre los mejores sabores de la ciudad."}
+              </p>
+            </div>
           </div>
 
           {/* Estadísticas Rápidas */}
@@ -128,7 +131,7 @@ export default function RestaurantsPage() {
 
               {/* Input de presupuesto */}
               <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 hover:border-[#FF4B3E] transition">
-                <span className="text-xs font-bold text-gray-400">💰</span>
+                <span className="text-xs font-bold text-gray-400"><i className="fas fa-coins"></i></span>
                 <input
                   type="number"
                   min="0"
@@ -165,31 +168,31 @@ export default function RestaurantsPage() {
             <div className="flex flex-wrap gap-2 mt-3">
               {selectedCategory && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  🍽️ {selectedCategory}
+                  <i className="fas fa-utensils"></i> {selectedCategory}
                   <button onClick={() => setSelectedCategory(null)} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
               {deliveryFilter !== 'all' && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  🛵 {deliveryFilter === 'free' ? 'Envío gratis' : 'Envío &lt; $3.000'}
+                  <i className="fas fa-motorcycle"></i> {deliveryFilter === 'free' ? 'Envío gratis' : 'Envío < $3.000'}
                   <button onClick={() => setDeliveryFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
               {timeFilter !== 'all' && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  ⏱️ {timeFilter === 'fast' ? 'Menos de 30 min' : 'Menos de 45 min'}
+                  <i className="fas fa-clock"></i> {timeFilter === 'fast' ? 'Menos de 30 min' : 'Menos de 45 min'}
                   <button onClick={() => setTimeFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
               {ratingFilter !== 'all' && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  ⭐ {ratingFilter === '4plus' ? '4.0 o más' : '4.5 o más'}
+                  <i className="fas fa-star"></i> {ratingFilter === '4plus' ? '4.0 o más' : '4.5 o más'}
                   <button onClick={() => setRatingFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
               {budgetInput !== '' && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  💰 Hasta ${Number(budgetInput).toLocaleString('es-CO')}
+                  <i className="fas fa-coins"></i> Hasta ${Number(budgetInput).toLocaleString('es-CO')}
                   <button onClick={() => setBudgetInput('')} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
@@ -198,21 +201,6 @@ export default function RestaurantsPage() {
 
           {/* Grilla de Resultados */}
           <div className="py-12">
-            <div className="flex items-center justify-between mb-10">
-              <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-                {searchQuery 
-                  ? `${t("restaurants.searching_for") || "Buscando"} "${searchQuery}"` 
-                  : (selectedCategory 
-                      ? t(`foodCarousel.categories.${selectedCategory}`, { defaultValue: selectedCategory }) 
-                      : t("restaurants.all_restaurants_title") || "Todos los restaurantes"
-                    )
-                }
-              </h2>
-              <span className="text-gray-400 dark:text-slate-500 font-medium">
-                {restaurants.length} {t("restaurants.results") || "resultados"}
-              </span>
-            </div>
-
             {loading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                 {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
@@ -222,19 +210,76 @@ export default function RestaurantsPage() {
             ) : (
               <>
                 {restaurants.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {restaurants.map(r => (
-                      <RestaurantCard 
-                        key={r.id} 
-                        restaurant={r} 
-                        onSelect={(res) => navigate(`/restaurants/${res.id}`)}
-                        onFavoriteToggle={handleFavoriteToggle}
-                      />
-                    ))}
+                  <div className="flex flex-col gap-12">
+                    {/* SECCIÓN 1: Restaurantes Cerca de Mí (Menos de 5.0 km) */}
+                    {(() => {
+                      const nearbyList = restaurants.filter(r => r.distance !== null && r.distance <= 5.0)
+                      if (nearbyList.length === 0) return null
+                      return (
+                        <div className="border-b border-gray-100 dark:border-slate-800/40 pb-10">
+                          <div className="flex items-center justify-between mb-6">
+                            <div>
+                              <h2 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+                                <i className="fas fa-map-marker-alt text-[#FF4B3E]"></i> {t("restaurants.nearby_section") || "Restaurantes cerca de mí"}
+                              </h2>
+                              <p className="text-xs text-gray-400 dark:text-slate-500 font-semibold mt-1">
+                                Establecimientos a menos de 5 km de tu ubicación actual
+                              </p>
+                            </div>
+                            <span className="text-xs font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-3 py-1.5 rounded-full">
+                              {nearbyList.length} encontrados
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {nearbyList.map(r => (
+                              <RestaurantCard 
+                                key={`nearby-${r.id}`} 
+                                restaurant={r} 
+                                onSelect={(res) => navigate(`/restaurants/${res.id}`)}
+                                onFavoriteToggle={handleFavoriteToggle}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })()}
+
+                    {/* SECCIÓN 2: Todos los Restaurantes */}
+                    <div>
+                      <div className="flex items-center justify-between mb-6">
+                        <div>
+                          <h2 className="text-2xl font-black text-gray-900 dark:text-white">
+                            {searchQuery 
+                              ? `${t("restaurants.searching_for") || "Buscando"} "${searchQuery}"` 
+                              : (selectedCategory 
+                                  ? t(`foodCarousel.categories.${selectedCategory}`, { defaultValue: selectedCategory }) 
+                                  : t("restaurants.all_restaurants_title") || "Todos los restaurantes"
+                                )
+                            }
+                          </h2>
+                          <p className="text-xs text-gray-400 dark:text-slate-500 font-semibold mt-1">
+                            Explora la oferta gastronómica completa
+                          </p>
+                        </div>
+                        <span className="text-gray-400 dark:text-slate-500 font-medium">
+                          {restaurants.length} {t("restaurants.results") || "resultados"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {restaurants.map(r => (
+                          <RestaurantCard 
+                            key={r.id} 
+                            restaurant={r} 
+                            onSelect={(res) => navigate(`/restaurants/${res.id}`)}
+                            onFavoriteToggle={handleFavoriteToggle}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-24 bg-white dark:bg-slate-950 rounded-3xl border-2 border-dashed border-gray-100 dark:border-slate-800">
-                    <div className="text-6xl mb-4">🍽️</div>
+                    <div className="text-6xl mb-4 text-gray-300 dark:text-slate-700"><i className="fas fa-utensils"></i></div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                       {t("restaurants.no_results") || "No se encontraron resultados"}
                     </h3>

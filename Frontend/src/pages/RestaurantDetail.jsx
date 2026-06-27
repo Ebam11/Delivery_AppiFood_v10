@@ -16,6 +16,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { useRestaurantImage } from '../hooks/useImages'
+import { getPlaceholderImage, detectFoodCategory } from '../api/images'
 
 const restaurantIcon = new L.DivIcon({
   className: '',
@@ -25,12 +26,12 @@ const restaurantIcon = new L.DivIcon({
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; box-shadow: 0 4px 12px rgba(255,75,62,0.5);
     border: 3px solid white;
-  ">🍽️</div>`,
+  "><i className="fas fa-utensils mr-1"></i></div>`,
   iconSize: [36, 36],
   iconAnchor: [18, 18],
 })
 
-// ✅ Componente definido antes de ser usado
+// <i className="fas fa-check-circle mr-1"></i> Componente definido antes de ser usado
 const ProductMenuItem = ({ product, onSelect, fmt }) => (
   <div
     onClick={() => onSelect(product)}
@@ -113,7 +114,7 @@ export const RestaurantDetail = () => {
                   {isCurrentlyOpen ? 'Abierto' : 'Cerrado'}
                 </span>
                 <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold">
-                  ⭐ {restaurant.rating || '4.5'}
+                  <i className="fas fa-star mr-1"></i> {restaurant.rating || '4.5'}
                 </span>
               </div>
               
@@ -161,7 +162,7 @@ export const RestaurantDetail = () => {
                     >
                       <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0">
                         <img
-                          src={p.image || heroImage}
+                          src={p.image || getPlaceholderImage(detectFoodCategory(p.name))}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                           alt={p.name}
                           onError={e => { e.target.src = heroImage }}
@@ -182,7 +183,7 @@ export const RestaurantDetail = () => {
             <div className="mt-16 pt-8 border-t border-gray-100">
               <h2 className="text-3xl font-black text-gray-900 mb-2 dark:text-white">Opiniones de clientes</h2>
               <div className="flex items-center gap-2 mb-6">
-                <span className="text-xl font-bold text-gray-800 dark:text-gray-200">⭐ {restaurant.rating || '4.5'}</span>
+                <span className="text-xl font-bold text-gray-800 dark:text-gray-200"><i className="fas fa-star mr-1"></i> {restaurant.rating || '4.5'}</span>
                 <span className="text-sm text-gray-400">({reviews.length} calificaciones)</span>
               </div>
               
@@ -332,7 +333,7 @@ export const RestaurantDetail = () => {
               <i className="fas fa-times" />
             </button>
             <div className="h-64 bg-gray-100">
-              <img src={selectedProduct.image || heroImage} className="w-full h-full object-cover" alt={selectedProduct.name} />
+              <img src={selectedProduct.image || getPlaceholderImage(detectFoodCategory(selectedProduct.name))} className="w-full h-full object-cover" alt={selectedProduct.name} />
             </div>
             <div className="p-10">
               <div className="flex justify-between items-start mb-6">

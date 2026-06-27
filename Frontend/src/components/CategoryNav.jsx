@@ -7,15 +7,15 @@ export default function CategoryNav({ onCategoryChange }) {
   const { t } = useTranslation();
 
   const categories = [
-    { id: 'all',          label: `🍽️ ${t('categoryNav.all')}` },
-    { id: 'hamburguesas', label: `🍔 ${t('categoryNav.burgers')}` },
-    { id: 'pizza',        label: `🍕 ${t('categoryNav.pizza')}` },
-    { id: 'sushi',        label: `🍣 ${t('categoryNav.sushi')}` },
-    { id: 'pollo',        label: `🍗 ${t('categoryNav.chicken')}` },
-    { id: 'pastas',       label: `🍝 ${t('categoryNav.pasta')}` },
-    { id: 'saludable',    label: `🥗 ${t('categoryNav.healthy')}` },
-    { id: 'postres',      label: `🍰 ${t('categoryNav.desserts')}` },
-    { id: 'bebidas',      label: `🧃 ${t('categoryNav.drinks')}` },
+    { id: 'all',          icon: <i className="fas fa-utensils mr-1"></i>,       label: t('categoryNav.all', 'Todas') },
+    { id: 'hamburguesas', icon: <i className="fas fa-hamburger mr-1"></i>,      label: t('categoryNav.burgers', 'Hamburguesas') },
+    { id: 'pizza',        icon: <i className="fas fa-pizza-slice mr-1"></i>,    label: t('categoryNav.pizza', 'Pizzas') },
+    { id: 'sushi',        icon: <i className="fas fa-fish mr-1"></i>,           label: t('categoryNav.sushi', 'Sushi') },
+    { id: 'pollo',        icon: <i className="fas fa-drumstick-bite mr-1"></i>, label: t('categoryNav.chicken', 'Pollo') },
+    { id: 'pastas',       icon: <i className="fas fa-wine-glass-alt mr-1"></i>, label: t('categoryNav.pasta', 'Pastas') },
+    { id: 'saludable',    icon: <i className="fas fa-carrot mr-1"></i>,         label: t('categoryNav.healthy', 'Saludable') },
+    { id: 'postres',      icon: <i className="fas fa-birthday-cake mr-1"></i>,  label: t('categoryNav.desserts', 'Postres') },
+    { id: 'bebidas',      icon: <i className="fas fa-cocktail mr-1"></i>,       label: t('categoryNav.drinks', 'Bebidas') },
   ];
 
   const handleClick = (categoryId) => {
@@ -41,7 +41,7 @@ export default function CategoryNav({ onCategoryChange }) {
             data-cat={cat.id}
             type="button"
           >
-            {cat.label}
+            {cat.icon} {cat.label}
           </button>
         ))}
       </div>

@@ -106,7 +106,7 @@ export default function NotificationsTab() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {notifications.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 0', color: '#9aa0a6' }}>
-            <span style={{ fontSize: 48 }}>🔔</span>
+            <span style={{ fontSize: 48 }}><i className="fas fa-bell mr-1"></i></span>
             <p style={{ marginTop: 12, fontWeight: 600 }}>{t('profile.no_notifications')}</p>
           </div>
         ) : (

@@ -49,7 +49,7 @@ export default function PayUCheckout({ orderId }) {
       id: 'VISA',
       name: t('payuCheckout.visa.name'),
       description: t('payuCheckout.visa.description'),
-      icon: '💳',
+      icon: '<i className="fas fa-credit-card mr-1"></i>',
       info: t('payuCheckout.visa.info'),
       recommend: false,
     },
@@ -57,7 +57,7 @@ export default function PayUCheckout({ orderId }) {
       id: 'MASTERCARD',
       name: t('payuCheckout.mastercard.name'),
       description: t('payuCheckout.mastercard.description'),
-      icon: '💳',
+      icon: '<i className="fas fa-credit-card mr-1"></i>',
       info: t('payuCheckout.mastercard.info'),
       recommend: false,
     },
@@ -113,7 +113,7 @@ export default function PayUCheckout({ orderId }) {
                     <h4 className="font-bold text-gray-800">{method.name}</h4>
                     {method.recommend && (
                       <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
-                        ⭐ {t('payuCheckout.recommended')}
+                        <i className="fas fa-star mr-1"></i> {t('payuCheckout.recommended')}
                       </span>
                     )}
                   </div>
@@ -158,7 +158,7 @@ export default function PayUCheckout({ orderId }) {
                     }`}
                   >
                     <div className="flex items-start">
-                      <div className="text-3xl mr-4">💳</div>
+                      <div className="text-3xl mr-4"><i className="fas fa-credit-card mr-1"></i></div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <h4 className="font-bold text-gray-800">
@@ -166,7 +166,7 @@ export default function PayUCheckout({ orderId }) {
                           </h4>
                           {method.is_default && (
                             <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
-                              ⭐ {t('payuCheckout.recommended')}
+                              <i className="fas fa-star mr-1"></i> {t('payuCheckout.recommended')}
                             </span>
                           )}
                         </div>
@@ -190,7 +190,7 @@ export default function PayUCheckout({ orderId }) {
       {selectedMethod === 'PSE' && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-sm text-blue-900">
-            <strong>💡 {t('payuCheckout.tip')}:</strong> {t('payuCheckout.pseTip')}
+            <strong><i className="fas fa-lightbulb mr-1"></i> {t('payuCheckout.tip')}:</strong> {t('payuCheckout.pseTip')}
           </p>
         </div>
       )}

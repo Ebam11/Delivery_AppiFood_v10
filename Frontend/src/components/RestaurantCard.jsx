@@ -134,51 +134,23 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle,
           </div>
         )}
 
-        <div className="grid grid-cols-3 gap-0.5 text-[9px] font-semibold text-[#545454] dark:text-slate-400">
-          <span className="inline-flex items-center justify-center gap-1 rounded-lg border border-[#ffe8c9] dark:border-amber-950/30 bg-[#fff4e8] dark:bg-amber-950/20 px-1 py-1">
+        <div className="grid grid-cols-4 gap-0.5 text-[9px] font-semibold text-[#545454] dark:text-slate-400">
+          <span className="inline-flex items-center justify-center gap-0.5 rounded-lg border border-[#ffe8c9] dark:border-amber-950/30 bg-[#fff4e8] dark:bg-amber-950/20 px-1 py-1">
             <i className="fas fa-star text-[#f59e0b]" />{ratingLabel}
           </span>
-          <span className="inline-flex items-center justify-center gap-1 rounded-lg border border-[#dee7ff] dark:border-blue-950/30 bg-[#f4f7ff] dark:bg-blue-950/20 px-1 py-1">
+          <span className="inline-flex items-center justify-center gap-0.5 rounded-lg border border-[#dee7ff] dark:border-blue-950/30 bg-[#f4f7ff] dark:bg-blue-950/20 px-1 py-1">
             <i className="fas fa-clock" />{restaurant.time}
           </span>
-          <span className="inline-flex items-center justify-center gap-1 rounded-lg border border-[#d9f5e3] dark:border-green-950/30 bg-[#f5fff8] dark:bg-green-950/20 px-1 py-1">
+          <span className="inline-flex items-center justify-center gap-0.5 rounded-lg border border-[#d9f5e3] dark:border-green-950/30 bg-[#f5fff8] dark:bg-green-950/20 px-1 py-1">
             <i className="fas fa-motorcycle" />{deliveryLabel}
           </span>
+          <span className="inline-flex items-center justify-center gap-0.5 rounded-lg border border-purple-100 dark:border-purple-950/30 bg-purple-50 dark:bg-purple-950/20 px-1 py-1 text-purple-700 dark:text-purple-400">
+            <i className="fas fa-map-marker-alt" />
+            {restaurant.distance !== undefined && restaurant.distance !== null
+              ? `${restaurant.distance.toFixed(1)} km`
+              : 'N/A'}
+          </span>
         </div>
-
-        {showSchedule && hasSchedule && (
-          <div className="mt-2.5 text-[10px]">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsScheduleOpen(!isScheduleOpen)
-              }}
-              className="text-[#FF4B3E] hover:underline font-medium"
-            >
-              {isOpen ? (t('restaurantCard.view_full_schedule') || 'Ver horario completo') : (t('restaurantCard.view_schedule') || 'Ver horario')}
-            </button>
-            
-            {isScheduleOpen && (
-              <div className="absolute inset-x-0 top-full mt-1 z-50 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 p-3 w-72">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setIsScheduleOpen(false)
-                  }}
-                  className="absolute top-2 right-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-250"
-                >
-                  <i className="fas fa-times text-xs"></i>
-                </button>
-                <ScheduleDisplay
-                  schedule={sched}
-                  isOpen={isOpen}
-                  variant="card"
-                  language="es"
-                />
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </article>
   )

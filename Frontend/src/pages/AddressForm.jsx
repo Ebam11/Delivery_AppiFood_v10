@@ -176,7 +176,7 @@ export default function AddressForm() {
                   }}
                   className="px-4 py-2.5 bg-white border border-gray-200 hover:border-[#FF4B3E] text-gray-700 hover:text-[#FF4B3E] font-bold rounded-xl text-xs transition active:scale-95 shadow-sm whitespace-nowrap"
                 >
-                  📍 {t('address_form.get_location') || 'Obtener ubicación actual'}
+                  <i className="fas fa-map-marker-alt mr-1"></i> {t('address_form.get_location') || 'Obtener ubicación actual'}
                 </button>
               </div>
             </div>

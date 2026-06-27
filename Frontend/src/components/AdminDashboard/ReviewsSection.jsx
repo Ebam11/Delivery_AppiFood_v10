@@ -206,7 +206,7 @@ export default function ReviewsSection({
                         </p>
                         {r.reply && (
                           <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                            💬 {r.reply}
+                            <i className="fas fa-comment mr-1"></i> {r.reply}
                           </p>
                         )}
                       </div>

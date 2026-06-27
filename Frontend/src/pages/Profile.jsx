@@ -31,7 +31,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
     const params = new URLSearchParams(window.location.search);
     if (params.get('verified') === 'email') {
       setEmailVerified(true);
-      setVerifyMsg({ type: 'success', text: t('profile.email_verified_success') || '✅ ¡Tu correo electrónico ha sido verificado con éxito!' });
+      setVerifyMsg({ type: 'success', text: t('profile.email_verified_success') || '<i className="fas fa-check-circle mr-1"></i> ¡Tu correo electrónico ha sido verificado con éxito!' });
       setActiveTab('security');
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -45,7 +45,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
       if (res.data) {
         setEmailVerified(true)
         onUpdateProfile?.(res.data)
-        setVerifyMsg({ type: 'success', text: t('profile.email_verified_success') || '✅ Correo verificado correctamente.' })
+        setVerifyMsg({ type: 'success', text: t('profile.email_verified_success') || '<i className="fas fa-check-circle mr-1"></i> Correo verificado correctamente.' })
       } else {
         setVerifyMsg({ type: 'success', text: t('profile.email_verification_sent') || '📩 Te hemos enviado un enlace de confirmación a tu correo electrónico.' })
       }
@@ -63,7 +63,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
       const res = await fetchJson('/profile/verify-phone', { method: 'POST' })
       setPhoneVerified(true)
       onUpdateProfile?.(res.data || res)
-      setVerifyMsg({ type: 'success', text: t('profile.phone_verified_success') || '✅ Teléfono verificado correctamente.' })
+      setVerifyMsg({ type: 'success', text: t('profile.phone_verified_success') || '<i className="fas fa-check-circle mr-1"></i> Teléfono verificado correctamente.' })
     } catch (err) {
       setVerifyMsg({ type: 'error', text: err.message || t('profile.verification_error') || 'Error al verificar el teléfono.' })
     } finally {

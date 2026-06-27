@@ -136,7 +136,7 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 {item.prep_time_minutes != null && <span>⏱ {item.prep_time_minutes} min</span>}
               </div>
               <div className="flex items-center justify-between mt-2 mb-3">
-                <span className="text-xs text-gray-400 dark:text-slate-500">⭐ {item.rating} · {item.orders} {t('rd.orders_label')}</span>
+                <span className="text-xs text-gray-400 dark:text-slate-500"><i className="fas fa-star mr-1"></i> {item.rating} · {item.orders} {t('rd.orders_label')}</span>
                 <span className="font-bold" style={{ color: COLORS.primary }}>${Number(item.price).toLocaleString()}</span>
               </div>
               <div className="flex gap-2">
@@ -158,7 +158,7 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
         ))}
         {visible.length === 0 && (
           <div className="col-span-full py-16 text-center text-gray-400 dark:text-slate-500">
-            <p className="text-4xl mb-2">🍽️</p>
+            <p className="text-4xl mb-2"><i className="fas fa-utensils mr-1"></i></p>
             <p className="font-medium">{t('rd.no_dishes')}</p>
           </div>
         )}

@@ -6,7 +6,7 @@ const PAYMENT_METHODS = [
   {
     id: 'card',
     label: 'Tarjeta de Crédito / Débito',
-    icon: '💳',
+    icon: '<i className="fas fa-credit-card mr-1"></i>',
     desc: 'Visa, Mastercard, Amex',
   },
   {
@@ -117,7 +117,7 @@ export default function WompiCheckout({ orderId }) {
 
       {error && (
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 text-red-700 dark:text-red-400 px-4 py-3 rounded-xl mb-4 text-sm font-semibold">
-          ⚠️ {error}
+          <i className="fas fa-exclamation-triangle mr-1"></i> {error}
         </div>
       )}
 

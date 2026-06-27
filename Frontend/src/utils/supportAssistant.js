@@ -148,7 +148,7 @@ export function getAssistantReply(message) {
   if (matched) return matched
 
   return {
-    reply: 'Puedo ayudarte con pedidos, pagos, direcciones, favoritos, suscripción, restaurantes, horarios, cupones y recuperación de cuenta. Si quieres, escribe tu duda con más detalle o abre el centro de soporte.',
+    reply: 'Hola. Soy el Asistente Virtual de AppiFood. Actualmente me encuentro en modo fuera de línea, pero puedo guiarte con consultas generales sobre tus pedidos, pagos o métodos de pago. ¿En qué puedo ayudarte específicamente?',
     action: { label: 'Ir al soporte', path: '/support' },
   }
 }
