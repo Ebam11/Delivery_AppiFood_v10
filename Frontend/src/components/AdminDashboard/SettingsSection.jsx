@@ -202,7 +202,7 @@ export default function SettingsSection({ showToast }) {
       {/* ── Notificaciones del sistema ── */}
       <section className={sectionClass}>
         <div className={sectionHeaderClass}>
-          <span className="text-xl">🔔</span>
+          <span className="text-xl"><i className="fas fa-bell mr-1"></i></span>
           <div>
             <h3 className="font-bold text-gray-800 dark:text-slate-100">Preferencias de Notificaciones</h3>
             <p className="text-xs text-gray-500 dark:text-slate-400">Qué eventos generan alertas para el admin</p>
@@ -256,7 +256,7 @@ export default function SettingsSection({ showToast }) {
       {/* ── Zona Crítica ── */}
       <section className="bg-red-50 dark:bg-red-950/20 rounded-2xl border border-red-100 dark:border-red-900/30 shadow-sm overflow-hidden">
         <div className="bg-red-100 dark:bg-red-900/30 border-b border-red-200 dark:border-red-800/30 px-6 py-4 flex items-center gap-3">
-          <span className="text-xl">⚠️</span>
+          <span className="text-xl"><i className="fas fa-exclamation-triangle mr-1"></i></span>
           <div>
             <h3 className="font-bold text-red-800 dark:text-red-400">Zona Crítica</h3>
             <p className="text-xs text-red-600 dark:text-red-500">Acciones de alto impacto sobre el sistema</p>

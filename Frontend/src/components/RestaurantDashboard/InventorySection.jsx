@@ -62,8 +62,8 @@ export default function InventorySection() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
-          { label: t('rd.in_stock') || 'Disponibles', value: available.length, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-950/30', icon: '✅' },
-          { label: t('rd.out_of_stock') || 'No disponibles', value: unavailable.length, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-950/30', icon: '❌' },
+          { label: t('rd.in_stock') || 'Disponibles', value: available.length, color: 'text-green-500', bg: 'bg-green-50 dark:bg-green-950/30', icon: '<i className="fas fa-check-circle mr-1"></i>' },
+          { label: t('rd.out_of_stock') || 'No disponibles', value: unavailable.length, color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-950/30', icon: '<i className="fas fa-times-circle mr-1"></i>' },
           { label: t('rd.total_products') || 'Total de Productos', value: products.length, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-950/30', icon: '📦' },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm flex items-center gap-4">
@@ -122,7 +122,7 @@ export default function InventorySection() {
                             onError={e => { e.target.style.display = 'none' }}
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-lg flex-shrink-0">🍽️</div>
+                          <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-lg flex-shrink-0"><i className="fas fa-utensils mr-1"></i></div>
                         )}
                         <span className="font-bold text-gray-800 dark:text-slate-200">{product.name}</span>
                       </div>
@@ -133,7 +133,7 @@ export default function InventorySection() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${product.is_available ? 'bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-950/30 dark:text-red-400'}`}>
-                        {product.is_available ? '✅ ' + t('rd.available') : '❌ ' + t('rd.unavailable')}
+                        {product.is_available ? '<i className="fas fa-check-circle mr-1"></i> ' + t('rd.available') : '<i className="fas fa-times-circle mr-1"></i> ' + t('rd.unavailable')}
                       </span>
                     </td>
                     <td className="px-6 py-4">

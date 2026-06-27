@@ -28,7 +28,7 @@ export const AddToCartButton = ({ restaurantId, product, compact = false }) => {
 
       {showSuccess && (
         <div className={`bg-green-50 border-2 border-green-200 text-green-700 rounded-lg font-semibold text-sm text-center ${compact ? 'px-3 py-2' : 'px-4 py-3'}`}>
-          ✅ {t('addToCart.success')}
+          <i className="fas fa-check-circle mr-1"></i> {t('addToCart.success')}
         </div>
       )}
 
@@ -61,8 +61,8 @@ export const AddToCartButton = ({ restaurantId, product, compact = false }) => {
           {isLoading
             ? `⏳ ${t('addToCart.adding')}`
             : compact
-              ? '🛒 Agregar'
-              : `🛒 ${t('addToCart.button')}`}
+              ? '<i className="fas fa-shopping-cart mr-1"></i> Agregar'
+              : `<i className="fas fa-shopping-cart mr-1"></i> ${t('addToCart.button')}`}
         </button>
       </div>
     </div>

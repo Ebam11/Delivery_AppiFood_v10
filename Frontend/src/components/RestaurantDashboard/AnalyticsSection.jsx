@@ -26,7 +26,7 @@ export default function AnalyticsSection({ stats }) {
           { label: t('rd.total_revenue'), value: `$${totalRevenue.toLocaleString()}`, trend: `${t('rd.today')}: $${(stats?.revenue?.today || 0).toLocaleString()}` },
           { label: t('rd.orders'), value: totalOrders, trend: `${t('rd.today')}: ${(stats?.orders?.today || 0)}` },
           { label: t('rd.avg_ticket'), value: `$${avgTicket}`, trend: t('rd.general') || 'General' },
-          { label: t('rd.avg_rating'), value: `⭐ ${avgRating}`, trend: `${stats?.rating?.total || 0} ${t('rd.reviews')}` },
+          { label: t('rd.avg_rating'), value: `<i className="fas fa-star mr-1"></i> ${avgRating}`, trend: `${stats?.rating?.total || 0} ${t('rd.reviews')}` },
         ].map((stat, i) => (
           <div key={i} className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-gray-100 dark:border-slate-800 shadow-sm text-center">
             <p className="text-3xl font-black text-gray-800 dark:text-slate-100">{stat.value}</p>

@@ -36,7 +36,7 @@ function FavoriteRestaurantCard({ restaurant, navigate, t, handleRemoveFavorite 
         <h3>{restaurant.name}</h3>
         <p className="description">{(restaurant.description || '').substring(0, 100)}</p>
         <div className="favorite-rating">
-          <span className="rating">{restaurant.rating ? `⭐ ${restaurant.rating}` : ''}</span>
+          <span className="rating">{restaurant.rating ? `<i className="fas fa-star mr-1"></i> ${restaurant.rating}` : ''}</span>
         </div>
       </div>
       <div className="favorite-actions flex justify-between items-center bg-slate-50 dark:bg-slate-800/40 p-4 border-t border-gray-100 dark:border-slate-800">

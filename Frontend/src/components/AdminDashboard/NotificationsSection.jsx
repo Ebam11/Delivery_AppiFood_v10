@@ -192,7 +192,7 @@ export default function NotificationsSection({ showToast }) {
             <div className="text-center py-8 text-red-400 text-sm">{error}</div>
           ) : notifications.length === 0 ? (
             <div className="text-center py-12 text-gray-400 dark:text-slate-500">
-              <p className="text-3xl mb-2">🔔</p>
+              <p className="text-3xl mb-2"><i className="fas fa-bell mr-1"></i></p>
               <p className="text-sm">Sin notificaciones</p>
             </div>
           ) : (

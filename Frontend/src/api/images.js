@@ -1,236 +1,123 @@
-// Archivo: src/api/images.js | Comentario: logica principal del modulo.
+// Archivo: src/api/images.js | Comentario: logica principal del modulo optimizada.
 /**
- * Servicio para obtener imágenes de Unsplash
- * API gratuita: https://unsplash.com/api
- * 
- * Límites: 50 requests/hora (sin API key)
- * Con API key: 5000 requests/hora
- * 
- * Fallback: loremflickr.com para placeholder de calidad
+ * Servicio para obtener imágenes mediante enlaces directos optimizados estáticos.
+ * Reemplaza la API de Unsplash para garantizar cargas instantáneas, sin límites
+ * de peticiones y alta confiabilidad.
  */
 
-import { imageCache } from '../utils/imageCache'
+const foodImages = {
+  'burger': [
+    'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1586816001966-79b736744398?w=400&h=300&fit=crop',
+  ],
+  'chicken': [
+    'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1562967914-608f82629710?w=400&h=300&fit=crop',
+  ],
+  'pizza': [
+    'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1590947132387-155cc02f3212?w=400&h=300&fit=crop',
+  ],
+  'pasta': [
+    'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=400&h=300&fit=crop',
+  ],
+  'sushi': [
+    'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1553621042-f6e147245754?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=400&h=300&fit=crop',
+  ],
+  'salad': [
+    'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop',
+  ],
+  'dessert': [
+    'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1550617931-e17a7b70dce2?w=400&h=300&fit=crop',
+  ],
+  'drink': [
+    'https://images.unsplash.com/photo-1554866585-acbb25d68d6c?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1509315811345-672d83ef2fbc?w=400&h=300&fit=crop',
+  ],
+}
 
-const UNSPLASH_ACCESS_KEY = import.meta.env.VITE_UNSPLASH_KEY || ''
-
-/**
- * URLs directas de comida de Unsplash (verificadas)
- */
-const getPlaceholderImage = (query = 'food', width = 400, height = 300) => {
-  const foodImages = {
-    'burger': [
-      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1550547660-d9450f859349?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
-    ],
-    'chicken': [
-      'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop',
-    ],
-    'pizza': [
-      'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=400&h=300&fit=crop',
-    ],
-    'pasta': [
-      'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=400&h=300&fit=crop',
-    ],
-    'sushi': [
-      'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop',
-    ],
-    'salad': [
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=crop',
-    ],
-    'dessert': [
-      'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&h=300&fit=crop',
-    ],
-    'drink': [
-      'https://images.unsplash.com/photo-1554866585-acbb25d68d6c?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1554866585-acbb25d68d6c?w=400&h=300&fit=crop',
-      'https://images.unsplash.com/photo-1554866585-acbb25d68d6c?w=400&h=300&fit=crop',
-    ],
-  }
-
+export const getPlaceholderImage = (query = 'burger') => {
   const q = query?.toLowerCase() || 'burger'
   const images = foodImages[q] || foodImages['burger']
-  
   return images[Math.floor(Math.random() * images.length)]
 }
 
-/**
- * Obtener imagen de comida por categoría
- * @param {string} query - Búsqueda (ej: 'hamburger', 'pizza', 'chicken')
- * @param {number} page - Número de página
- * @returns {Promise<Object>} { url, photographer, description }
- */
-export const getRandomFoodImage = async (query = 'food', page = 1) => {
-  try {
-    // Verificar cache primero
-    const cacheKey = `food_${query}_${page}`
-    const cachedUrl = imageCache.get(cacheKey)
-    if (cachedUrl) {
-      return {
-        url: cachedUrl,
-        photographer: 'Cached',
-        description: query,
-        cached: true
-      }
-    }
-
-    // Si no hay API key, usar fallback de loremflickr directamente
-    if (!UNSPLASH_ACCESS_KEY) {
-      const placeholderUrl = getPlaceholderImage(query)
-      imageCache.set(cacheKey, placeholderUrl)
-      return {
-        url: placeholderUrl,
-        photographer: 'Stock Placeholder',
-        description: query,
-        fromPlaceholder: true
-      }
-    }
-
-    const response = await fetch(
-      `https://api.unsplash.com/search/photos?query=${query}&page=${page}&per_page=1&orientation=landscape`,
-      {
-        headers: {
-          'Authorization': `Client-ID ${UNSPLASH_ACCESS_KEY}`
-        }
-      }
-    )
-
-    if (!response.ok) throw new Error('Error fetching image')
-
-    const data = await response.json()
-    if (data.results.length === 0) {
-      // Fallback a placeholder de calidad
-      const placeholderUrl = getPlaceholderImage(query)
-      imageCache.set(cacheKey, placeholderUrl)
-      return {
-        url: placeholderUrl,
-        photographer: 'Stock Placeholder',
-        description: query
-      }
-    }
-
-    const image = data.results[0]
-    const result = {
-      url: image.urls.regular,
-      photographer: image.user.name,
-      photographerUrl: image.user.links.html,
-      description: image.description || image.alt_description || query,
-      downloadUrl: image.links.download_location // Para estadísticas
-    }
-
-    // Guardar en cache
-    imageCache.set(cacheKey, result.url, {
-      photographer: result.photographer,
-      description: result.description
-    })
-
-    return result
-  } catch (error) {
-    console.warn('Image fetch failed, using placeholder:', error)
-    // Retornar placeholder de calidad si falla
-    const placeholderUrl = getPlaceholderImage(query)
-    return {
-      url: placeholderUrl,
-      photographer: 'Stock Placeholder',
-      description: query,
-      error: true
-    }
+export const getRandomFoodImage = async (query = 'burger') => {
+  const url = getPlaceholderImage(query)
+  return {
+    url,
+    photographer: 'Stock Food',
+    description: query,
+    cached: true
   }
 }
 
-/**
- * Obtener múltiples imágenes
- */
-export const getFoodImages = async (query = 'food', count = 4) => {
+export const getFoodImages = async (query = 'burger', count = 4) => {
   const images = []
   for (let i = 0; i < count; i++) {
-    const img = await getRandomFoodImage(query, i + 1)
-    images.push(img)
-    // Esperar un poquito para no saturar API
-    await new Promise(r => setTimeout(r, 100))
+    images.push(await getRandomFoodImage(query))
   }
   return images
 }
 
-/**
- * Mapeo de categorías a términos de búsqueda
- */
 const categoryMap = {
-  burger: 'burger fast food',
-  hamburguesa: 'hamburger sandwich',
-  pizza: 'pizza italian food',
-  chicken: 'fried chicken crispy',
-  pollo: 'pollo fried chicken',
-  pasta: 'pasta italian noodles',
-  sushi: 'sushi japanese food',
-  ensalada: 'salad healthy food',
-  postre: 'dessert cake chocolate',
-  bebida: 'beverage drink juice',
+  burger: 'burger',
+  hamburguesa: 'burger',
+  pizza: 'pizza',
+  chicken: 'chicken',
+  pollo: 'chicken',
+  pasta: 'pasta',
+  sushi: 'sushi',
+  ensalada: 'salad',
+  postre: 'dessert',
+  bebida: 'drink',
 }
 
-/**
- * Detectar categoría de comida del nombre del producto
- */
-const detectFoodCategory = (name = '') => {
+export const detectFoodCategory = (name = '') => {
   const nameL = name.toLowerCase()
-  
   if (nameL.includes('burger') || nameL.includes('whopper') || nameL.includes('hamburger')) return 'burger'
   if (nameL.includes('chicken') || nameL.includes('pollo') || nameL.includes('ruti')) return 'chicken'
   if (nameL.includes('pizza')) return 'pizza'
-  if (nameL.includes('pasta') || nameL.includes('chinese')) return 'pasta'
-  if (nameL.includes('sushi')) return 'sushi'
-  if (nameL.includes('salad') || nameL.includes('ensalada')) return 'salad'
-  if (nameL.includes('dessert') || nameL.includes('postre') || nameL.includes('chocolate')) return 'dessert'
-  if (nameL.includes('drink') || nameL.includes('bebida')) return 'drink'
-  
-  return 'burger' // fallback
+  if (nameL.includes('pasta') || nameL.includes('chinese') || nameL.includes('sopa') || nameL.includes('caldo')) return 'pasta'
+  if (nameL.includes('sushi') || nameL.includes('roll')) return 'sushi'
+  if (nameL.includes('salad') || nameL.includes('ensalada') || nameL.includes('vegetariano')) return 'salad'
+  if (nameL.includes('dessert') || nameL.includes('postre') || nameL.includes('chocolate') || nameL.includes('helado')) return 'dessert'
+  if (nameL.includes('drink') || nameL.includes('bebida') || nameL.includes('jugo') || nameL.includes('gaseosa')) return 'drink'
+  if (nameL.includes('empanada') || nameL.includes('dedito') || nameL.includes('frito') || nameL.includes('entrada')) return 'chicken' // fallback to chicken for fried entries
+  return 'burger'
 }
 
-/**
- * Obtener imagen por término genérico (nombre de producto, restaurante, etc)
- */
 export const getImageByQuery = async (query) => {
-  // Detectar categoría del nombre
   const category = detectFoodCategory(query)
-  
   return getRandomFoodImage(category)
 }
 
-/**
- * Obtener imagen según categoría de producto
- */
 export const getImageByCategory = async (category) => {
-  const query = categoryMap[category?.toLowerCase()] || categoryMap.burger
+  const query = categoryMap[category?.toLowerCase()] || 'burger'
   return getRandomFoodImage(query)
 }
 
-/**
- * Mapeo de restaurantes a tipo de comida
- */
 const restaurantFoodMap = {
-  'burger house': 'delicious burger fast food',
-  'pizza nostra': 'authentic italian pizza',
-  'sushi zen': 'fresh sushi japanese',
-  'el rincón paisa': 'traditional colombian food bandeja paisa',
+  'burger house': 'burger',
+  'pizza nostra': 'pizza',
+  'sushi zen': 'sushi',
+  'el rincón paisa': 'salad',
 }
 
-/**
- * Obtener imagen de restaurante
- */
 export const getRestaurantImage = async (restaurantName = 'restaurant') => {
-  const foodType = restaurantFoodMap[restaurantName?.toLowerCase()] || `${restaurantName} food restaurant`
+  const foodType = restaurantFoodMap[restaurantName?.toLowerCase()] || 'burger'
   return getRandomFoodImage(foodType)
 }
 

@@ -49,6 +49,26 @@ class ReviewController extends Controller
             ], 422);
         }
 
+        // 1. Filtro de palabras altisonantes (Profanity Filter)
+        if (!empty($request->comment)) {
+            $badWords = [
+                'puta', 'puto', 'mierda', 'pendejo', 'pendeja', 'idiota', 'estupido', 'estúpido', 'estupida', 'estúpida',
+                'imbecil', 'imbécil', 'cabron', 'cabrón', 'maricon', 'maricón', 'malparido', 'gonorrea', 'hijueputa',
+                'pirobo', 'carechimba', 'perra', 'zorra', 'bastardo', 'culero', 'chinga', 'verga', 'pene', 'culo',
+                'matar', 'muerte', 'amenaza', 'golpear', 'sangre', 'asqueroso', 'basura'
+            ];
+
+            $commentLower = strtolower($request->comment);
+            foreach ($badWords as $word) {
+                // Buscamos la palabra exacta o como subcadena dependiendo del nivel de estrictez
+                if (preg_match('/\b' . preg_quote($word, '/') . '\b/i', $commentLower)) {
+                    return response()->json([
+                        'message' => 'Tu comentario contiene lenguaje inapropiado o palabras prohibidas y fue rechazado. Por favor, mantén un lenguaje respetuoso.',
+                    ], 422);
+                }
+            }
+        }
+
         $review = Review::create([
             'user_id'       => $request->user()->id,
             'restaurant_id' => $order->restaurant_id,
@@ -56,6 +76,9 @@ class ReviewController extends Controller
             'rating'        => $request->rating,
             'comment'       => $request->comment,
         ]);
+
+        // 2. Actualizar el promedio del restaurante
+        $order->restaurant->updateRating();
 
         return response()->json([
             'message' => 'Reseña enviada. ¡Gracias por tu opinión!',
@@ -69,7 +92,14 @@ class ReviewController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
+        $restaurant = $review->restaurant;
+        
         $review->delete();
+
+        // Actualizar el promedio del restaurante al eliminar una reseña
+        if ($restaurant) {
+            $restaurant->updateRating();
+        }
 
         return response()->json(['message' => 'Reseña eliminada.']);
     }

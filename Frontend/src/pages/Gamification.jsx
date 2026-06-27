@@ -164,7 +164,7 @@ export default function Gamification() {
         <header className="gf-header">
           <div className="gf-header-bg" />
           <div className="gf-header-content">
-            <h1 className="gf-title">{t('gamification.title', { defaultValue: '🏆 Club de Fidelidad AppiFood' })}</h1>
+            <h1 className="gf-title">{t('gamification.title', { defaultValue: '<i className="fas fa-trophy mr-1"></i> Club de Fidelidad AppiFood' })}</h1>
             <p className="gf-subtitle">{t('gamification.subtitle', { defaultValue: 'Gana puntos ordenando comida deliciosa y redímelos por cupones gratis.' })}</p>
           </div>
         </header>
@@ -203,7 +203,7 @@ export default function Gamification() {
         {redeemedCoupon && (
           <div className="gf-coupon-alert animate-bounce">
             <div className="gf-coupon-alert-inner">
-              <div className="gf-coupon-icon">🎁</div>
+              <div className="gf-coupon-icon"><i className="fas fa-gift mr-1"></i></div>
               <div className="flex-1">
                 <h3 className="gf-coupon-alert-title">{t('gamification.coupon_claimed', { defaultValue: '¡Cupón reclamado con éxito!' })}</h3>
                 <p className="gf-coupon-alert-desc">{t('gamification.use_code', { defaultValue: 'Usa el siguiente código en el checkout de tu próxima compra:' })}</p>
@@ -230,7 +230,7 @@ export default function Gamification() {
         )}
 
         <section className="gf-rewards-section">
-          <h2 className="gf-section-title">{t('gamification.redeem_rewards', { defaultValue: '🎁 Redimir Recompensas' })}</h2>
+          <h2 className="gf-section-title">{t('gamification.redeem_rewards', { defaultValue: '<i className="fas fa-gift mr-1"></i> Redimir Recompensas' })}</h2>
           <div className="gf-rewards-grid">
             {rewards.map((reward) => {
               const canAfford = points >= reward.points;
@@ -269,7 +269,7 @@ export default function Gamification() {
 
       {toast && (
         <div className={`gf-toast ${toast.type}`}>
-          {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'} {toast.message}
+          {toast.type === 'success' ? '<i className="fas fa-check-circle mr-1"></i>' : toast.type === 'error' ? '<i className="fas fa-times-circle mr-1"></i>' : 'ℹ️'} {toast.message}
         </div>
       )}
     </div>

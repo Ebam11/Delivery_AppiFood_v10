@@ -22,7 +22,7 @@ export default function Sidebar({ active, onNav, open, onClose, user, onLogout, 
       title: t('adminDashboard.breadcrumb.moderation', { defaultValue: 'Retroalimentación' }),
       items: [
         { id: 'reviews', icon: '★', label: t('adminDashboard.nav.reviews', { defaultValue: 'Reseñas' }) },
-        { id: 'notifications', icon: '🔔', label: t('adminDashboard.nav.notifications', { defaultValue: 'Notificaciones' }) },
+        { id: 'notifications', icon: '<i className="fas fa-bell mr-1"></i>', label: t('adminDashboard.nav.notifications', { defaultValue: 'Notificaciones' }) },
       ]
     },
     {
@@ -38,7 +38,7 @@ export default function Sidebar({ active, onNav, open, onClose, user, onLogout, 
       items: [
         { id:'dashboard',       icon:'⊞', label: t('rd.dashboard') },
         { id:'orders',          icon:'☰', label: t('rd.orders') },
-        { id:'messages',        icon:'💬', label: t('rd.messages') },
+        { id:'messages',        icon:'<i className="fas fa-comment mr-1"></i>', label: t('rd.messages') },
       ]
     },
     {

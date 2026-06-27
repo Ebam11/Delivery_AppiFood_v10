@@ -65,7 +65,7 @@ export default function ReviewsSection() {
     <div className="space-y-6 animate-fade-in pb-10">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: t('rd.avg_rating'), value: `⭐ ${avgRating}`, color: 'text-yellow-500' },
+          { label: t('rd.avg_rating'), value: `<i className="fas fa-star mr-1"></i> ${avgRating}`, color: 'text-yellow-500' },
           { label: t('rd.total_reviews'), value: reviews.length, color: 'text-blue-500' },
           { label: t('rd.positive'), value: `${positivePct}%`, color: 'text-green-500' },
           { label: t('rd.pending_reply'), value: pendingCount, color: 'text-red-500' },
@@ -103,7 +103,7 @@ export default function ReviewsSection() {
           </div>
         ) : visible.length === 0 ? (
           <div className="py-16 text-center text-gray-400">
-            <div className="text-5xl mb-3">💬</div>
+            <div className="text-5xl mb-3"><i className="fas fa-comment mr-1"></i></div>
             <p className="font-semibold text-gray-600">{t('rd.no_reviews') || 'No hay reseñas en esta categoría.'}</p>
             <p className="text-sm mt-1">{t('rd.reviews_hint') || '¡Las reseñas de tus clientes aparecerán aquí!'}</p>
           </div>

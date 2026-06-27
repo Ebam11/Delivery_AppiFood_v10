@@ -30,7 +30,7 @@ export const Cart = () => {
     <div className="page-cart min-h-screen bg-gray-50 dark:bg-slate-950 p-6 text-gray-900 dark:text-slate-100 transition-colors duration-300">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-8 flex items-center gap-3">
-          <span className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center text-white text-xl">🛒</span>
+          <span className="w-12 h-12 rounded-2xl bg-red-500 flex items-center justify-center text-white text-xl"><i className="fas fa-shopping-cart mr-1"></i></span>
           {t('cartPage.title')}
         </h1>
 

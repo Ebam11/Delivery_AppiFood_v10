@@ -10,30 +10,11 @@ import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import ProductModal from '../components/ProductModal';
 import Footer from '../components/Footer';
-
-const PLACEHOLDER = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop';
-
-const FOOD_IMAGES = {
-  'Burger': 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop',
-  'Pizza': 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=400&h=300&fit=crop',
-  'Sushi': 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop',
-  'Pollo': 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=400&h=300&fit=crop',
-  'Pasta': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&h=300&fit=crop',
-  'Roll': 'https://images.unsplash.com/photo-1617196034183-421b4040ed20?w=400&h=300&fit=crop',
-  'Malteada': 'https://images.unsplash.com/photo-1570696516188-ade861b84a49?w=400&h=300&fit=crop',
-  'Papas': 'https://images.unsplash.com/photo-1576107232684-1279f390859f?w=400&h=300&fit=crop',
-  'Arepa': 'https://images.unsplash.com/photo-1628191139853-8d5ff44b78e5?w=400&h=300&fit=crop',
-  'Wrap': 'https://images.unsplash.com/photo-1600850056064-a8b29d927e11?w=400&h=300&fit=crop',
-};
+import { getPlaceholderImage, detectFoodCategory } from '../api/images';
 
 function getProductImage(name, image) {
   if (image) return image;
-  for (const key in FOOD_IMAGES) {
-    if (name && name.toLowerCase().includes(key.toLowerCase())) {
-      return FOOD_IMAGES[key];
-    }
-  }
-  return PLACEHOLDER;
+  return getPlaceholderImage(detectFoodCategory(name));
 }
 
 function OfferCardSkeleton() {
@@ -167,11 +148,11 @@ export default function OffersPage() {
   };
 
   const filters = [
-    { key: 'all', label: t('offers.all') || 'All' },
-    { key: 'burger', label: `🍔 ${t('offers.burgers') || 'Burgers'}` },
-    { key: 'pizza', label: `🍕 ${t('offers.pizzas') || 'Pizzas'}` },
-    { key: 'sushi', label: `🍣 ${t('offers.sushi') || 'Sushi'}` },
-    { key: 'pollo', label: `🍗 ${t('offers.chicken') || 'Chicken'}` },
+    { key: 'all',    icon: '🍽️', label: t('offers.all') || 'Todas' },
+    { key: 'burger', icon: '🍔', label: t('offers.burgers') || 'Hamburguesas' },
+    { key: 'pizza',  icon: '🍕', label: t('offers.pizzas') || 'Pizzas' },
+    { key: 'sushi',  icon: '🍣', label: t('offers.sushi') || 'Sushi' },
+    { key: 'pollo',  icon: '🍗', label: t('offers.chicken') || 'Pollo' },
   ];
 
   const filteredProducts = activeFilter === 'all'
@@ -194,7 +175,7 @@ export default function OffersPage() {
               <i className="fas fa-fire-alt" /> {t('home.specialDiscounts') || 'Descuentos especiales del día'}
             </span>
             <h1 className="text-3xl sm:text-5xl font-black leading-tight">
-              🎉 {t('home.offersTitle') || 'Ofertas del Día'}
+              <i className="fas fa-gift mr-1"></i> {t('home.offersTitle') || 'Ofertas del Día'}
             </h1>
             <p className="mt-3 text-white/80 max-w-xl font-medium text-lg">
               {t('home.offersSubtitle') || 'Los mejores platos con descuentos exclusivos para ti.'}
@@ -230,7 +211,7 @@ export default function OffersPage() {
                   : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-700 hover:border-red-300'
               }`}
             >
-              {f.label}
+              {f.icon} {f.label}
             </button>
           ))}
         </div>
@@ -250,10 +231,10 @@ export default function OffersPage() {
               >
                 <div className="h-48 overflow-hidden relative">
                   <img
-                    src={p.image || PLACEHOLDER}
+                    src={p.image}
                     alt={p.name}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    onError={e => { e.target.src = PLACEHOLDER; }}
+                    onError={e => { e.target.src = getPlaceholderImage('burger'); }}
                   />
                   {p.pct > 0 && (
                     <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full font-black text-xs shadow-lg animate-pulse">

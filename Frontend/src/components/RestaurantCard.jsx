@@ -151,40 +151,6 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle,
               : 'N/A'}
           </span>
         </div>
-
-        {showSchedule && hasSchedule && (
-          <div className="mt-2.5 text-[10px]">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setIsScheduleOpen(!isScheduleOpen)
-              }}
-              className="text-[#FF4B3E] hover:underline font-medium"
-            >
-              {isOpen ? (t('restaurantCard.view_full_schedule') || 'Ver horario completo') : (t('restaurantCard.view_schedule') || 'Ver horario')}
-            </button>
-            
-            {isScheduleOpen && (
-              <div className="absolute inset-x-0 top-full mt-1 z-50 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-gray-200 dark:border-slate-700 p-3 w-72">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    setIsScheduleOpen(false)
-                  }}
-                  className="absolute top-2 right-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-250"
-                >
-                  <i className="fas fa-times text-xs"></i>
-                </button>
-                <ScheduleDisplay
-                  schedule={sched}
-                  isOpen={isOpen}
-                  variant="card"
-                  language="es"
-                />
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </article>
   )

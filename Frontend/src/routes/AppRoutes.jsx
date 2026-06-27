@@ -178,7 +178,7 @@ export default function AppRoutes({ user, isAuth, loading, handleLogin, handleLo
         <Route path="*" element={
           <PublicPage isAuth={isAuth} user={user} onLogout={handleLogout} isLoading={loading}>
             <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
-              <span className="text-8xl">🍔</span>
+              <span className="text-8xl"><i className="fas fa-hamburger mr-1"></i></span>
               <h1 className="text-3xl font-black text-gray-800">{t('app.pageNotFound') || "Página no encontrada"}</h1>
               <Link to={getHomePathByRole(user)} className="px-6 py-3 bg-[#FF4B3E] text-white rounded-full font-bold hover:bg-[#e03a2d] transition">
                 {t('app.backToHome') || "Volver al inicio"}

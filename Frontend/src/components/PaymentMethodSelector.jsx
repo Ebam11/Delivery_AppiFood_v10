@@ -23,7 +23,7 @@ export default function PaymentMethodSelector() {
       id: 'credit_card',
       name: t('paymentSelector.credit.name'),
       description: t('paymentSelector.credit.description'),
-      icon: '💳',
+      icon: '<i className="fas fa-credit-card mr-1"></i>',
       info: t('paymentSelector.credit.info'),
       recommend: false,
     },
@@ -74,7 +74,7 @@ export default function PaymentMethodSelector() {
                     <h4 className="font-bold text-gray-800">{method.name}</h4>
                     {method.recommend && (
                       <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded font-semibold">
-                        ⭐ {t('paymentSelector.recommended')}
+                        <i className="fas fa-star mr-1"></i> {t('paymentSelector.recommended')}
                       </span>
                     )}
                   </div>
@@ -91,7 +91,7 @@ export default function PaymentMethodSelector() {
       {selectedMethod === 'pse' && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p className="text-sm text-blue-900">
-            <strong>💡 {t('paymentSelector.tip')}:</strong> {t('paymentSelector.pseTip')}
+            <strong><i className="fas fa-lightbulb mr-1"></i> {t('paymentSelector.tip')}:</strong> {t('paymentSelector.pseTip')}
           </p>
         </div>
       )}

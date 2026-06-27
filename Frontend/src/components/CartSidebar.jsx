@@ -16,8 +16,8 @@ export default function CartSidebar({ isAuth }) {
     const r = applyCoupon(couponInput)
     setCouponMsg(
       r.ok
-        ? `✅ ${t('cart.couponApplied', { label: r.label })}`
-        : `❌ ${t('cart.couponInvalid')}`
+        ? `<i className="fas fa-check-circle mr-1"></i> ${t('cart.couponApplied', { label: r.label })}`
+        : `<i className="fas fa-times-circle mr-1"></i> ${t('cart.couponInvalid')}`
     )
     setTimeout(() => setCouponMsg(null), 3000)
   }
@@ -41,7 +41,7 @@ export default function CartSidebar({ isAuth }) {
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <h2 className="font-bold text-lg text-gray-800">
-            🛒 {t('cart.title')} {count > 0 && <span className="text-sm font-normal text-gray-500">({count} {t('cart.items')})</span>}
+            <i className="fas fa-shopping-cart mr-1"></i> {t('cart.title')} {count > 0 && <span className="text-sm font-normal text-gray-500">({count} {t('cart.items')})</span>}
           </h2>
           <button onClick={() => setIsOpen(false)}
             className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-red-50 hover:text-[#FF4B3E] transition">
@@ -53,7 +53,7 @@ export default function CartSidebar({ isAuth }) {
         <div className="flex-1 overflow-y-auto px-5 py-4">
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-gray-400 gap-4">
-              <span className="text-6xl">🛒</span>
+              <span className="text-6xl"><i className="fas fa-shopping-cart mr-1"></i></span>
               <p className="font-medium text-gray-500">{t('cart.empty')}</p>
               <p className="text-sm text-center">{t('cart.emptyHint')}</p>
             </div>
@@ -63,7 +63,7 @@ export default function CartSidebar({ isAuth }) {
                 <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
                   <img src={item.img} alt={item.name}
                     className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                    onError={e => { e.target.src = 'https://via.placeholder.com/60/f3f3f3/ccc?text=🍔' }} />
+                    onError={e => { e.target.src = 'https://via.placeholder.com/60/f3f3f3/ccc?text=<i className="fas fa-hamburger mr-1"></i>' }} />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm text-gray-800 truncate">{item.name}</p>
                     <p className="text-[#FF4B3E] font-bold text-sm">${fmt(item.price)}</p>
@@ -112,7 +112,7 @@ export default function CartSidebar({ isAuth }) {
               </div>
               {discount > 0 && (
                 <div className="flex justify-between text-green-600 font-semibold">
-                  <span>✨ {t('cart.discount')} {appliedCoupon?.code}</span>
+                  <span><i className="fas fa-sparkles mr-1"></i> {t('cart.discount')} {appliedCoupon?.code}</span>
                   <span>-${fmt(discount)}</span>
                 </div>
               )}

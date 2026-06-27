@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
+import { getPlaceholderImage, detectFoodCategory } from '../../api/images'
 
 /**
  * Sección de productos/ofertas destacadas.
@@ -56,7 +57,7 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
                 <div onClick={() => onSelectProduct?.(p)} className="cursor-pointer">
                   <div className="w-full h-48 rounded-2xl overflow-hidden mb-5 bg-slate-100 dark:bg-slate-700">
                     <img 
-                      src={p.image || 'https://via.placeholder.com/300x200'} 
+                      src={p.image || getPlaceholderImage(detectFoodCategory(p.name))} 
                       alt={p.name} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />

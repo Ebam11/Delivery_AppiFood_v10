@@ -19,7 +19,7 @@ const driverIcon = new L.DivIcon({
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; box-shadow: 0 4px 12px rgba(108,92,231,0.5);
     border: 3px solid white;
-  ">🛵</div>`,
+  "><i className="fas fa-motorcycle mr-1"></i></div>`,
   iconSize: [36, 36],
   iconAnchor: [18, 18],
 });
@@ -105,7 +105,7 @@ const OrderTrackingMap = ({ order }) => {
             <>
               <MapAutoCenter center={[driverLocation.lat, driverLocation.lng]} />
               <Marker position={[driverLocation.lat, driverLocation.lng]} icon={driverIcon}>
-                <Popup>{t('order_detail.driver_here') || '🛵 Tu repartidor está aquí'}</Popup>
+                <Popup>{t('order_detail.driver_here') || '<i className="fas fa-motorcycle mr-1"></i> Tu repartidor está aquí'}</Popup>
               </Marker>
             </>
           )}
@@ -125,6 +125,12 @@ export const OrderDetail = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { selectedOrder, isLoading, error, fetchOrderById, cancelOrderById, clearError } = useOrderStore();
+
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState(null);
+  const [reviewSuccess, setReviewSuccess] = useState(false);
 
   useEffect(() => {
     fetchOrderById(id);
@@ -162,6 +168,30 @@ export const OrderDetail = () => {
       } catch (error) {
         alert(t('order_detail.cancel_error'));
       }
+    }
+  };
+
+  const submitReview = async () => {
+    if (rating === 0) {
+      setReviewError('Por favor, selecciona una calificación en estrellas.');
+      return;
+    }
+    setReviewSubmitting(true);
+    setReviewError(null);
+    try {
+      await fetchJson('/api/reviews', {
+        method: 'POST',
+        body: JSON.stringify({
+          order_id: id,
+          rating,
+          comment
+        })
+      });
+      setReviewSuccess(true);
+    } catch (err) {
+      setReviewError(err.message || 'Error al enviar la reseña');
+    } finally {
+      setReviewSubmitting(false);
     }
   };
 
@@ -296,6 +326,60 @@ export const OrderDetail = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Review Section */}
+            {order.status === 'delivered' && !order.review && (
+              <div className="mt-8 bg-orange-50 border border-orange-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="text-xl font-black text-gray-900 mb-2">¿Qué tal estuvo tu pedido?</h3>
+                <p className="text-sm text-gray-600 mb-4">Califica tu experiencia con <span className="font-bold">{order.restaurant_name}</span>. ¡Tus reseñas ayudan a otros usuarios y a los restaurantes!</p>
+                
+                {reviewSuccess ? (
+                  <div className="bg-green-100 text-green-800 p-4 rounded-xl flex items-center gap-3">
+                    <i className="fas fa-check-circle text-2xl"></i>
+                    <div>
+                      <p className="font-bold">¡Gracias por tu opinión!</p>
+                      <p className="text-sm">Tu reseña se ha guardado correctamente y ya está calculándose en la puntuación del restaurante.</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          onClick={() => setRating(star)}
+                          className={`text-3xl transition-transform hover:scale-110 ${star <= rating ? 'text-yellow-400' : 'text-gray-300'}`}
+                        >
+                          <i className="fas fa-star"></i>
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <textarea
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="Escribe tu opinión sobre la comida, entrega y servicio... (Opcional)"
+                      className="w-full bg-white border border-gray-300 rounded-xl p-4 text-sm focus:ring-2 focus:ring-[#FF4B3E] focus:outline-none resize-none"
+                      rows="3"
+                    ></textarea>
+
+                    {reviewError && (
+                      <div className="text-red-500 text-sm font-bold bg-red-50 p-3 rounded-lg border border-red-200 flex items-center gap-2">
+                        <i className="fas fa-exclamation-triangle"></i> {reviewError}
+                      </div>
+                    )}
+
+                    <button
+                      onClick={submitReview}
+                      disabled={reviewSubmitting}
+                      className="bg-[#FF4B3E] text-white px-6 py-2.5 rounded-xl font-bold shadow-md shadow-red-500/30 hover:bg-[#e03a2d] transition disabled:opacity-50"
+                    >
+                      {reviewSubmitting ? 'Enviando...' : 'Enviar Reseña'}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

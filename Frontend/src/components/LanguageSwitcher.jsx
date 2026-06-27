@@ -2,13 +2,13 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function LanguageSwitcher() {
-  const { i18n, t } = useTranslation(); // ✅ t() definida DENTRO del componente
+  const { i18n, t } = useTranslation(); // <i className="fas fa-check-circle mr-1"></i> t() definida DENTRO del componente
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const currentLang = i18n.language || 'es';
 
-  // ✅ languages definido DENTRO del componente, después de t()
+  // <i className="fas fa-check-circle mr-1"></i> languages definido DENTRO del componente, después de t()
   const languages = [
     { code: 'es', label: t('language.es') || 'Español' },
     { code: 'en', label: t('language.en') || 'English' },

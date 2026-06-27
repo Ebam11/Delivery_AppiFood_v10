@@ -65,7 +65,7 @@ export function useRestaurants() {
   }, [location.search])
 
   // Coordenadas del usuario obtenidas de localStorage ('selected_delivery_coords')
-  const userCoords = useMemo(() => {
+  const [userCoords, setUserCoords] = useState(() => {
     try {
       const stored = localStorage.getItem('selected_delivery_coords')
       if (stored) {
@@ -79,7 +79,30 @@ export function useRestaurants() {
     }
     // Ubicación por defecto de Popayán
     return { lat: 2.4448, lng: -76.6147 }
-  }, [location]) // Recalcular si cambia la URL o navegación
+  })
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      try {
+        const stored = localStorage.getItem('selected_delivery_coords')
+        if (stored) {
+          const parsed = JSON.parse(stored)
+          if (parsed?.lat && parsed?.lng) {
+            setUserCoords({ lat: Number(parsed.lat), lng: Number(parsed.lng), label: parsed.label })
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing selected_delivery_coords:', e)
+      }
+    }
+    
+    // Escuchar el evento personalizado de Header.jsx cuando se guarda la ubicación
+    window.addEventListener('delivery-address-updated', handleLocationChange)
+    // Sincronizar también si cambia de página
+    handleLocationChange()
+    
+    return () => window.removeEventListener('delivery-address-updated', handleLocationChange)
+  }, [location])
 
   // Fórmula de Haversine para calcular distancia en kilómetros
   const calculateDistance = (lat1, lon1, lat2, lon2) => {

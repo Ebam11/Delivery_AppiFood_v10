@@ -56,15 +56,6 @@ export default function RestaurantsPage() {
                 {t("restaurants.subtitle") || "Descubre los mejores sabores de la ciudad."}
               </p>
             </div>
-            {userLocationLabel && (
-              <div className="flex items-center gap-2 bg-purple-50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30 rounded-2xl px-4 py-2.5 w-fit">
-                <span className="text-purple-600 dark:text-purple-400 text-sm">📍</span>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-purple-500 dark:text-purple-400 uppercase tracking-widest leading-none mb-0.5">Ordenados por cercanía a:</span>
-                  <span className="text-xs font-bold text-gray-700 dark:text-slate-350 line-clamp-1">{userLocationLabel}</span>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Estadísticas Rápidas */}
@@ -140,7 +131,7 @@ export default function RestaurantsPage() {
 
               {/* Input de presupuesto */}
               <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-2.5 py-1.5 hover:border-[#FF4B3E] transition">
-                <span className="text-xs font-bold text-gray-400">💰</span>
+                <span className="text-xs font-bold text-gray-400"><i className="fas fa-coins"></i></span>
                 <input
                   type="number"
                   min="0"
@@ -177,31 +168,31 @@ export default function RestaurantsPage() {
             <div className="flex flex-wrap gap-2 mt-3">
               {selectedCategory && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  🍽️ {selectedCategory}
+                  <i className="fas fa-utensils"></i> {selectedCategory}
                   <button onClick={() => setSelectedCategory(null)} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
               {deliveryFilter !== 'all' && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  🛵 {deliveryFilter === 'free' ? 'Envío gratis' : 'Envío &lt; $3.000'}
+                  <i className="fas fa-motorcycle"></i> {deliveryFilter === 'free' ? 'Envío gratis' : 'Envío < $3.000'}
                   <button onClick={() => setDeliveryFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
               {timeFilter !== 'all' && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  ⏱️ {timeFilter === 'fast' ? 'Menos de 30 min' : 'Menos de 45 min'}
+                  <i className="fas fa-clock"></i> {timeFilter === 'fast' ? 'Menos de 30 min' : 'Menos de 45 min'}
                   <button onClick={() => setTimeFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
               {ratingFilter !== 'all' && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  ⭐ {ratingFilter === '4plus' ? '4.0 o más' : '4.5 o más'}
+                  <i className="fas fa-star"></i> {ratingFilter === '4plus' ? '4.0 o más' : '4.5 o más'}
                   <button onClick={() => setRatingFilter('all')} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
               {budgetInput !== '' && (
                 <span className="flex items-center gap-1.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 border border-red-100 dark:border-red-900/30 px-3 py-1 rounded-full text-xs font-bold">
-                  💰 Hasta ${Number(budgetInput).toLocaleString('es-CO')}
+                  <i className="fas fa-coins"></i> Hasta ${Number(budgetInput).toLocaleString('es-CO')}
                   <button onClick={() => setBudgetInput('')} className="hover:text-red-700 ml-0.5">✕</button>
                 </span>
               )}
@@ -229,7 +220,7 @@ export default function RestaurantsPage() {
                           <div className="flex items-center justify-between mb-6">
                             <div>
                               <h2 className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                                📍 {t("restaurants.nearby_section") || "Restaurantes cerca de mí"}
+                                <i className="fas fa-map-marker-alt text-[#FF4B3E]"></i> {t("restaurants.nearby_section") || "Restaurantes cerca de mí"}
                               </h2>
                               <p className="text-xs text-gray-400 dark:text-slate-500 font-semibold mt-1">
                                 Establecimientos a menos de 5 km de tu ubicación actual
@@ -288,7 +279,7 @@ export default function RestaurantsPage() {
                   </div>
                 ) : (
                   <div className="text-center py-24 bg-white dark:bg-slate-950 rounded-3xl border-2 border-dashed border-gray-100 dark:border-slate-800">
-                    <div className="text-6xl mb-4">🍽️</div>
+                    <div className="text-6xl mb-4 text-gray-300 dark:text-slate-700"><i className="fas fa-utensils"></i></div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                       {t("restaurants.no_results") || "No se encontraron resultados"}
                     </h3>

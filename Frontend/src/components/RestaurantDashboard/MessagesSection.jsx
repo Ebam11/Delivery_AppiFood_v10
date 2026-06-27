@@ -66,11 +66,11 @@ export default function MessagesSection() {
   const getStatusLabel = (status) => {
     const map = {
       pending: '⏳ ' + t('orders.status_pending'),
-      confirmed: '✅ ' + t('orders.status_confirmed'),
-      preparing: '👨‍🍳 ' + t('orders.status_preparing'),
-      on_the_way: '🛵 ' + t('orders.status_on_the_way'),
-      delivered: '🎉 ' + t('orders.status_delivered'),
-      cancelled: '❌ ' + t('orders.status_cancelled'),
+      confirmed: '<i className="fas fa-check-circle mr-1"></i> ' + t('orders.status_confirmed'),
+      preparing: '<i className="fas fa-user-tie mr-1"></i> ' + t('orders.status_preparing'),
+      on_the_way: '<i className="fas fa-motorcycle mr-1"></i> ' + t('orders.status_on_the_way'),
+      delivered: '<i className="fas fa-gift mr-1"></i> ' + t('orders.status_delivered'),
+      cancelled: '<i className="fas fa-times-circle mr-1"></i> ' + t('orders.status_cancelled'),
     }
     return map[status] || status
   }
@@ -172,7 +172,7 @@ export default function MessagesSection() {
                   <p className="text-xs text-gray-500 italic">{t('rd.order_details_hint') || 'Ver detalle en sección de Pedidos'}</p>
                 )}
                 {selected.address && (
-                  <p className="text-xs text-gray-400 mt-2">📍 {selected.address}</p>
+                  <p className="text-xs text-gray-400 mt-2"><i className="fas fa-map-marker-alt mr-1"></i> {selected.address}</p>
                 )}
                 <p className="text-[10px] text-gray-400 mt-2">{selected.time}</p>
               </div>
@@ -186,9 +186,9 @@ export default function MessagesSection() {
                     : selected.status === 'confirmed'
                       ? t('rd.reply_confirmed') || '¡Pedido confirmado! Ya estamos preparando tu orden.'
                       : selected.status === 'preparing'
-                        ? t('rd.reply_preparing') || '👨‍🍳 Tu pedido está siendo preparado con mucho cariño.'
+                        ? t('rd.reply_preparing') || '<i className="fas fa-user-tie mr-1"></i> Tu pedido está siendo preparado con mucho cariño.'
                         : selected.status === 'on_the_way'
-                          ? t('rd.reply_on_the_way') || '🛵 Tu pedido ya salió en camino. ¡Llegará pronto!'
+                          ? t('rd.reply_on_the_way') || '<i className="fas fa-motorcycle mr-1"></i> Tu pedido ya salió en camino. ¡Llegará pronto!'
                           : selected.status === 'delivered'
                             ? t('rd.reply_delivered') || '¡Pedido entregado! Esperamos que lo hayas disfrutado. 😊'
                             : t('rd.reply_default') || 'Gracias por contactarnos.'}
@@ -220,7 +220,7 @@ export default function MessagesSection() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center text-gray-400">
-          <div className="text-6xl mb-4">💬</div>
+          <div className="text-6xl mb-4"><i className="fas fa-comment mr-1"></i></div>
           <p className="font-semibold text-gray-600">{t('rd.select_order') || 'Selecciona un pedido'}</p>
           <p className="text-sm mt-1">{t('rd.select_order_hint') || 'Verás el detalle de la conversación aquí'}</p>
         </div>

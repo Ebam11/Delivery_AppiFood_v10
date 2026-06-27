@@ -62,7 +62,7 @@ export default function TopBar({
             onClick={() => setShowNotifs(v => !v)}
             className="relative w-9 h-9 flex items-center justify-center rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700 transition"
           >
-            🔔
+            <i className="fas fa-bell mr-1"></i>
             {unreadCount > 0 && (
               <span
                 className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-white text-xs flex items-center justify-center font-bold"

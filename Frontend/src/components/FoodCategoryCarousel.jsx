@@ -48,7 +48,7 @@ export default function FoodCategoryCarousel({ onSelectCategory, selectedCategor
   const [isDragging, setIsDragging] = useState(false)
 
   const foodCategories = categories.map((name) => {
-    const theme = CATEGORY_THEME[name] || { icon: '🍽️', color: '#8884FF' }
+    const theme = CATEGORY_THEME[name] || { icon: '<i className="fas fa-utensils mr-1"></i>', color: '#8884FF' }
     return {
       id: name,
       name,

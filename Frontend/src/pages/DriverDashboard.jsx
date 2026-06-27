@@ -18,7 +18,7 @@ const driverIcon = new L.DivIcon({
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; box-shadow: 0 4px 12px rgba(108,92,231,0.5);
     border: 3px solid white;
-  ">🛵</div>`,
+  "><i className="fas fa-motorcycle mr-1"></i></div>`,
   iconSize: [36, 36],
   iconAnchor: [18, 18],
 })
@@ -44,7 +44,7 @@ const restaurantIcon = new L.DivIcon({
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; box-shadow: 0 4px 12px rgba(255,107,107,0.5);
     border: 3px solid white;
-  ">🍽️</div>`,
+  "><i className="fas fa-utensils mr-1"></i></div>`,
   iconSize: [36, 36],
   iconAnchor: [18, 18],
 })
@@ -249,7 +249,7 @@ export default function DriverDashboard({ user, onLogout }) {
         <header className="dd-header">
           <div className="dd-header-inner">
             <div className="dd-logo">
-              <div className="dd-logo-icon">🛵</div>
+              <div className="dd-logo-icon"><i className="fas fa-motorcycle mr-1"></i></div>
               <span className="dd-logo-text">{t('driver.app_name') || 'AppiFood Driver'}</span>
             </div>
             <div className="dd-user-info">
@@ -266,7 +266,7 @@ export default function DriverDashboard({ user, onLogout }) {
         <nav className="dd-tabs">
           {[
             { id: 'available', label: t('driver.available') || 'Disponibles', icon: '📋' },
-            { id: 'active', label: t('driver.active') || 'En Curso', icon: '🚀' },
+            { id: 'active', label: t('driver.active') || 'En Curso', icon: '<i className="fas fa-rocket mr-1"></i>' },
             { id: 'history', label: t('driver.history') || 'Historial', icon: '📜' },
           ].map((tab) => (
             <button
@@ -293,14 +293,14 @@ export default function DriverDashboard({ user, onLogout }) {
               </div>
             </div>
             <div className="dd-stat-card">
-              <div className="dd-stat-icon teal">🏆</div>
+              <div className="dd-stat-icon teal"><i className="fas fa-trophy mr-1"></i></div>
               <div>
                 <div className="dd-stat-value">{stats?.deliveries_total ?? 0}</div>
                 <div className="dd-stat-label">{t('driver.total_deliveries') || 'Total entregas'}</div>
               </div>
             </div>
             <div className="dd-stat-card">
-              <div className="dd-stat-icon green">💰</div>
+              <div className="dd-stat-icon green"><i className="fas fa-coins mr-1"></i></div>
               <div>
                 <div className="dd-stat-value">
                   ${(stats?.earnings_today ?? 0).toLocaleString('es-CO')}
@@ -309,7 +309,7 @@ export default function DriverDashboard({ user, onLogout }) {
               </div>
             </div>
             <div className="dd-stat-card">
-              <div className="dd-stat-icon yellow">🔥</div>
+              <div className="dd-stat-icon yellow"><i className="fas fa-fire mr-1"></i></div>
               <div>
                 <div className="dd-stat-value">{stats?.active_orders ?? 0}</div>
                 <div className="dd-stat-label">{t('driver.active_orders') || 'Pedidos activos'}</div>
@@ -320,7 +320,7 @@ export default function DriverDashboard({ user, onLogout }) {
           {activeOrder && (
             <div className="dd-active-order">
               <div className="dd-active-order-title">
-                🚀 {t('driver.active_order') || 'Pedido en Curso'} — #{activeOrder.id}
+                <i className="fas fa-rocket mr-1"></i> {t('driver.active_order') || 'Pedido en Curso'} — #{activeOrder.id}
               </div>
               <div className="dd-active-order-grid">
                 <div>
@@ -334,7 +334,7 @@ export default function DriverDashboard({ user, onLogout }) {
                     </div>
                   </div>
                   <div className="dd-order-info-row">
-                    <div className="dd-order-info-icon">📍</div>
+                    <div className="dd-order-info-icon"><i className="fas fa-map-marker-alt mr-1"></i></div>
                     <div>
                       <div className="dd-order-info-label">{t('driver.address') || 'Dirección'}</div>
                       <div className="dd-order-info-value">
@@ -357,7 +357,7 @@ export default function DriverDashboard({ user, onLogout }) {
                       onClick={() => handleCompleteOrder(activeOrder.id)}
                       disabled={actionLoading === activeOrder.id}
                     >
-                      {actionLoading === activeOrder.id ? '⏳' : '✅'} {t('driver.mark_delivered') || 'Marcar como Entregado'}
+                      {actionLoading === activeOrder.id ? '⏳' : '<i className="fas fa-check-circle mr-1"></i>'} {t('driver.mark_delivered') || 'Marcar como Entregado'}
                     </button>
                   </div>
                 </div>
@@ -378,7 +378,7 @@ export default function DriverDashboard({ user, onLogout }) {
                         <>
                           <MapAutoCenter center={[driverPos.lat, driverPos.lng]} />
                           <Marker position={[driverPos.lat, driverPos.lng]} icon={driverIcon}>
-                            <Popup>{t('driver.your_location') || '📍 Tu ubicación actual'}</Popup>
+                            <Popup>{t('driver.your_location') || '<i className="fas fa-map-marker-alt mr-1"></i> Tu ubicación actual'}</Popup>
                           </Marker>
                         </>
                       )}
@@ -423,7 +423,7 @@ export default function DriverDashboard({ user, onLogout }) {
                       </div>
                       <div className="dd-order-card-body">
                         <div className="dd-order-info-row">
-                          <div className="dd-order-info-icon">🍽️</div>
+                          <div className="dd-order-info-icon"><i className="fas fa-utensils mr-1"></i></div>
                           <div>
                             <div className="dd-order-info-label">{t('driver.restaurant') || 'Restaurante'}</div>
                             <div className="dd-order-info-value">
@@ -441,7 +441,7 @@ export default function DriverDashboard({ user, onLogout }) {
                           </div>
                         </div>
                         <div className="dd-order-info-row">
-                          <div className="dd-order-info-icon">📍</div>
+                          <div className="dd-order-info-icon"><i className="fas fa-map-marker-alt mr-1"></i></div>
                           <div>
                             <div className="dd-order-info-label">{t('driver.delivery_address') || 'Dirección de entrega'}</div>
                             <div className="dd-order-info-value">
@@ -474,7 +474,7 @@ export default function DriverDashboard({ user, onLogout }) {
                           onClick={() => handleAcceptOrder(order.id)}
                           disabled={actionLoading === order.id}
                         >
-                          {actionLoading === order.id ? '⏳' : '🛵'} {t('driver.accept_order') || 'Aceptar Pedido'}
+                          {actionLoading === order.id ? '⏳' : '<i className="fas fa-motorcycle mr-1"></i>'} {t('driver.accept_order') || 'Aceptar Pedido'}
                         </button>
                       </div>
                     </div>
@@ -486,10 +486,10 @@ export default function DriverDashboard({ user, onLogout }) {
 
           {activeTab === 'active' && (
             <div>
-              <h2 className="dd-section-title">🚀 {t('driver.active_orders_title') || 'Pedidos en Curso'}</h2>
+              <h2 className="dd-section-title"><i className="fas fa-rocket mr-1"></i> {t('driver.active_orders_title') || 'Pedidos en Curso'}</h2>
               {myOrders.length === 0 ? (
                 <div className="dd-empty">
-                  <div className="dd-empty-icon">✨</div>
+                  <div className="dd-empty-icon"><i className="fas fa-sparkles mr-1"></i></div>
                   <div className="dd-empty-title">{t('driver.no_active_orders') || 'No tienes pedidos activos'}</div>
                   <div className="dd-empty-desc">
                     {t('driver.no_active_hint') || 'Acepta un pedido desde la pestaña "Disponibles" para comenzar a entregar.'}
@@ -516,7 +516,7 @@ export default function DriverDashboard({ user, onLogout }) {
                           </div>
                         </div>
                         <div className="dd-order-info-row">
-                          <div className="dd-order-info-icon">📍</div>
+                          <div className="dd-order-info-icon"><i className="fas fa-map-marker-alt mr-1"></i></div>
                           <div>
                             <div className="dd-order-info-label">{t('driver.address') || 'Dirección'}</div>
                             <div className="dd-order-info-value">
@@ -550,7 +550,7 @@ export default function DriverDashboard({ user, onLogout }) {
                             onClick={() => handleCompleteOrder(order.id)}
                             disabled={actionLoading === order.id}
                           >
-                            {actionLoading === order.id ? '⏳' : '✅'} {t('driver.deliver') || 'Entregar'}
+                            {actionLoading === order.id ? '⏳' : '<i className="fas fa-check-circle mr-1"></i>'} {t('driver.deliver') || 'Entregar'}
                           </button>
                         )}
                         {order.status !== 'on_the_way' && (
@@ -628,7 +628,7 @@ export default function DriverDashboard({ user, onLogout }) {
 
       {toast && (
         <div className={`dd-toast ${toast.type}`}>
-          {toast.type === 'success' ? '✅' : toast.type === 'error' ? '❌' : 'ℹ️'} {toast.message}
+          {toast.type === 'success' ? '<i className="fas fa-check-circle mr-1"></i>' : toast.type === 'error' ? '<i className="fas fa-times-circle mr-1"></i>' : 'ℹ️'} {toast.message}
         </div>
       )}
     </div>

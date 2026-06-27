@@ -119,6 +119,7 @@
   "restaurants": {
     "title": "Restaurants near me",
     "subtitle": "Choose your favorite category and discover delicious options",
+    "nearby_section": "Restaurants near me",
     "count": "Restaurants",
     "open": "Open",
     "closed": "Closed",

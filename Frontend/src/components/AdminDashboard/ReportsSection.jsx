@@ -53,7 +53,7 @@ export default function ReportsSection() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-6 text-center max-w-md">
-          <p className="text-red-500 dark:text-red-400 font-semibold">⚠️ {error}</p>
+          <p className="text-red-500 dark:text-red-400 font-semibold"><i className="fas fa-exclamation-triangle mr-1"></i> {error}</p>
         </div>
       </div>
     )
