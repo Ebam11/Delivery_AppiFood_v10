@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchJson } from '../api/fetchJson'
 import {
   getNotifications,
@@ -21,6 +21,30 @@ export function useRestaurantDashboard(user) {
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount]     = useState(0)
   const [restaurantProfile, setRestaurantProfile] = useState(null)
+
+  // Genera un sonido de notificación usando Web Audio API
+  function playNotificationSound() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)()
+      const oscillator = ctx.createOscillator()
+      const gainNode = ctx.createGain()
+
+      oscillator.connect(gainNode)
+      gainNode.connect(ctx.destination)
+
+      oscillator.type = 'sine'
+      oscillator.frequency.setValueAtTime(880, ctx.currentTime)
+      oscillator.frequency.setValueAtTime(660, ctx.currentTime + 0.1)
+
+      gainNode.gain.setValueAtTime(0.3, ctx.currentTime)
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4)
+
+      oscillator.start(ctx.currentTime)
+      oscillator.stop(ctx.currentTime + 0.4)
+    } catch (e) {
+      console.warn('Audio no disponible:', e)
+    }
+  }
 
   const mapOrder = (order) => {
     const items = Array.isArray(order?.items)
@@ -45,17 +69,31 @@ export function useRestaurantDashboard(user) {
     }
   }
 
+  // ===== NOTIFICACIONES =====
+  // MOVER AQUÍ antes del useEffect que las usa
+  const prevUnreadCount = useRef(null)
+
   const loadNotifications = useCallback(async () => {
     try {
       const data = await getNotifications()
       const payload = data?.data?.data ?? data?.data ?? data
-      setNotifications(Array.isArray(payload) ? payload : [])
-      setUnreadCount(data?.unread_count ?? 0)
+      const notifList = Array.isArray(payload) ? payload : []
+      const newUnread = data?.unread_count ?? notifList.filter(n => !n.is_read && !n.read_at).length
+
+      // Reproducir sonido si hay notificaciones nuevas
+      if (prevUnreadCount.current !== null && newUnread > prevUnreadCount.current) {
+        playNotificationSound()
+      }
+      prevUnreadCount.current = newUnread
+
+      setNotifications(notifList)
+      setUnreadCount(newUnread)
     } catch (error) {
       console.error('Error al cargar notificaciones:', error)
     }
   }, [])
 
+  // ===== EFECTO PRINCIPAL =====
   useEffect(() => {
     if (!user) return
 
@@ -66,7 +104,7 @@ export function useRestaurantDashboard(user) {
           fetchJson('/api/restaurant/orders'),
           fetchJson('/api/restaurant/products?paginate=false'),
           fetchJson('/api/restaurant/categories'),
-          fetchJson('/api/restaurant/profile'),  // ← nuevo
+          fetchJson('/api/restaurant/profile'),
         ])
 
         if (ordersRes?.data) {
@@ -107,9 +145,17 @@ export function useRestaurantDashboard(user) {
     }
 
     loadData()
-    loadNotifications()
-  }, [user])
+    loadNotifications() // ✅ Ahora loadNotifications está definida
 
+    // Polling de notificaciones cada 30 segundos
+    const pollingInterval = setInterval(() => {
+      loadNotifications()
+    }, 30000)
+
+    return () => clearInterval(pollingInterval)
+  }, [user]) // ✅ loadNotifications NO está en dependencias porque es estable
+
+  // ===== HANDLERS =====
   const handleStatusChange = async (orderId, newStatus) => {
     const rawId = orderId.replace('#ORD', '')
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o))
@@ -192,65 +238,63 @@ export function useRestaurantDashboard(user) {
   }
 
   const handleEditProduct = async (id, formData) => {
-  try {
-    let options = { method: 'PUT' }
-    if (formData.file) {
-      const body = new FormData()
-      body.append('name', formData.name)
-      body.append('price', formData.price)
-      if (formData.description) body.append('description', formData.description)
-      if (formData.category_id) body.append('category_id', formData.category_id)
-      if (formData.stock !== '' && formData.stock != null) body.append('stock', formData.stock)
-      if (formData.prep_time_minutes !== '' && formData.prep_time_minutes != null) {
-        body.append('prep_time_minutes', formData.prep_time_minutes)
+    try {
+      let options = { method: 'PUT' }
+      if (formData.file) {
+        const body = new FormData()
+        body.append('name', formData.name)
+        body.append('price', formData.price)
+        if (formData.description) body.append('description', formData.description)
+        if (formData.category_id) body.append('category_id', formData.category_id)
+        if (formData.stock !== '' && formData.stock != null) body.append('stock', formData.stock)
+        if (formData.prep_time_minutes !== '' && formData.prep_time_minutes != null) {
+          body.append('prep_time_minutes', formData.prep_time_minutes)
+        }
+        body.append('image', formData.file)
+        options.body = body
+      } else {
+        options.body = {
+          name:              formData.name,
+          price:             formData.price,
+          description:       formData.description || null,
+          category_id:       formData.category_id,
+          stock:             formData.stock !== '' ? formData.stock : null,
+          prep_time_minutes: formData.prep_time_minutes !== '' ? formData.prep_time_minutes : null,
+        }
       }
-      body.append('image', formData.file)
-      options.body = body
-    } else {
-      options.body = {
-        name:              formData.name,
-        price:             formData.price,
-        description:       formData.description || null,
-        category_id:       formData.category_id,
-        stock:             formData.stock !== '' ? formData.stock : null,
-        prep_time_minutes: formData.prep_time_minutes !== '' ? formData.prep_time_minutes : null,
+      const res = await fetchJson(`/api/restaurant/products/${id}`, options)
+      if (res?.data) {
+        const p = res.data
+        setMenu(prev => prev.map(item => item.id === id ? {
+          ...item,
+          name:              p.name,
+          description:       p.description,
+          price:             Number(p.price),
+          img:               p.image || item.img,
+          category:          p.category?.name || item.category,
+          category_id:       p.category_id,
+          stock:             p.stock,
+          prep_time_minutes: p.prep_time_minutes,
+        } : item))
+        setToast('Producto actualizado')
+        setTimeout(() => setToast(null), 3000)
       }
-    }
-    const res = await fetchJson(`/api/restaurant/products/${id}`, options)
-    if (res?.data) {
-      const p = res.data
-      setMenu(prev => prev.map(item => item.id === id ? {
-        ...item,
-        name:              p.name,
-        description:       p.description,
-        price:             Number(p.price),
-        img:               p.image || item.img,
-        category:          p.category?.name || item.category,
-        category_id:       p.category_id,
-        stock:             p.stock,
-        prep_time_minutes: p.prep_time_minutes,
-      } : item))
-      setToast('Producto actualizado')
+    } catch (error) {
+      console.error('Error al editar producto:', error)
+      setToast('Error al editar el producto')
       setTimeout(() => setToast(null), 3000)
     }
-  } catch (error) {
-    console.error('Error al editar producto:', error)
-    setToast('Error al editar el producto')
-    setTimeout(() => setToast(null), 3000)
   }
-}
 
-const handleToggleAvailability = async (id) => {
-  // Actualización optimista
-  setMenu(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
-  try {
-    await fetchJson(`/api/restaurant/products/${id}/toggle-availability`, { method: 'PATCH' })
-  } catch (error) {
-    console.error('Error al cambiar disponibilidad:', error)
-    // Revertir si falla
+  const handleToggleAvailability = async (id) => {
     setMenu(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
+    try {
+      await fetchJson(`/api/restaurant/products/${id}/toggle-availability`, { method: 'PATCH' })
+    } catch (error) {
+      console.error('Error al cambiar disponibilidad:', error)
+      setMenu(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
+    }
   }
-}
 
   const handleNotifRead = async (id) => {
     try {
