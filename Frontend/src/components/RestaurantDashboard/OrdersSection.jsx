@@ -7,10 +7,10 @@ export default function OrdersSection({ orders, onViewDetails, onUpdateStatus, e
   const { t } = useTranslation()
   const [filter, setFilter] = useState('all')
   const [search, setSearch] = useState('')
+  
   useEffect(() => {
     setSearch(externalSearch)
   }, [externalSearch])
-  
 
   const counts = {
     all:        orders.length,
@@ -35,6 +35,12 @@ export default function OrdersSection({ orders, onViewDetails, onUpdateStatus, e
     { key:'delivered',  label: t('orders.status_delivered') },
   ]
 
+  const onStatusChange = (orderId, newStatus) => {
+    if (onUpdateStatus) {
+      onUpdateStatus(orderId, newStatus)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -46,7 +52,7 @@ export default function OrdersSection({ orders, onViewDetails, onUpdateStatus, e
         ].map((s,i) => (
           <div key={i} className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
             <div className="flex items-center justify-between">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background:`${s.color}20` }}>
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background:`${s.color}20` }}>
                 <i className={`fas ${s.icon} text-base`} style={{ color: s.color }} />
               </div>
             </div>
@@ -56,31 +62,18 @@ export default function OrdersSection({ orders, onViewDetails, onUpdateStatus, e
         ))}
       </div>
 
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-1 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-1 shadow-sm">
-          {FILTERS.map(f => (
-            <button 
-              key={f.key} 
-              onClick={() => setFilter(f.key)}
-              className="px-3 py-1.5 rounded-lg text-xs font-semibold transition"
-              style={filter === f.key ? { background: COLORS.primary, color:'white' } : { color:'#6b7280' }}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-center gap-2 w-full lg:w-auto">
-          <div className="flex-1 flex items-center gap-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 shadow-sm">
-            <span className="text-gray-400 dark:text-slate-500 text-sm">🔍</span>
-            <input 
-              placeholder={t('rd.search_order')} 
-              value={search} 
-              onChange={e => setSearch(e.target.value)}
-              className="text-sm outline-none w-full lg:w-40 text-gray-600 dark:text-slate-200 placeholder-gray-400 dark:placeholder-slate-500 bg-transparent" 
-            />
-          </div>
-        </div>
+      {/* Filtros - SIN barra de búsqueda interna */}
+      <div className="flex flex-wrap gap-1 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl p-1 shadow-sm">
+        {FILTERS.map(f => (
+          <button 
+            key={f.key} 
+            onClick={() => setFilter(f.key)}
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold transition"
+            style={filter === f.key ? { background: COLORS.primary, color:'white' } : { color:'#6b7280' }}
+          >
+            {f.label}
+          </button>
+        ))}
       </div>
 
       <div className="bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">

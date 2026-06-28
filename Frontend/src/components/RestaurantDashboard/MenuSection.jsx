@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { COLORS } from './constants'
 
-export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit, onToggle }) {
+export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit, onToggle, onToggleAvailability, externalSearch = '' }) {
   const { t } = useTranslation()
   const [showModal, setShowModal] = useState(false)
   const [catFilter, setCatFilter] = useState(t('rd.all_categories') || 'Todos')
@@ -17,6 +17,11 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
   const [preview, setPreview] = useState(null)
 
   const CATEGORIES = [t('rd.all_categories'), ...categories.map(c => c.name)]
+
+  // Sincronizar con el buscador externo del TopBar
+  useEffect(() => {
+    setSearch(externalSearch)
+  }, [externalSearch])
 
   const visible = menu
     .filter(m => catFilter === t('rd.all_categories') || catFilter === 'Todos' || m.category?.name === catFilter || m.category === catFilter)
@@ -72,15 +77,7 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
           {menu.filter(m => m.active).length} {t('rd.active_dishes')} / {menu.length} {t('rd.total_dishes')}
         </p>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-3 py-2 shadow-sm">
-            <span className="text-gray-400 text-sm">🔍</span>
-            <input
-              placeholder={t('rd.search_dish')}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="text-sm outline-none w-32 text-gray-600 dark:text-slate-200 placeholder-gray-400 bg-transparent"
-            />
-          </div>
+          {/* Barra de búsqueda interna ELIMINADA - Ahora usa la del TopBar */}
           <button
             onClick={() => setShowModal(true)}
             className="px-4 py-2 rounded-xl text-sm font-bold text-white hover:opacity-90 transition"
@@ -132,8 +129,8 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 line-clamp-1">{item.description}</p>
               )}
               <div className="flex items-center gap-3 mt-1 text-xs text-gray-400 dark:text-slate-500">
-                {item.stock != null && <span>📦 {item.stock}</span>}
-                {item.prep_time_minutes != null && <span>⏱ {item.prep_time_minutes} min</span>}
+                {item.stock != null && <span><i className="fas fa-box text-gray-300 mr-1" />{item.stock}</span>}
+                {item.prep_time_minutes != null && <span><i className="fas fa-clock text-gray-300 mr-1" />{item.prep_time_minutes} min</span>}
               </div>
               <div className="flex items-center justify-between mt-2 mb-3">
                 <span className="text-xs text-gray-400 dark:text-slate-500"><i className="fas fa-star mr-1"></i> {item.rating} · {item.orders} {t('rd.orders_label')}</span>
@@ -158,7 +155,7 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
         ))}
         {visible.length === 0 && (
           <div className="col-span-full py-16 text-center text-gray-400 dark:text-slate-500">
-            <p className="text-4xl mb-2"><i className="fas fa-utensils mr-1"></i></p>
+            <i className="fas fa-utensils text-4xl text-gray-300 dark:text-slate-600 mb-2 block" />
             <p className="font-medium">{t('rd.no_dishes')}</p>
           </div>
         )}
@@ -182,7 +179,9 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
                 >
                   {preview
                     ? <img src={preview} alt="preview" className="w-full h-full object-cover" />
-                    : <span className="text-gray-400 dark:text-slate-500 text-sm">📷 {t('rd.photo_upload')}</span>
+                    : <span className="text-gray-400 dark:text-slate-500 text-sm flex items-center gap-1">
+                        <i className="fas fa-camera" /> {t('rd.photo_upload')}
+                      </span>
                   }
                 </div>
                 <input id="menu-img-input" type="file" accept="image/*" className="hidden" onChange={handleImage} />
@@ -299,7 +298,7 @@ export default function MenuSection({ menu, categories, onAdd, onDelete, onEdit,
             onClick={e => e.stopPropagation()}
           >
             <div className="text-center mb-5">
-              <p className="text-3xl mb-3">🗑️</p>
+              <i className="fas fa-trash text-3xl text-red-400 mb-3 block" />
               <h3 className="text-base font-bold text-gray-800 dark:text-slate-100 mb-1">
                 {t('rd.confirm_delete')}
               </h3>
