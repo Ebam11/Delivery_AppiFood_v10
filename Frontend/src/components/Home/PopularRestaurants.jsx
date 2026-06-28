@@ -1,18 +1,40 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import RestaurantCard from '../RestaurantCard'
 
 /**
- * Sección de restaurantes populares con carrusel horizontal.
+ * Sección de restaurantes populares con carrusel horizontal y flechas a los costados.
  */
 export default function PopularRestaurants({ restaurants, loading, onSelect, onFavoriteToggle }) {
   const { t } = useTranslation()
   const trackRef = useRef(null)
+  const [canScrollPrev, setCanScrollPrev] = useState(false)
+  const [canScrollNext, setCanScrollNext] = useState(true)
+
+  const updateScrollState = () => {
+    if (!trackRef.current) return
+    const { scrollLeft, scrollWidth, clientWidth } = trackRef.current
+    setCanScrollPrev(scrollLeft > 5)
+    setCanScrollNext(scrollLeft < scrollWidth - clientWidth - 5)
+  }
+
+  useEffect(() => {
+    const el = trackRef.current
+    if (el) {
+      el.addEventListener('scroll', updateScrollState)
+      updateScrollState()
+      window.addEventListener('resize', updateScrollState)
+    }
+    return () => {
+      if (el) el.removeEventListener('scroll', updateScrollState)
+      window.removeEventListener('resize', updateScrollState)
+    }
+  }, [restaurants])
 
   const slide = (direction) => {
     const track = trackRef.current
     if (!track) return
-    const cardWidth = 300
+    const cardWidth = 320
     const scrollAmount = cardWidth * 2 * direction
     track.scrollBy({ left: scrollAmount, behavior: 'smooth' })
   }
@@ -30,26 +52,20 @@ export default function PopularRestaurants({ restaurants, loading, onSelect, onF
               {t('home.popular_restaurants') || "Restaurantes Populares"}
             </h2>
           </div>
-          
-          {/* Controles de Navegación */}
-          <div className="flex gap-3">
-            <button 
-              onClick={() => slide(-1)}
-              className="w-12 h-12 rounded-full border-2 border-gray-100 dark:border-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500 hover:border-red-500 hover:text-red-500 transition-all shadow-sm"
-            >
-              <i className="fas fa-chevron-left" />
-            </button>
-            <button 
-              onClick={() => slide(1)}
-              className="w-12 h-12 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition-all shadow-lg shadow-red-500/30"
-            >
-              <i className="fas fa-chevron-right" />
-            </button>
-          </div>
         </div>
 
-        {/* Contenedor del Carrusel */}
-        <div className="relative">
+        {/* Contenedor del Carrusel con flechas laterales */}
+        <div className="relative w-full">
+          {/* Flecha izquierda */}
+          {canScrollPrev && !loading && (
+            <button 
+              onClick={() => slide(-1)}
+              className="absolute -left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-[#FF4B3E] hover:border-[#FF4B3E]/30 shadow-lg transition-all flex items-center justify-center"
+            >
+              <i className="fas fa-chevron-left text-xs" />
+            </button>
+          )}
+
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <div className="w-10 h-10 border-4 border-red-500 border-t-transparent rounded-full animate-spin" />
@@ -58,7 +74,7 @@ export default function PopularRestaurants({ restaurants, loading, onSelect, onF
           ) : (
             <div 
               ref={trackRef}
-              className="flex gap-6 overflow-x-auto pb-8 scrollbar-hide snap-x"
+              className="flex gap-6 overflow-x-auto pb-8 px-2 scrollbar-hide snap-x"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {restaurants.map((r) => (
@@ -77,6 +93,16 @@ export default function PopularRestaurants({ restaurants, loading, onSelect, onF
                 </div>
               )}
             </div>
+          )}
+
+          {/* Flecha derecha */}
+          {canScrollNext && !loading && (
+            <button 
+              onClick={() => slide(1)}
+              className="absolute -right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:text-[#FF4B3E] hover:border-[#FF4B3E]/30 shadow-lg transition-all flex items-center justify-center"
+            >
+              <i className="fas fa-chevron-right text-xs" />
+            </button>
           )}
         </div>
       </div>

@@ -1,12 +1,11 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate, Link } from 'react-router-dom'
-import { useTranslation } from 'react-i18next' // <- CORREGIDO
+import { useTranslation } from 'react-i18next'
 import PublicLayout from '../components/layout/PublicLayout'
 import RestaurantLayout from '../components/layout/RestaurantLayout'
 import LoadingScreen from '../components/layout/LoadingScreen'
 import { getHomePathByRole } from '../utils/appHelpers'
 
-// Carga perezosa de páginas para optimizar el bundle
 const Home = lazy(() => import('../pages/Home'))
 const Login = lazy(() => import('../pages/Login'))
 const RestaurantLogin = lazy(() => import('../pages/RestaurantLogin'))
@@ -35,9 +34,6 @@ const DriverDashboard = lazy(() => import('../pages/DriverDashboard'))
 const Gamification = lazy(() => import('../pages/Gamification'))
 const Offers = lazy(() => import('../pages/Offers'))
 
-/**
- * Componente para proteger rutas según el rol del usuario.
- */
 function RoleRoute({ user, allow = [], children }) {
   if (!user) return <Navigate to="/login" replace />
   const role = String(user?.role ?? user?.rol ?? 'user').toLowerCase()
@@ -47,9 +43,6 @@ function RoleRoute({ user, allow = [], children }) {
   return children
 }
 
-/**
- * Wrappers para tipos de páginas comunes.
- */
 const PublicPage = ({ children, isAuth, user, onLogout, isLoading }) => (
   <PublicLayout isAuth={isAuth} user={user} onLogout={onLogout} isLoading={isLoading}>
     {children}
@@ -64,9 +57,6 @@ const UserPage = ({ children, user, isAuth, onLogout, isLoading }) => (
   </RoleRoute>
 )
 
-/**
- * Definición central de rutas de la aplicación.
- */
 export default function AppRoutes({ user, isAuth, loading, handleLogin, handleLogout, setUser }) {
   const { t } = useTranslation()
 

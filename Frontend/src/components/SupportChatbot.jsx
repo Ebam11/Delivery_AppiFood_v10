@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { useTranslation } from 'react-i18next' // <- CORREGIDO
+import { useTranslation } from 'react-i18next'
 import { getAssistantReply, supportShortcuts } from '../utils/supportAssistant'
 import { useCart } from '../context/useCart'
 
@@ -44,7 +44,7 @@ async function resolveAnswer(message, history) {
 }
 
 export default function SupportChatbot({ embedded = false, startOpen = false }) {
-  const { t } = useTranslation() // <- CORREGIDO
+  const { t } = useTranslation()
   const location = useLocation()
   const bottomRef = useRef(null)
   const [open, setOpen] = useState(embedded || startOpen)

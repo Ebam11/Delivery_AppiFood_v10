@@ -1,4 +1,3 @@
-// Archivo: src/components/Header.jsx
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -265,7 +264,6 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     { to:'/help-center', icon:'fa-question-circle', label: t('header.nav.howItWorks') || 'Centro de ayuda', promo:true },
     { to:'/support', icon:'fa-headset',         label: t('header.nav.supportChat') || 'Chat de soporte', promo:true },
     { href:'#',      icon:'fa-mobile-alt',      label: t('header.nav.downloadApp') || 'Descarga la app' },
-    { to:'/register-restaurant',icon:'fa-utensils',        label: t('header.nav.registerRestaurant') || 'Registra tu restaurante', promo:true },
   ]
 
   const linkClasses = (promo) => 

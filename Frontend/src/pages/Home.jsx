@@ -1,8 +1,3 @@
-/**
- * Archivo: src/pages/Home.jsx
- * Página de inicio principal para el consumidor.
- * Organizada en componentes modulares para mejorar la legibilidad y el rendimiento.
- */
 
 import { useTranslation } from 'react-i18next'
 import { useHomeData } from '../hooks/useHomeData'
@@ -31,7 +26,6 @@ export default function Home({ isAuth }) {
     isFavorite
   } = useHomeData()
 
-  // Datos para el carrusel de bienvenida
   const heroSlides = [
     {
       title: t('hero.slide1.title') || 'HOT SPICY\nCHICKEN BURGER',
@@ -56,7 +50,6 @@ export default function Home({ isAuth }) {
     },
   ]
 
-  // Estadísticas del Hero
   const stats = {
     restaurants: '50+',
     avg_delivery: '25 min',
