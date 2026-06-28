@@ -151,7 +151,8 @@ export default function RestaurantDashboard({ user, onLogout }) {
           order={selectedOrder}
           onClose={() => setSelectedOrder(null)}
           onStatusChange={handleStatusChange}
-        />
+          restaurantName={restaurantProfile?.name}
+/>
       )}
     </div>
   )
