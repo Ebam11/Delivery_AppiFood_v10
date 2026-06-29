@@ -59,7 +59,12 @@ class GoogleAuthController extends Controller
             $token = $user->createToken('api-token')->plainTextToken;
 
             // Redirigir al frontend con el token y datos del usuario
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            // Forzar puerto 3000 si es localhost de desarrollo
+            if (str_contains($frontendUrl, 'localhost') || str_contains($frontendUrl, '127.0.0.1')) {
+                $frontendUrl = 'http://localhost:3000';
+            }
+
             $userData = base64_encode(json_encode([
                 'id' => $user->id,
                 'name' => $user->name,
@@ -71,7 +76,10 @@ class GoogleAuthController extends Controller
             return redirect()->away("{$frontendUrl}/login?token={$token}&user={$userData}");
 
         } catch (Exception $e) {
-            $frontendUrl = env('FRONTEND_URL', 'http://localhost:5173');
+            $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+            if (str_contains($frontendUrl, 'localhost') || str_contains($frontendUrl, '127.0.0.1')) {
+                $frontendUrl = 'http://localhost:3000';
+            }
             return redirect()->away("{$frontendUrl}/login?error=" . urlencode($e->getMessage()));
         }
     }
