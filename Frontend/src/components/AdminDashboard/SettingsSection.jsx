@@ -99,7 +99,7 @@ export default function SettingsSection({ showToast }) {
       {/* ── Gestión de Usuarios ── */}
       <section className={sectionClass}>
         <div className={sectionHeaderClass}>
-          <span className="text-xl">👥</span>
+        <i className="fas fa-users text-xl text-gray-600 dark:text-slate-400" />
           <div>
             <h3 className="font-bold text-gray-800 dark:text-slate-100">
               {t('adminDashboard.settings.userMgmt', { defaultValue: 'Gestión de Usuarios' })}
@@ -156,7 +156,7 @@ export default function SettingsSection({ showToast }) {
       {/* ── Seguridad ── */}
       <section className={sectionClass}>
         <div className={sectionHeaderClass}>
-          <span className="text-xl">🔒</span>
+        <i className="fas fa-lock text-xl text-gray-600 dark:text-slate-400" />
           <div>
             <h3 className="font-bold text-gray-800 dark:text-slate-100">
               {t('adminDashboard.settings.security', { defaultValue: 'Seguridad' })}
@@ -232,7 +232,7 @@ export default function SettingsSection({ showToast }) {
       {/* ── Tema ── */}
       <section className={sectionClass}>
         <div className={sectionHeaderClass}>
-          <span className="text-xl">🎨</span>
+        <i className="fas fa-palette text-xl text-gray-600 dark:text-slate-400" />
           <div>
             <h3 className="font-bold text-gray-800 dark:text-slate-100">
               {t('adminDashboard.settings.themeTitle', { defaultValue: 'Preferencia de Interfaz' })}
@@ -267,13 +267,13 @@ export default function SettingsSection({ showToast }) {
             onClick={handleBackup}
             className="px-6 py-3 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 rounded-xl font-bold hover:bg-red-50 dark:hover:bg-red-950/30 transition text-sm"
           >
-            📦 Backup de Configuración
+            <><i className="fas fa-box-archive mr-2" />Backup de Configuración</>
           </button>
           <button
             onClick={handleReset}
             className="px-6 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition text-sm shadow-lg shadow-red-600/20"
           >
-            🔄 Restablecer Configuración
+            <><i className="fas fa-rotate-left mr-2" />Restablecer Configuración</>
           </button>
         </div>
       </section>

@@ -26,28 +26,32 @@ export default function DashboardSection({ stats, loading }) {
       label: t('adminDashboard.kpi.activeRestaurants', { defaultValue: 'Restaurantes' }),
       value: stats.restaurants?.total || 0,
       detail: `${stats.restaurants?.active || 0} ${t('adminDashboard.status.active')} • ${stats.restaurants?.pending || 0} ${t('adminDashboard.status.pending')}`,
-      icon: '🏪',
+      icon: 'fa-store',
+      color: '#f59e0b',
       trend: `${stats.restaurants?.verified || 0} ${t('adminDashboard.status.verified') || 'verificados'}`
     },
     {
       label: t('adminDashboard.kpi.activeUsers', { defaultValue: 'Usuarios' }),
       value: stats.users?.total || 0,
       detail: `${stats.users?.customers || 0} ${t('adminDashboard.userTypes.customers') || 'clientes'} • ${stats.users?.restaurants || 0} ${t('adminDashboard.userTypes.restaurants') || 'restaurantes'}`,
-      icon: '👥',
+      icon: 'fa-users',
+      color: '#3b82f6',
       trend: `${stats.users?.new_today || 0} ${t('adminDashboard.kpi.new_today') || 'nuevos hoy'}`
     },
     {
       label: t('adminDashboard.kpi.totalOrders', { defaultValue: 'Órdenes' }),
       value: stats.orders?.total || 0,
       detail: `${stats.orders?.pending || 0} ${t('adminDashboard.status.pending')} • ${stats.orders?.delivered || 0} ${t('orders.status_delivered')}`,
-      icon: '📦',
+      icon: 'fa-bag-shopping',
+      color: '#8b5cf6',
       trend: `${stats.orders?.today || 0} ${t('adminDashboard.kpi.today') || 'hoy'}`
     },
     {
       label: t('adminDashboard.kpi.platformRevenue', { defaultValue: 'Ingresos' }),
       value: `$${Number(stats.revenue?.total || 0).toFixed(2)}`,
       detail: `$${Number(stats.revenue?.today || 0).toFixed(2)} ${t('adminDashboard.kpi.today') || 'hoy'}`,
-      icon: '💰',
+      icon: 'fa-money-bill-trend-up',
+      color: '#10b981',
       trend: `$${Number(stats.revenue?.this_month || 0).toFixed(2)} ${t('adminDashboard.kpi.this_month') || 'este mes'}`
     }
   ]
@@ -74,8 +78,11 @@ export default function DashboardSection({ stats, loading }) {
                   {kpi.trend}
                 </p>
               </div>
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl bg-orange-50 dark:bg-slate-800">
-                {kpi.icon}
+              <div
+                className="w-12 h-12 rounded-xl flex items-center justify-center"
+                style={{ background: `${kpi.color}20` }}
+              >
+                <i className={`fas ${kpi.icon} text-xl`} style={{ color: kpi.color }} />
               </div>
             </div>
           </div>
