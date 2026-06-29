@@ -95,7 +95,7 @@ function AppContent() {
           handleLogout={handleLogout}
           setUser={setUser}
         />
-        <PWAInstallPrompt />
+        {/* <PWAInstallPrompt /> */}
         <FloatingWidgets
           isCartOpen={isCartOpen}
           isNearFooter={isNearFooter}

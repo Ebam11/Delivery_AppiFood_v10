@@ -7,7 +7,7 @@ import { useOrderStore } from '../store/orderStore';
 import { usePaymentStore } from '../store/paymentStore';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { Loading } from '../components/Loading';
-import WompiCheckout from '../components/WompiCheckout';
+import RapydCheckout from '../components/RapydCheckout';
 import '../components/SharedUI.css';
 
 export const Checkout = () => {
@@ -262,7 +262,7 @@ export const Checkout = () => {
                 </div>
               </div>
 
-              <WompiCheckout orderId={orderId} />
+              <RapydCheckout orderId={orderId} />
 
               <button
                 onClick={() => {

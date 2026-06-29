@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
+use App\Services\RapydService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -41,30 +42,54 @@ class PaymentController extends Controller
             $request->input('payment_method')
         );
 
-        if (!$paymentMethodId) {
-            return response()->json([
-                'message' => 'No hay métodos de pago activos configurados.',
-            ], 422);
-        }
+        $reference = 'PAY-' . $order->id . '-' . Str::upper(Str::random(10));
 
         $payment = Payment::updateOrCreate(
             ['order_id' => $order->id],
             [
-                'payment_method_id' => $paymentMethodId,
-                'amount'            => $order->total,
-                'status'            => PaymentStatus::PENDING,
-                'external_reference' => 'PAY-' . $order->id . '-' . Str::upper(Str::random(10)),
-                'paid_at'           => null,
+                'payment_method_id'  => $paymentMethodId,
+                'amount'             => $order->total,
+                'status'             => PaymentStatus::PENDING,
+                'external_reference' => $reference,
+                'paid_at'            => null,
             ]
         );
 
-        $paymentUrl = '/payment/confirmation/' . $order->id
-            . '?transaction_id=' . urlencode((string) $payment->id)
-            . '&reference_code=' . urlencode((string) $payment->external_reference);
+        // Construir URLs de redirección
+        $frontendUrl        = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
+        $completeRedirectUrl = $frontendUrl . '/payment/confirmation/' . $order->id
+            . '?transaction_id=' . $payment->id
+            . '&reference_code=' . urlencode($reference)
+            . '&status=APPROVED';
+        $cancelRedirectUrl = $frontendUrl . '/checkout?status=cancelled';
+
+        // Intentar crear checkout con Rapyd
+        $paymentUrl = $frontendUrl . '/payment/confirmation/' . $order->id
+            . '?transaction_id=' . $payment->id
+            . '&reference_code=' . urlencode($reference);
+
+        try {
+            $rapyd    = new RapydService();
+            $rapydRes = $rapyd->createCheckout(
+                (float) $order->total,
+                'COP',
+                $reference,
+                $completeRedirectUrl,
+                $cancelRedirectUrl
+            );
+
+            if (!empty($rapydRes['data']['redirect_url'])) {
+                $paymentUrl = $rapydRes['data']['redirect_url'];
+                // Guardar el id de Rapyd en metadata si el modelo lo permite
+            }
+        } catch (\Throwable $e) {
+            // Si Rapyd falla, caemos al flujo interno (sandbox / dev)
+            \Illuminate\Support\Facades\Log::warning('Rapyd checkout error: ' . $e->getMessage());
+        }
 
         return response()->json([
-            'message' => 'Pago preparado correctamente.',
-            'data'    => $payment->load('method'),
+            'message'     => 'Pago preparado correctamente.',
+            'data'        => $payment->load('method'),
             'payment_url' => $paymentUrl,
         ]);
     }
@@ -73,7 +98,7 @@ class PaymentController extends Controller
     {
         $request->validate([
             'transaction_id' => ['required', 'integer'],
-            'reference_code'  => ['required', 'string'],
+            'reference_code' => ['required', 'string'],
         ]);
 
         $payment = Payment::with('order')
@@ -82,9 +107,7 @@ class PaymentController extends Controller
             ->first();
 
         if (!$payment || !$payment->order || $payment->order->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'No se encontró el pago para confirmar.',
-            ], 404);
+            return response()->json(['message' => 'No se encontró el pago para confirmar.'], 404);
         }
 
         $payment->update([
@@ -98,13 +121,13 @@ class PaymentController extends Controller
 
         Notification::create([
             'user_id' => $payment->order->user_id,
-            'title' => 'Pago confirmado',
+            'title'   => 'Pago confirmado',
             'message' => "Tu pago del pedido #{$payment->order->id} fue confirmado.",
-            'type' => 'payment',
-            'data' => [
-                'order_id' => $payment->order->id,
+            'type'    => 'payment',
+            'data'    => [
+                'order_id'   => $payment->order->id,
                 'payment_id' => $payment->id,
-                'status' => PaymentStatus::COMPLETED->value,
+                'status'     => PaymentStatus::COMPLETED->value,
             ],
         ]);
 
@@ -116,19 +139,13 @@ class PaymentController extends Controller
 
     public function show(Request $request, int $id): JsonResponse
     {
-        $payment = Payment::with(['method', 'order'])
-            ->whereKey($id)
-            ->first();
+        $payment = Payment::with(['method', 'order'])->whereKey($id)->first();
 
         if (!$payment || !$payment->order || $payment->order->user_id !== $request->user()->id) {
-            return response()->json([
-                'message' => 'No se encontró el pago solicitado.',
-            ], 404);
+            return response()->json(['message' => 'No se encontró el pago solicitado.'], 404);
         }
 
-        return response()->json([
-            'data' => $payment,
-        ]);
+        return response()->json(['data' => $payment]);
     }
 
     private function resolvePaymentMethodId(mixed $paymentMethodId, ?string $paymentMethod): ?int
@@ -148,21 +165,20 @@ class PaymentController extends Controller
 
         $aliases = [
             'PSE'        => ['wallet', 'card', 'cash'],
+            'NEQUI'      => ['wallet'],
+            'DAVIPLATA'  => ['wallet'],
+            'EFECTY'     => ['cash'],
             'VISA'       => ['card'],
             'MASTERCARD' => ['card'],
             'CARD'       => ['card'],
             'CASH'       => ['cash'],
-            'NEQUI'      => ['wallet'],
-            'DAVIPLATA'  => ['wallet'],
         ];
 
         $types = $aliases[$normalized] ?? [];
 
         foreach ($types as $type) {
             $methodId = PaymentMethod::active()->where('type', $type)->value('id');
-            if ($methodId) {
-                return (int) $methodId;
-            }
+            if ($methodId) return (int) $methodId;
         }
 
         return PaymentMethod::active()->value('id');

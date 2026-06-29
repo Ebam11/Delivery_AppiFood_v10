@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchJson } from '../api/fetchJson'
+import { useRestaurantOrderNotifications } from './useOrderRealtime'
 import {
   getNotifications,
   markNotificationAsRead,
@@ -92,6 +93,22 @@ export function useRestaurantDashboard(user) {
       console.error('Error al cargar notificaciones:', error)
     }
   }, [])
+
+  // Notificaciones en tiempo real: detectar nuevos pedidos cada 20s
+  useRestaurantOrderNotifications(!!user, (newOrders) => {
+    setOrders(prev => [
+      ...newOrders.map(mapOrder),
+      ...prev,
+    ])
+    const count = newOrders.length
+    setToast({
+      type: 'success',
+      message: `🍽️ ${count} nuevo${count > 1 ? 's' : ''} pedido${count > 1 ? 's' : ''} recibido${count > 1 ? 's' : ''}`,
+    })
+    setTimeout(() => setToast(null), 5000)
+    // Refrescar notificaciones del backend
+    loadNotifications()
+  })
 
   // ===== EFECTO PRINCIPAL =====
   useEffect(() => {

@@ -1,5 +1,4 @@
-// Archivo: src/pages/OrderDetail.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useOrderStore } from '../store/orderStore';
@@ -9,6 +8,9 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { fetchJson } from '../api/fetchJson';
+import { useOrderRealtime } from '../hooks/useOrderRealtime';
+
+const ACTIVE_STATUSES = ['pending', 'confirmed', 'preparing', 'on_the_way', 'pendiente', 'confirmado', 'preparando', 'en_camino'];
 
 // Iconos personalizados de Leaflet
 const driverIcon = new L.DivIcon({
@@ -131,10 +133,23 @@ export const OrderDetail = () => {
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState(null);
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [liveStatus, setLiveStatus] = useState(null);
 
   useEffect(() => {
     fetchOrderById(id);
   }, [id]);
+
+  const order = selectedOrder?.data || selectedOrder;
+  const currentStatus = liveStatus || order?.status || ''
+  const isLive = ACTIVE_STATUSES.includes((currentStatus).toLowerCase())
+
+  const handleStatusChange = useCallback((newStatus) => {
+    setLiveStatus(newStatus)
+    // Refrescar el pedido completo del store cuando cambia el estado
+    fetchOrderById(id)
+  }, [id, fetchOrderById])
+
+  useOrderRealtime(order?.id, handleStatusChange)
 
   const getStatusColor = (status) => {
     const colors = {
@@ -213,7 +228,7 @@ export const OrderDetail = () => {
     );
   }
 
-  const order = selectedOrder.data || selectedOrder;
+
 
   return (
     <div className="page-order-detail min-h-screen bg-gray-50 p-6">
@@ -236,8 +251,16 @@ export const OrderDetail = () => {
                   <i className="fas fa-store" /> {order.restaurant_name}
                 </p>
               </div>
-              <div className={`px-4 py-2 rounded-full font-bold text-sm shadow-sm ${getStatusColor(order.status)}`}>
-                {getStatusLabel(order.status)}
+              <div className="flex items-center gap-2">
+                <div className={`px-4 py-2 rounded-full font-bold text-sm shadow-sm ${getStatusColor(currentStatus || order.status)}`}>
+                  {getStatusLabel(currentStatus || order.status)}
+                </div>
+                {isLive && (
+                  <span className="flex items-center gap-1.5 bg-white/20 backdrop-blur px-2.5 py-1 rounded-full text-xs font-bold">
+                    <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                    EN VIVO
+                  </span>
+                )}
               </div>
             </div>
           </div>

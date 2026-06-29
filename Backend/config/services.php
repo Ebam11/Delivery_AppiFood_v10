@@ -65,4 +65,11 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URL', env('APP_URL') . '/api/auth/google/callback'),
     ],
 
+    'rapyd' => [
+        'access_key' => env('RAPYD_ACCESS_KEY'),
+        'secret_key' => env('RAPYD_SECRET_KEY'),
+        'base_url'   => env('RAPYD_BASE_URL', 'https://sandboxapi.rapyd.net'),
+        'mode'       => env('RAPYD_MODE', 'sandbox'),
+    ],
+
 ];

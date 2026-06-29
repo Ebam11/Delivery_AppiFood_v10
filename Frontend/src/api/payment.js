@@ -1,8 +1,6 @@
-// Archivo: src/api/payment.js | Comentario: logica principal del modulo.
 import client from './client';
 
-// Crear transacción en PayU
-export const createPayment = async (orderId, paymentMethod = 'PSE') => {
+export const createPayment = async (orderId, paymentMethod = 'co_pse_bank') => {
   const response = await client.post('/payments', { 
     order_id: orderId,
     payment_method: paymentMethod 
@@ -10,7 +8,6 @@ export const createPayment = async (orderId, paymentMethod = 'PSE') => {
   return response.data;
 };
 
-// Confirmar pago después del callback de PayU
 export const confirmPayment = async (transactionId, referenceCode) => {
   const response = await client.post('/payments/confirm', { 
     transaction_id: transactionId,
@@ -31,7 +28,6 @@ export const getPaymentStatus = async (paymentId) => {
   return response.data;
 };
 
-// ======================== MÉTODOS DE PAGO GUARDADOS ========================
 
 // Obtener métodos de pago guardados del usuario
 export const getUserPaymentMethods = async () => {

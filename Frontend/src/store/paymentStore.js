@@ -1,4 +1,3 @@
-// Archivo: src/store/paymentStore.js | Comentario: logica principal del modulo.
 import { create } from 'zustand';
 import {
   createPayment as apiCreatePayment,
@@ -13,8 +12,7 @@ export const usePaymentStore = create((set) => ({
   loading: false,
   error: null,
 
-  // Crear transacción en PayU
-  createPayment: async (orderId, paymentMethod = 'PSE') => {
+  createPayment: async (orderId, paymentMethod = 'co_pse_bank') => {
     set({ loading: true, error: null });
     try {
       const response = await apiCreatePayment(orderId, paymentMethod);
