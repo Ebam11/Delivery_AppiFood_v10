@@ -47,7 +47,7 @@ export default function DashboardSection({ stats, loading }) {
       label: t('adminDashboard.kpi.platformRevenue', { defaultValue: 'Ingresos' }),
       value: `$${Number(stats.revenue?.total || 0).toFixed(2)}`,
       detail: `$${Number(stats.revenue?.today || 0).toFixed(2)} ${t('adminDashboard.kpi.today') || 'hoy'}`,
-      icon: '<i className="fas fa-coins mr-1"></i>',
+      icon: '💰',
       trend: `$${Number(stats.revenue?.this_month || 0).toFixed(2)} ${t('adminDashboard.kpi.this_month') || 'este mes'}`
     }
   ]

@@ -65,12 +65,12 @@ export default function MessagesSection() {
 
   const getStatusLabel = (status) => {
     const map = {
-      pending: '⏳ ' + t('orders.status_pending'),
-      confirmed: '<i className="fas fa-check-circle mr-1"></i> ' + t('orders.status_confirmed'),
-      preparing: '<i className="fas fa-user-tie mr-1"></i> ' + t('orders.status_preparing'),
-      on_the_way: '<i className="fas fa-motorcycle mr-1"></i> ' + t('orders.status_on_the_way'),
-      delivered: '<i className="fas fa-gift mr-1"></i> ' + t('orders.status_delivered'),
-      cancelled: '<i className="fas fa-times-circle mr-1"></i> ' + t('orders.status_cancelled'),
+      pending:    `⏳ ${t('orders.status_pending')}`,
+      confirmed:  `✓ ${t('orders.status_confirmed')}`,
+      preparing:  `🔥 ${t('orders.status_preparing')}`,
+      on_the_way: `🛵 ${t('orders.status_on_the_way')}`,
+      delivered:  `✅ ${t('orders.status_delivered')}`,
+      cancelled:  `✕ ${t('orders.status_cancelled')}`,
     }
     return map[status] || status
   }

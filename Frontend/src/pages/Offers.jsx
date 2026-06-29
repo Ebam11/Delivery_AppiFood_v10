@@ -152,7 +152,7 @@ export default function OffersPage() {
     { key: 'burger', icon: '🍔', label: t('offers.burgers') || 'Hamburguesas' },
     { key: 'pizza',  icon: '🍕', label: t('offers.pizzas') || 'Pizzas' },
     { key: 'sushi',  icon: '🍣', label: t('offers.sushi') || 'Sushi' },
-    { key: 'pollo',  icon: '🍗', label: t('offers.chicken') || 'Pollo' },
+    { key: 'pollo', icon: '🍗', label: 'Pollo' },
   ];
 
   const filteredProducts = activeFilter === 'all'
@@ -192,7 +192,7 @@ export default function OffersPage() {
               </div>
               <div className="w-px h-10 bg-white/30" />
               <div className="text-center">
-                <p className="text-3xl font-black">⏰</p>
+              <i className="fas fa-clock text-3xl text-white" />
                 <p className="text-white/70 text-sm">{t('offers.today_only') || 'Solo hoy'}</p>
               </div>
             </div>

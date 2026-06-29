@@ -26,12 +26,12 @@ const restaurantIcon = new L.DivIcon({
     display: flex; align-items: center; justify-content: center;
     font-size: 18px; box-shadow: 0 4px 12px rgba(255,75,62,0.5);
     border: 3px solid white;
-  "><i className="fas fa-utensils mr-1"></i></div>`,
+  "><i class="fas fa-utensils"></i></div>`,
   iconSize: [36, 36],
   iconAnchor: [18, 18],
 })
 
-// <i className="fas fa-check-circle mr-1"></i> Componente definido antes de ser usado
+// Componente definido antes de ser usado
 const ProductMenuItem = ({ product, onSelect, fmt }) => (
   <div
     onClick={() => onSelect(product)}

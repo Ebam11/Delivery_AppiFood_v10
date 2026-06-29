@@ -205,7 +205,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="profile-input-group">
-                        <label className="profile-label">{t('profile.id_type') || 'Tipo de documento'}</label>
+                      <label className="profile-label">Tipo de documento</label>
                         <select name="id_type" value={formData.id_type} onChange={handleChange} className="profile-input cursor-pointer">
                           <option value="cc">{t('profile.id_cc') || 'Cédula de Ciudadanía (CC)'}</option>
                           <option value="ce">{t('profile.id_ce') || 'Cédula de Extranjería (CE)'}</option>
@@ -215,7 +215,7 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
                         </select>
                       </div>
                       <div className="profile-input-group">
-                        <label className="profile-label">{t('profile.id_number') || 'Número de documento'}</label>
+                      <label className="profile-label">Número de documento</label>
                         <input name="id_number" value={formData.id_number} onChange={handleChange} className="profile-input" placeholder={t('profile.placeholder_id') || '1234567890'} />
                       </div>
                     </div>
