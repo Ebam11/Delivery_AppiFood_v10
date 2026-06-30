@@ -3,7 +3,8 @@ import { create } from 'zustand';
 import { login as apiLogin, logout as apiLogout } from '../api/auth';
 
 export const useAuthStore = create((set) => ({
-  token: localStorage.getItem('token') || null,
+  token: localStorage.getItem('access_token') || localStorage.getItem('token') || null,
+
   user: null,
   isLoading: false,
   error: null,

@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ApiError, fetchJson } from '../api/fetchJson'
+import { useAuthStore } from '../store/authStore'
 import './Auth.css'
 
 export default function LoginPage({ onLogin }) {
   const navigate = useNavigate()
   const { t } = useTranslation()
+  const { setToken, setUser } = useAuthStore()
 
   // 'client' | 'restaurant'
   const [loginMode, setLoginMode] = useState('client')
@@ -27,7 +29,11 @@ export default function LoginPage({ onLogin }) {
     if (token && userData) {
       try {
         const user = JSON.parse(atob(userData))
+        // Guardar en localStorage Y actualizar Zustand para que toda la app lo vea
         localStorage.setItem('token', token)
+        localStorage.setItem('access_token', token)
+        setToken(token)   // ← actualizar authStore
+        setUser(user)     // ← actualizar usuario en authStore
         onLogin?.(user)
         const role = user.role || user.rol
         if (role === 'admin') navigate('/admin')
@@ -39,7 +45,7 @@ export default function LoginPage({ onLogin }) {
     } else if (errorParam) {
       setError(t('login.error_connection') || 'Error en la autenticación con Google: ' + errorParam)
     }
-  }, [navigate, onLogin, t])
+  }, [navigate, onLogin, setToken, setUser, t])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target

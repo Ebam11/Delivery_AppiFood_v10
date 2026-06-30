@@ -10,7 +10,10 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $restaurants = [
+        $allRestaurants = Restaurant::all();
+
+        // Categorías de menú sugeridas según la temática o el tipo de restaurante
+        $menuCategoriesPreset = [
             'Burger House' => ['Hamburguesas', 'Papas y Acompañamientos', 'Bebidas', 'Postres'],
             'Pizza Nostra' => ['Pizzas', 'Pastas', 'Entradas', 'Bebidas'],
             'Sushi Zen' => ['Rolls', 'Nigiri', 'Entradas', 'Bebidas'],
@@ -25,17 +28,17 @@ class CategorySeeder extends Seeder
             'Barra Fresca' => ['Batidos', 'Jugos', 'Bebidas Frías', 'Snacks'],
         ];
 
-        foreach ($restaurants as $restaurantName => $categoryNames) {
-            $restaurantId = Restaurant::where('name', $restaurantName)->value('id');
+        // Fallback genérico para restaurantes nuevos o no listados arriba
+        $defaultCategories = ['Platos Fuertes', 'Entradas', 'Bebidas', 'Postres'];
 
-            if (!$restaurantId) {
-                continue;
-            }
+        foreach ($allRestaurants as $restaurant) {
+            // Obtener el set de categorías para este restaurante
+            $categoryNames = $menuCategoriesPreset[$restaurant->name] ?? $defaultCategories;
 
             foreach ($categoryNames as $index => $name) {
                 Category::updateOrCreate(
                     [
-                        'restaurant_id' => $restaurantId,
+                        'restaurant_id' => $restaurant->id,
                         'name'          => $name,
                     ],
                     [

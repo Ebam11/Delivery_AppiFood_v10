@@ -58,11 +58,17 @@ export const AddToCartButton = ({ restaurantId, product, compact = false }) => {
           disabled={isLoading}
           className={`w-full rounded-lg bg-gradient-to-r from-[#FF4B3E] to-[#FF6B52] text-white font-bold transition disabled:opacity-50 hover:shadow-lg hover:shadow-[#FF4B3E]/30 ${compact ? 'px-3 py-2 text-sm leading-tight' : 'px-4 py-3 text-base'}`}
         >
-          {isLoading
-            ? `⏳ ${t('addToCart.adding')}`
-            : compact
-              ? '<i className="fas fa-shopping-cart mr-1"></i> Agregar'
-              : `<i className="fas fa-shopping-cart mr-1"></i> ${t('addToCart.button')}`}
+          {isLoading ? (
+            <span>⏳ {t('addToCart.adding')}</span>
+          ) : compact ? (
+            <span className="flex items-center justify-center gap-1.5">
+              <i className="fas fa-shopping-cart text-xs" /> Agregar
+            </span>
+          ) : (
+            <span className="flex items-center justify-center gap-1.5">
+              <i className="fas fa-shopping-cart text-sm" /> {t('addToCart.button')}
+            </span>
+          )}
         </button>
       </div>
     </div>

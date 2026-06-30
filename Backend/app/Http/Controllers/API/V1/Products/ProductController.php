@@ -26,15 +26,28 @@ class ProductController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $products = Product::with('restaurant', 'category')
-                ->where('is_available', true)
-                ->paginate(30);
+            $query = Product::with('restaurant', 'category')
+                ->where('is_available', true);
+
+            // Filtro por descuento
+            if (request()->boolean('has_discount')) {
+                $query->whereNotNull('discount_price')
+                    ->whereColumn('discount_price', '<', 'price');
+            }
+
+            // Paginación o listado completo
+            if (request()->get('paginate') === 'false') {
+                $products = $query->get();
+            } else {
+                $products = $query->paginate(30);
+            }
 
             return $this->success(ProductResource::collection($products), 'Productos obtenidos');
         } catch (\Exception $e) {
             return $this->error('Error al obtener productos: ' . $e->getMessage(), 500);
         }
     }
+
 
     /**
      * Get Product Details

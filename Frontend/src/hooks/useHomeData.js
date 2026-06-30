@@ -10,7 +10,11 @@ import { useFavoritesStore } from '../store/favoritesStore'
 export function useHomeData() {
   const navigate = useNavigate()
   const { token } = useAuthStore()
-  const { fetchFavorites, toggleFavorite, isFavorite } = useFavoritesStore()
+  const favorites = useFavoritesStore(s => s.favorites)
+  const fetchFavorites = useFavoritesStore(s => s.fetchFavorites)
+  const toggleFavorite = useFavoritesStore(s => s.toggleFavorite)
+  const isFavorite = (id) => favorites.includes(Number(id))
+
   
   const [popularRestaurants, setPopularRestaurants] = useState([])
   const [loadingRestaurants, setLoadingRestaurants] = useState(true)
@@ -64,6 +68,7 @@ export function useHomeData() {
         res.products.slice(0, 2).forEach(p => {
           products.push({
             ...p,
+            img: p.image || p.img || '',
             restaurantId: res.id,
             restaurantName: res.name,
             oldPrice: p.price * 1.25,

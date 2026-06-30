@@ -46,14 +46,6 @@ export default function FeaturedProducts({ products, loading, onSelectProduct, i
             {products.slice(0, 8).map(p => (
               <div key={p.id} className="group bg-white dark:bg-slate-800 rounded-3xl p-5 border border-slate-100 dark:border-slate-800 hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 relative flex flex-col justify-between">
                 
-                {/* Botón Favoritos */}
-                <button 
-                  onClick={() => onFavoriteToggle?.(p.id)}
-                  className="absolute top-8 right-8 w-10 h-10 rounded-2xl bg-white/80 backdrop-blur-sm dark:bg-slate-800/80 text-gray-400 hover:text-red-500 flex items-center justify-center transition-colors shadow-sm z-10"
-                >
-                  <i className={`${isFavorite?.(p.id) ? 'fas fa-heart text-red-500 scale-110' : 'far fa-heart'} transition-transform`} />
-                </button>
-
                 <div onClick={() => onSelectProduct?.(p)} className="cursor-pointer">
                   <div className="w-full h-48 rounded-2xl overflow-hidden mb-5 bg-slate-100 dark:bg-slate-700">
                     <img 

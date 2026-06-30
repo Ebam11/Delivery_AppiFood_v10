@@ -54,11 +54,11 @@ Route::get('/health', static fn (): JsonResponse => response()->json([
     'service' => 'appifood-backend',
 ]));
 
-Route::get('/restaurants', [RestaurantController::class, 'index']);
-Route::get('/restaurants/{id}', [RestaurantController::class, 'show']);
-Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'indexPublic']);
+Route::get('/restaurants', [RestaurantController::class, 'index'])->middleware('api.cache:120');
+Route::get('/restaurants/{id}', [RestaurantController::class, 'show'])->middleware('api.cache:120');
+Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'indexPublic'])->middleware('api.cache:60');
 Route::get('/auth/verify-email-link/{id}', [ProfileController::class, 'verifyEmailLink'])->name('verification.verify');
-Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index']);
+Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index'])->middleware('api.cache:600');
 Route::post('/support/chat', SupportAssistantController::class)->middleware('throttle:20,1');
 
 // ─── Endpoints protegidos ─────────────────────────────────────────────────────
@@ -85,8 +85,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('payments')->group(function () {
             Route::get('/methods', [PaymentController::class, 'methods']);
             Route::get('/{id}', [PaymentController::class, 'show']);
-            Route::post('/', [PaymentController::class, 'store']);
-            Route::post('/confirm', [PaymentController::class, 'confirm']);
+            Route::post('/', [PaymentController::class, 'store'])->middleware('rate.limit:critical');
+            Route::post('/confirm', [PaymentController::class, 'confirm'])->middleware('rate.limit:critical');
         });
 
         Route::prefix('payment-methods')->group(function () {
@@ -129,9 +129,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::prefix('orders')->group(function () {
             Route::get('/', [OrderController::class, 'index']);
-            Route::post('/', [OrderController::class, 'store']);
+            Route::post('/', [OrderController::class, 'store'])->middleware('rate.limit:critical');
             Route::get('/{id}', [OrderController::class, 'show']);
-            Route::patch('/{id}/cancel', [OrderController::class, 'cancel']);
+            Route::patch('/{id}/cancel', [OrderController::class, 'cancel'])->middleware('rate.limit:critical');
         });
 
         Route::post('/reviews', [ReviewController::class, 'store']);

@@ -34,7 +34,11 @@ export default function OffersPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { token } = useAuthStore();
-  const { fetchFavorites, toggleFavorite, isFavorite } = useFavoritesStore();
+  const favorites = useFavoritesStore(s => s.favorites);
+  const fetchFavorites = useFavoritesStore(s => s.fetchFavorites);
+  const toggleFavorite = useFavoritesStore(s => s.toggleFavorite);
+  const isFavorite = (id) => favorites.includes(Number(id));
+
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,9 +58,10 @@ export default function OffersPage() {
 
         if (items.length > 0) {
           const offersList = items
-            .filter(p => p.discount_price && p.discount_price < p.price)
+            .filter(p => p.discount_price && Number(p.discount_price) < Number(p.price))
             .map(p => ({
               ...p,
+              restaurantId: p.restaurant_id || p.restaurantId, // normalizar campo
               oldPrice: p.price,
               price: p.discount_price,
               pct: Math.round((1 - p.discount_price / p.price) * 100),
@@ -64,74 +69,11 @@ export default function OffersPage() {
             }));
           setProducts(offersList);
         } else {
-          const resData = await fetchJson('/restaurants?paginate=false');
-          const restaurants = Array.isArray(resData) ? resData : resData.data || [];
-          const offersList = [];
-          restaurants.forEach(res => {
-            if (res.products) {
-              res.products
-                .filter(p => p.discount_price && p.discount_price < p.price)
-                .forEach(p => {
-                  offersList.push({
-                    ...p,
-                    restaurantId: res.id,
-                    restaurantName: res.name,
-                    oldPrice: p.price,
-                    price: p.discount_price,
-                    pct: Math.round((1 - p.discount_price / p.price) * 100),
-                    image: getProductImage(p.name, p.image),
-                  });
-                });
-            }
-          });
-          if (offersList.length === 0) {
-            restaurants.forEach(res => {
-              if (res.products) {
-                res.products
-                  .filter(p => p.is_featured)
-                  .slice(0, 2)
-                  .forEach(p => {
-                    offersList.push({
-                      ...p,
-                      restaurantId: res.id,
-                      restaurantName: res.name,
-                      oldPrice: Math.round(p.price * 1.25),
-                      pct: 20,
-                      image: getProductImage(p.name, p.image),
-                    });
-                  });
-              }
-            });
-          }
-          setProducts(offersList);
+          setProducts([]);
         }
       } catch (err) {
         console.error('Error loading offers:', err);
-        try {
-          const resData = await fetchJson('/restaurants?paginate=false');
-          const restaurants = Array.isArray(resData) ? resData : resData.data || [];
-          const offersList = [];
-          restaurants.forEach(res => {
-            if (res.products) {
-              res.products
-                .filter(p => p.is_featured)
-                .slice(0, 2)
-                .forEach(p => {
-                  offersList.push({
-                    ...p,
-                    restaurantId: res.id,
-                    restaurantName: res.name,
-                    oldPrice: Math.round(p.price * 1.25),
-                    pct: 20,
-                    image: getProductImage(p.name, p.image),
-                  });
-                });
-            }
-          });
-          setProducts(offersList);
-        } catch (e) {
-          console.error('Fallback also failed:', e);
-        }
+        setProducts([]);
       } finally {
         setLoading(false);
       }
@@ -141,10 +83,13 @@ export default function OffersPage() {
 
   const fmt = (n) => `$${Number(n).toLocaleString('es-CO')}`;
 
-  const handleFavoriteToggle = async (id, e) => {
+  const handleFavoriteToggle = async (restaurantId, e) => {
     e.stopPropagation();
+    e.preventDefault();
     if (!token) return navigate('/login');
-    await toggleFavorite(id, token);
+    if (!restaurantId) return; // si no hay ID de restaurante, no hacer nada
+    const wasAdded = await toggleFavorite(Number(restaurantId), token);
+    return wasAdded;
   };
 
   const filters = [
@@ -241,16 +186,8 @@ export default function OffersPage() {
                       -{p.pct}% OFF
                     </div>
                   )}
-                  <button
-                    onClick={(e) => handleFavoriteToggle(p.restaurantId || p.restaurant_id, e)}
-                    className={`absolute top-3 right-3 w-9 h-9 rounded-full flex items-center justify-center transition-all shadow-md backdrop-blur-sm
-                      ${isFavorite(p.restaurantId || p.restaurant_id)
-                        ? 'bg-red-500 text-white scale-110'
-                        : 'bg-white/90 dark:bg-slate-900/90 text-gray-400 hover:text-red-500'}`}
-                  >
-                    <i className={`${isFavorite(p.restaurantId || p.restaurant_id) ? 'fas' : 'far'} fa-heart text-sm`} />
-                  </button>
                 </div>
+
 
                 <div className="p-5 flex flex-col flex-grow">
                   {p.restaurantName && (

@@ -46,7 +46,7 @@ export default function RapydCheckout({ orderId }) {
     setError(null);
 
     try {
-      const res = await fetchJson('/api/payments', {
+      const res = await fetchJson('/payments', {
         method: 'POST',
         body: { order_id: orderId, payment_method: selectedMethod },
       });
@@ -71,14 +71,14 @@ export default function RapydCheckout({ orderId }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetchJson('/api/payments', {
+      const res = await fetchJson('/payments', {
         method: 'POST',
         body: { order_id: orderId, payment_method: selectedMethod },
       });
       const payment   = res?.data ?? res;
       const reference = payment?.external_reference;
 
-      await fetchJson('/api/payments/confirm', {
+      await fetchJson('/payments/confirm', {
         method: 'POST',
         body: { transaction_id: payment?.id, reference_code: reference },
       });

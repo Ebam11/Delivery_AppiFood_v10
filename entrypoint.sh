@@ -29,7 +29,10 @@ if [ -z "$APP_KEY" ]; then
 fi
 
 # ── Crear enlace simbólico de storage ──
-php artisan storage:link 2>/dev/null || true
+if [ -L public/storage ] && [ ! -e public/storage ]; then
+  rm -f public/storage
+fi
+php artisan storage:link --force 2>/dev/null || php artisan storage:link 2>/dev/null || true
 
 # ── Ejecutar migraciones y tasks en background DESPUES de que Apache arranque ──
 (

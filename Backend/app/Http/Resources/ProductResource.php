@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,7 +16,7 @@ class ProductResource extends JsonResource
             'category_id'       => $this->category_id,
             'name'              => $this->name,
             'description'       => $this->description,
-            'image'             => $this->image ? asset('storage/' . $this->image) : null,
+            'image'             => MediaUrl::resolve($this->image),
             'price'             => $this->price,
             'discount_price'    => $this->discount_price,
             'final_price'       => $this->final_price,

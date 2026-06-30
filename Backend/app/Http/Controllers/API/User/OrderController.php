@@ -158,10 +158,33 @@ class OrderController extends Controller
                 return $order->load('items.product', 'restaurant', 'payment.method', 'tracking');
             });
 
+            // ── Sumar puntos de fidelidad (1 punto por cada $1.000 COP) ──
+            $pointsEarned = (int) floor($order->total / 1000);
+            if ($pointsEarned > 0) {
+                $user->increment('points', $pointsEarned);
+
+                // Notificación de puntos ganados
+                Notification::create([
+                    'user_id' => $user->id,
+                    'title'   => "🏆 +{$pointsEarned} puntos ganados",
+                    'message' => "Ganaste {$pointsEarned} puntos por tu pedido #{$order->id}. ¡Sigue acumulando!",
+                    'type'    => 'loyalty_points',
+                    'data'    => [
+                        'order_id'      => $order->id,
+                        'points_earned' => $pointsEarned,
+                        'total_points'  => $user->fresh()->points,
+                    ],
+                ]);
+            }
+
+
             return response()->json([
-                'message' => '¡Pedido creado exitosamente!',
-                'data'    => new OrderResource($order),
+                'message'       => '¡Pedido creado exitosamente!',
+                'data'          => new OrderResource($order),
+                'points_earned' => $pointsEarned ?? 0,
+                'total_points'  => $user->fresh()->points,
             ], 201);
+
 
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);

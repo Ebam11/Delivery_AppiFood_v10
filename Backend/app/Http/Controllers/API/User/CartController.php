@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\API\User;
 
+use App\Support\MediaUrl;
+
 use App\Http\Controllers\Controller;
 use App\Models\CartItem;
 use App\Models\Product;
@@ -159,9 +161,7 @@ class CartController extends Controller
                 'product_id'    => $item->product_id,
                 'name'          => $item->product->name,
                 'product_name'  => $item->product->name, // Compatible con frontend
-                'image'         => $item->product->image
-                    ? asset('storage/' . $item->product->image)
-                    : null,
+                'image'         => MediaUrl::resolve($item->product->image),
                 'quantity'      => $item->quantity,
                 'unit_price'    => $item->unit_price,
                 'product_price' => $item->unit_price, // Compatible con frontend

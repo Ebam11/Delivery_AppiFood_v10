@@ -28,25 +28,25 @@ export default function Home({ isAuth }) {
 
   const heroSlides = [
     {
-      title: t('hero.slide1.title') || 'HOT SPICY\nCHICKEN BURGER',
-      subtitle: t('hero.slide1.subtitle') || 'Crujiente, cada bocado sabe',
-      price: 30000,
-      discount: 25,
-      image: 'https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=1200&h=800&fit=crop',
-    },
-    {
-      title: t('hero.slide2.title') || 'CHICAGO DEEP\nPIZZA',
-      subtitle: t('hero.slide2.subtitle') || 'Clásica y deliciosa',
-      price: 22000,
+      title: 'SABORES URBANOS\nBURGER GOURMET',
+      subtitle: '100% Carne Premium Ahumada',
+      price: 24900,
       discount: 20,
-      image: 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=1200&h=800&fit=crop',
+      image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&h=800&fit=crop',
     },
     {
-      title: t('hero.slide3.title') || 'SUSHI PREMIUM\nSET',
-      subtitle: t('hero.slide3.subtitle') || 'Fresco del día',
-      price: 45000,
+      title: 'AUTÉNTICA ARTESANÍA\nPIZZA A LA LEÑA',
+      subtitle: 'Mozzarella fresca y bordes crujientes',
+      price: 28900,
       discount: 15,
-      image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=1200&h=800&fit=crop',
+      image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&h=800&fit=crop',
+    },
+    {
+      title: 'ARTE JAPONÉS\nROLLS PREMIUM SET',
+      subtitle: 'Salmón fresco y cortes de autor',
+      price: 32000,
+      discount: 25,
+      image: 'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=1200&h=800&fit=crop',
     },
   ]
 

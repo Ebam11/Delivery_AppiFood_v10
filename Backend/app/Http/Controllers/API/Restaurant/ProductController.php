@@ -5,9 +5,9 @@ namespace App\Http\Controllers\API\Restaurant;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use App\Support\ProductImageStorage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -49,8 +49,8 @@ class ProductController extends Controller
         $data = $request->except('image');
         $data['restaurant_id'] = $request->user()->restaurant->id;
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('products', 'public');
+        if ($storedImage = ProductImageStorage::storeFromRequest($request)) {
+            $data['image'] = $storedImage;
         }
 
         $product = Product::create($data);
@@ -82,8 +82,8 @@ class ProductController extends Controller
         $data = $request->except('image');
 
         if ($request->hasFile('image')) {
-            if ($product->image) Storage::disk('public')->delete($product->image);
-            $data['image'] = $request->file('image')->store('products', 'public');
+            ProductImageStorage::delete($product->image);
+            $data['image'] = ProductImageStorage::storeFromRequest($request);
         }
 
         $product->update($data);
@@ -99,7 +99,7 @@ class ProductController extends Controller
         $product = Product::where('restaurant_id', $request->user()->restaurant->id)
             ->findOrFail($id);
 
-        if ($product->image) Storage::disk('public')->delete($product->image);
+        ProductImageStorage::delete($product->image);
         $product->delete();
 
         return response()->json(['message' => 'Producto eliminado.']);

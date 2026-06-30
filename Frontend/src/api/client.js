@@ -34,6 +34,10 @@ const processQueue = (error, token = null) => {
 
 // Interceptor para agregar token de autenticación
 client.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type']
+  }
+
   const token = localStorage.getItem('access_token') || localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;

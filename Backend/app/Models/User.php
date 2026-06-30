@@ -20,6 +20,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name', 'email', 'password', 'role',
         'phone', 'id_number', 'birth_date', 'gender', 'avatar', 'status', 'is_premium',
+        'points',
         'google_id',
         'refresh_token_hash', 'refresh_token_expires_at', 'last_login_at',
         'phone_verified_at',
@@ -34,6 +35,7 @@ class User extends Authenticatable
         'role'              => UserRole::class,
         'status'            => 'boolean',
         'is_premium'        => 'boolean',
+        'points'            => 'integer',
         'birth_date'        => 'date',
         'refresh_token_expires_at' => 'datetime',
         'last_login_at'     => 'datetime',

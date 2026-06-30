@@ -12,7 +12,11 @@ export function useRestaurants() {
   const navigate = useNavigate()
   const location = useLocation()
   const { token } = useAuthStore()
-  const { favorites, fetchFavorites, isFavorite, toggleFavorite } = useFavoritesStore()
+  const favorites = useFavoritesStore(s => s.favorites)
+  const fetchFavorites = useFavoritesStore(s => s.fetchFavorites)
+  const toggleFavorite = useFavoritesStore(s => s.toggleFavorite)
+  const isFavorite = (id) => favorites.includes(Number(id))
+
   const [budgetInput, setBudgetInput] = useState('')
   
   const [restaurants, setRestaurants] = useState([])

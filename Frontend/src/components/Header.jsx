@@ -23,6 +23,7 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   const [addressesError, setAddressesError] = useState('')
   const [addressSaving, setAddressSaving] = useState(false)
   const [search, setSearch] = useState('')
+  const [bannerDismissed, setBannerDismissed] = useState(() => sessionStorage.getItem('gmail_banner_dismissed') === 'true')
   const { count, setIsOpen } = useCart()
   const navigate = useNavigate()
   const location = useLocation()
@@ -573,22 +574,31 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
         </div>
       )}
 
-      {isGmailUserMissingInfo && (
+      {isGmailUserMissingInfo && !bannerDismissed && (
         <div className="fixed top-16 left-0 right-0 bg-amber-500 text-white font-bold text-xs sm:text-sm px-4 py-3 shadow-md flex items-center justify-between gap-4 animate-fade-in z-40 border-b border-amber-600">
           <div className="flex items-center gap-2">
             <i className="fas fa-exclamation-triangle text-base animate-pulse flex-shrink-0" />
             <span className="leading-snug">{t('validation.gmail_missing_info_warning')}</span>
           </div>
-          <Link 
-            to="/user/profile" 
-            className="flex-shrink-0 bg-white hover:bg-amber-50 text-amber-600 font-black px-4 py-2 rounded-xl transition shadow-sm uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap"
-          >
-            {t('validation.gmail_missing_info_button')}
-          </Link>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Link 
+              to="/user/profile" 
+              className="bg-white hover:bg-amber-50 text-amber-600 font-black px-4 py-2 rounded-xl transition shadow-sm uppercase tracking-wider text-[10px] sm:text-xs whitespace-nowrap"
+            >
+              {t('validation.gmail_missing_info_button')}
+            </Link>
+            <button
+              onClick={() => { setBannerDismissed(true); sessionStorage.setItem('gmail_banner_dismissed', 'true') }}
+              className="ml-1 text-white hover:text-amber-100 transition text-lg font-black leading-none px-2 py-1 rounded-lg hover:bg-amber-600"
+              aria-label="Cerrar aviso"
+            >
+              ×
+            </button>
+          </div>
         </div>
       )}
 
-      <div style={{ height: isGmailUserMissingInfo ? 116 : 64 }} />
+      <div style={{ height: isGmailUserMissingInfo && !bannerDismissed ? 116 : 64 }} />
     </>
   )
 }

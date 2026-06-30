@@ -39,9 +39,12 @@ const ProductMenuItem = ({ product, onSelect, fmt }) => (
   >
     <div className="h-40 bg-gray-100 overflow-hidden">
       <img
-        src={product.image || heroImage}
+        src={product.image || product.img || getPlaceholderImage(detectFoodCategory(product.name))}
         alt={product.name}
         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        onError={e => {
+          e.target.src = getPlaceholderImage(detectFoodCategory(product.name));
+        }}
       />
     </div>
     <div className="p-4">
@@ -269,27 +272,29 @@ export const RestaurantDetail = () => {
                     { key: 'saturday',  label: 'Sábado' },
                     { key: 'sunday',    label: 'Domingo' },
                   ]
-                  const jsDay = new Date().getDay()
+                   const jsDay = new Date().getDay()
                   const todayKey = days[jsDay === 0 ? 6 : jsDay - 1].key
                   return days.map(({ key, label }) => {
-                    const day = restaurant.schedule?.[key]
+                    const day = Array.isArray(restaurant.schedules)
+                      ? restaurant.schedules.find(s => s.day?.toLowerCase() === key)
+                      : null
                     const isToday = key === todayKey
-                    const closed = !day || day.closed || (!day.open && !day.close)
+                    const closed = !day || day.is_closed || (!day.opening_time && !day.closing_time)
                     return (
                       <div
                         key={key}
                         className={`flex justify-between items-center text-sm px-3 py-2 rounded-xl transition-colors ${
-                          isToday ? 'bg-red-50 border border-red-200' : 'hover:bg-gray-100'
+                          isToday ? 'bg-red-50 border border-red-200 font-bold' : 'hover:bg-gray-100'
                         }`}
                       >
-                        <span className={`font-bold flex items-center gap-1.5 ${isToday ? 'text-red-500' : 'text-gray-600'}`}>
-                          {isToday && <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />}
+                        <span className={`flex items-center gap-1.5 ${isToday ? 'text-red-500 font-bold' : 'text-gray-600 font-medium'}`}>
+                          {isToday && <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block animate-pulse" />}
                           {label}
                         </span>
-                        <span className={`font-semibold text-xs ${
-                          closed ? 'text-gray-300' : isToday ? 'text-red-500' : 'text-gray-700'
+                        <span className={`font-black text-xs ${
+                          closed ? 'text-red-500/70' : isToday ? 'text-red-500' : 'text-gray-700'
                         }`}>
-                          {closed ? 'Cerrado' : `${day.open} – ${day.close}`}
+                          {closed ? 'Cerrado' : `${day.opening_time.slice(0, 5)} – ${day.closing_time.slice(0, 5)}`}
                         </span>
                       </div>
                     )

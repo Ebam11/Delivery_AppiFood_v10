@@ -11,412 +11,112 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $categoryId = function (string $restaurantName, string $categoryName): ?int {
-            $restaurantId = Restaurant::where('name', $restaurantName)->value('id');
+        $restaurants = Restaurant::all();
 
-            if (!$restaurantId) {
-                return null;
+        // Platos de muestra por tipo de categoría de menú
+        $dishesByKeywords = [
+            'hamburguesa' => [
+                ['name' => 'Burger Clásica', 'description' => 'Carne de res 150g, queso cheddar, lechuga, tomate y salsa de la casa.', 'price' => 18000, 'discount' => true],
+                ['name' => 'Burger BBQ', 'description' => 'Carne de res, tocino crujiente, aros de cebolla y salsa barbacoa dulce.', 'price' => 24000, 'discount' => true],
+                ['name' => 'Burger Pollo', 'description' => 'Pechuga de pollo apanada, lechuga y mayonesa con notas de ajo.', 'price' => 20000, 'discount' => false],
+                ['name' => 'Burger Especial', 'description' => 'Doble carne, huevo frito, jamón, queso y verduras frescas.', 'price' => 28000, 'discount' => false],
+            ],
+            'pizza' => [
+                ['name' => 'Pizza Margherita', 'description' => 'Salsa de tomate italiana, mozzarella fresca y albahaca fresca.', 'price' => 22000, 'discount' => false],
+                ['name' => 'Pizza Pepperoni', 'description' => 'Doble porción de pepperoni americano y queso mozzarella derretido.', 'price' => 27000, 'discount' => true],
+                ['name' => 'Pizza Hawaiana', 'description' => 'Queso mozzarella, jamón premium seleccionado y piña dulce calada.', 'price' => 25000, 'discount' => true],
+                ['name' => 'Pizza Cuatro Quesos', 'description' => 'Mozzarella, parmesano, queso azul y queso crema.', 'price' => 29000, 'discount' => false],
+            ],
+            'sushi' => [
+                ['name' => 'Philadelphia Roll', 'description' => 'Salmón fresco, queso crema y aguacate, cubierto de ajonjolí.', 'price' => 26000, 'discount' => true],
+                ['name' => 'California Roll', 'description' => 'Cangrejo, aguacate y pepino, cubierto de masago.', 'price' => 24000, 'discount' => false],
+                ['name' => 'Ojo de Tigre Roll', 'description' => 'Salmón, atún y pescado blanco apanados, con salsa de anguila.', 'price' => 32000, 'discount' => true],
+                ['name' => 'Nigiri Combo', 'description' => 'Selección de 6 piezas de nigiri (salmón, atún y camarón).', 'price' => 30000, 'discount' => false],
+            ],
+            'pollo' => [
+                ['name' => 'Pollo Asado Entero', 'description' => 'Pollo entero marinado con especias secretas y asado a la brasa.', 'price' => 34000, 'discount' => true],
+                ['name' => 'Medio Pollo Asado', 'description' => 'Medio pollo dorado a la brasa acompañado de papas y arepa.', 'price' => 19000, 'discount' => false],
+                ['name' => 'Combo Pollo Broaster', 'description' => '4 piezas de pollo crujiente apanadas al estilo americano.', 'price' => 22000, 'discount' => true],
+                ['name' => 'Consomé de Pollo', 'description' => 'Caldo concentrado con menudencias, verduras y cilantro.', 'price' => 8000, 'discount' => false],
+            ],
+            'mariscos' => [
+                ['name' => 'Ceviche Peruano', 'description' => 'Trozos de pescado blanco marinados en zumo de limón y ají.', 'price' => 26000, 'discount' => true],
+                ['name' => 'Cazuela de Mariscos', 'description' => 'Mezcla selecta de mariscos en crema de coco y finas hierbas.', 'price' => 36000, 'discount' => false],
+                ['name' => 'Pescado Frito', 'description' => 'Pargo rojo frito acompañado de arroz de coco, patacones y ensalada.', 'price' => 32000, 'discount' => true],
+                ['name' => 'Arroz con Camarones', 'description' => 'Arroz sazonado con camarones salteados y verduras de la huerta.', 'price' => 28000, 'discount' => false],
+            ],
+            'bebida' => [
+                ['name' => 'Gaseosa Personal', 'description' => 'Lata de 330ml helada (Coca-Cola, Sprite, Cuatro).', 'price' => 4500, 'discount' => false],
+                ['name' => 'Jugo Natural', 'description' => 'Jugo de fruta natural en agua o leche (Lulo, Fresa, Mango).', 'price' => 6000, 'discount' => false],
+                ['name' => 'Limonada Cerezada', 'description' => 'Limonada fresca licuada con cerezas dulces y hielo frappé.', 'price' => 8500, 'discount' => true],
+                ['name' => 'Té Helado', 'description' => 'Té helado casero con infusión de limón y menta.', 'price' => 5000, 'discount' => false],
+            ],
+            'postre' => [
+                ['name' => 'Brownie con Helado', 'description' => 'Brownie de chocolate caliente con una bola de helado de vainilla.', 'price' => 12000, 'discount' => true],
+                ['name' => 'Flan de Caramelo', 'description' => 'Flan casero suave bañado en caramelo líquido.', 'price' => 9000, 'discount' => false],
+                ['name' => 'Tres Leches', 'description' => 'Bizcochuelo bañado en mezcla de tres leches con crema chantilly.', 'price' => 11000, 'discount' => true],
+                ['name' => 'Copa de Helado', 'description' => 'Tres bolas de helado a elección con salsa y barquillo.', 'price' => 10000, 'discount' => false],
+            ],
+            'general' => [
+                ['name' => 'Plato Especial de la Casa', 'description' => 'Deliciosa preparación con la firma del chef usando ingredientes frescos.', 'price' => 25000, 'discount' => true],
+                ['name' => 'Entrada de Patacones', 'description' => 'Patacones crujientes acompañados de hogao casero y queso.', 'price' => 12000, 'discount' => false],
+                ['name' => 'Porción de Papas Fritas', 'description' => 'Papas cortadas en bastón fritas en su punto exacto.', 'price' => 8000, 'discount' => false],
+                ['name' => 'Ensalada Personal', 'description' => 'Mezcla de lechugas, tomate cherry, cebolla morada y vinagreta.', 'price' => 10000, 'discount' => false],
+            ]
+        ];
+
+        foreach ($restaurants as $restaurant) {
+            $categories = Category::where('restaurant_id', $restaurant->id)->get();
+
+            foreach ($categories as $cat) {
+                $catNameLower = strtolower($cat->name);
+
+                // Determinar el set de platos a usar según la categoría
+                $dishTemplates = $dishesByKeywords['general'];
+                if (str_contains($catNameLower, 'hamburguesa') || str_contains($catNameLower, 'rapida') || str_contains($catNameLower, 'rápida')) {
+                    $dishTemplates = $dishesByKeywords['hamburguesa'];
+                } elseif (str_contains($catNameLower, 'pizza') || str_contains($catNameLower, 'pasta') || str_contains($catNameLower, 'italian')) {
+                    $dishTemplates = $dishesByKeywords['pizza'];
+                } elseif (str_contains($catNameLower, 'sushi') || str_contains($catNameLower, 'roll') || str_contains($catNameLower, 'asiat')) {
+                    $dishTemplates = $dishesByKeywords['sushi'];
+                } elseif (str_contains($catNameLower, 'pollo')) {
+                    $dishTemplates = $dishesByKeywords['pollo'];
+                } elseif (str_contains($catNameLower, 'marisco') || str_contains($catNameLower, 'cevic') || str_contains($catNameLower, 'pescad') || str_contains($catNameLower, 'mar')) {
+                    $dishTemplates = $dishesByKeywords['mariscos'];
+                } elseif (str_contains($catNameLower, 'bebida') || str_contains($catNameLower, 'jugo') || str_contains($catNameLower, 'cafe') || str_contains($catNameLower, 'café') || str_contains($catNameLower, 'licu')) {
+                    $dishTemplates = $dishesByKeywords['bebida'];
+                } elseif (str_contains($catNameLower, 'postre') || str_contains($catNameLower, 'torta') || str_contains($catNameLower, 'helado') || str_contains($catNameLower, 'dulce')) {
+                    $dishTemplates = $dishesByKeywords['postre'];
+                }
+
+                // Crear 3 o 4 productos por cada categoría
+                foreach ($dishTemplates as $index => $tpl) {
+                    $price = $tpl['price'];
+                    $discountPrice = null;
+
+                    // Si califica para descuento, reducir 20%
+                    if ($tpl['discount']) {
+                        $discountPrice = round(($price * 0.80) / 100) * 100;
+                    }
+
+                    Product::updateOrCreate(
+                        [
+                            'restaurant_id' => $restaurant->id,
+                            'category_id'   => $cat->id,
+                            'name'          => $tpl['name'],
+                        ],
+                        [
+                            'description'       => $tpl['description'],
+                            'price'             => $price,
+                            'discount_price'    => $discountPrice,
+                            'stock'             => rand(15, 45),
+                            'prep_time_minutes' => rand(15, 30),
+                            'is_featured'       => ($index === 0 || $tpl['discount']),
+                            'is_available'      => true,
+                        ]
+                    );
+                }
             }
-
-            return Category::where('restaurant_id', $restaurantId)
-                ->where('name', $categoryName)
-                ->value('id');
-        };
-
-        // ── Burger House ───────────────────────────────────────
-        $burgerProducts = [
-            // Hamburguesas (category_id: 1)
-            ['category_id' => 1, 'name' => 'Burger Clásica',      'description' => 'Carne de res, lechuga, tomate, cebolla y salsa especial.',   'price' => 18000, 'is_featured' => true],
-            ['category_id' => 1, 'name' => 'Burger BBQ',          'description' => 'Doble carne, tocino, queso cheddar y salsa BBQ.',              'price' => 24000, 'is_featured' => true],
-            ['category_id' => 1, 'name' => 'Burger Pollo',        'description' => 'Pechuga apanada, aguacate, tomate y mayonesa de ajo.',         'price' => 20000, 'is_featured' => false],
-            ['category_id' => 1, 'name' => 'Burger Vegetariana',  'description' => 'Medallón de frijol negro, lechuga, tomate y salsa tahini.',    'price' => 17000, 'is_featured' => false],
-            // Papas (category_id: 2)
-            ['category_id' => 2, 'name' => 'Papas Fritas',        'description' => 'Papas crujientes con sal.',                                    'price' => 7000,  'is_featured' => false],
-            ['category_id' => 2, 'name' => 'Papas con Queso',     'description' => 'Papas fritas bañadas en queso cheddar derretido.',              'price' => 10000, 'is_featured' => true],
-            ['category_id' => 2, 'name' => 'Aros de Cebolla',     'description' => 'Aros de cebolla apanados y crujientes.',                       'price' => 9000,  'is_featured' => false],
-            // Bebidas (category_id: 3)
-            ['category_id' => 3, 'name' => 'Gaseosa',             'description' => 'Coca-Cola, Pepsi o Sprite 400ml.',                             'price' => 4000,  'is_featured' => false],
-            ['category_id' => 3, 'name' => 'Malteada',            'description' => 'Vainilla, fresa o chocolate. 500ml.',                          'price' => 9000,  'is_featured' => true],
-            ['category_id' => 3, 'name' => 'Agua',                'description' => 'Agua mineral o sin gas 500ml.',                                'price' => 2500,  'is_featured' => false],
-        ];
-
-        foreach ($burgerProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => 1,
-                'is_available'  => true,
-            ]);
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Pizza Nostra ───────────────────────────────────────
-        $pizzaProducts = [
-            // Pizzas (category_id: 5)
-            ['category_id' => 5, 'name' => 'Margarita',           'description' => 'Salsa de tomate, mozzarella y albahaca fresca.',               'price' => 25000, 'is_featured' => true],
-            ['category_id' => 5, 'name' => 'Pepperoni',           'description' => 'Salsa de tomate, mozzarella y pepperoni.',                      'price' => 28000, 'is_featured' => true],
-            ['category_id' => 5, 'name' => 'Cuatro Quesos',       'description' => 'Mozzarella, gorgonzola, parmesano y brie.',                     'price' => 32000, 'is_featured' => false],
-            ['category_id' => 5, 'name' => 'Hawaiana',            'description' => 'Salsa de tomate, mozzarella, jamón y piña.',                    'price' => 27000, 'is_featured' => false],
-            // Pastas (category_id: 6)
-            ['category_id' => 6, 'name' => 'Pasta Bolognesa',     'description' => 'Pasta fresca con ragú de carne y parmesano.',                   'price' => 22000, 'is_featured' => true],
-            ['category_id' => 6, 'name' => 'Pasta Carbonara',     'description' => 'Pasta con huevo, panceta, parmesano y pimienta.',               'price' => 24000, 'is_featured' => false],
-            // Bebidas (category_id: 8)
-            ['category_id' => 8, 'name' => 'Agua Mineral',        'description' => 'Agua mineral 500ml.',                                           'price' => 3000,  'is_featured' => false],
-            ['category_id' => 8, 'name' => 'Vino de la Casa',     'description' => 'Copa de vino tinto o blanco.',                                  'price' => 12000, 'is_featured' => false],
-        ];
-
-        foreach ($pizzaProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => 2,
-                'is_available'  => true,
-            ]);
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Sushi Zen ──────────────────────────────────────────
-        $sushiProducts = [
-            // Rolls (category_id: 9)
-            ['category_id' => 9, 'name' => 'Roll California',     'description' => 'Cangrejo, aguacate y pepino. 8 piezas.',                        'price' => 22000, 'is_featured' => true],
-            ['category_id' => 9, 'name' => 'Roll Spicy Tuna',     'description' => 'Atún picante, pepino y salsa sriracha. 8 piezas.',              'price' => 26000, 'is_featured' => true],
-            ['category_id' => 9, 'name' => 'Roll Dragón',         'description' => 'Camarón tempura, aguacate y anguila. 8 piezas.',                'price' => 32000, 'is_featured' => true],
-            ['category_id' => 9, 'name' => 'Roll Vegetal',        'description' => 'Pepino, aguacate, zanahoria y espinaca. 8 piezas.',             'price' => 19000, 'is_featured' => false],
-            // Nigiri (category_id: 10)
-            ['category_id' => 10, 'name' => 'Nigiri Salmón',      'description' => 'Arroz con salmón fresco. 2 piezas.',                            'price' => 12000, 'is_featured' => false],
-            ['category_id' => 10, 'name' => 'Nigiri Atún',        'description' => 'Arroz con atún fresco. 2 piezas.',                              'price' => 13000, 'is_featured' => false],
-            // Bebidas (category_id: 12)
-            ['category_id' => 12, 'name' => 'Té Verde',           'description' => 'Té verde japonés caliente o frío.',                             'price' => 5000,  'is_featured' => false],
-            ['category_id' => 12, 'name' => 'Cerveza Japonesa',   'description' => 'Sapporo o Kirin 330ml.',                                        'price' => 9000,  'is_featured' => false],
-        ];
-
-        foreach ($sushiProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => 3,
-                'is_available'  => true,
-            ]);
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Parrilla del Valle ────────────────────────────────
-        $parrillaProducts = [
-            ['category' => 'Cortes', 'name' => 'Churrasco 350g',        'description' => 'Corte de res a la parrilla con papas y ensalada.', 'price' => 36000, 'is_featured' => true],
-            ['category' => 'Cortes', 'name' => 'Costillas BBQ',         'description' => 'Costillas bañadas en salsa BBQ ahumada.',           'price' => 42000, 'is_featured' => true],
-            ['category' => 'Acompañamientos', 'name' => 'Papas Criollas', 'description' => 'Papas criollas doradas y crocantes.',                'price' => 9000,  'is_featured' => false],
-            ['category' => 'Acompañamientos', 'name' => 'Yuca Frita',    'description' => 'Yuca frita con ají casero.',                         'price' => 8000,  'is_featured' => false],
-            ['category' => 'Bebidas', 'name' => 'Limonada Cerezada',     'description' => 'Limonada fría con toque de cereza.',                 'price' => 7000,  'is_featured' => false],
-            ['category' => 'Postres', 'name' => 'Brownie con Helado',    'description' => 'Brownie tibio con helado de vainilla.',              'price' => 11000, 'is_featured' => true],
-        ];
-
-        $parrillaRestaurantId = Restaurant::where('name', 'Parrilla del Valle')->value('id');
-        foreach ($parrillaProducts as $product) {
-            $categoryName = $product['category'];
-            $payload = array_merge($product, [
-                'restaurant_id' => $parrillaRestaurantId,
-                'category_id'   => $categoryId('Parrilla del Valle', $categoryName),
-                'is_available'  => true,
-            ]);
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Tacos del Valle ────────────────────────────────────
-        $tacosProducts = [
-            ['category' => 'Tacos', 'name' => 'Tacos al Pastor x5',     'description' => 'Tacos con piña, cebolla y cilantro.',            'price' => 22000, 'is_featured' => true],
-            ['category' => 'Tacos', 'name' => 'Tacos de Carne Asada x5','description' => 'Tortilla de maíz con carne asada jugosa.',       'price' => 24000, 'is_featured' => true],
-            ['category' => 'Entradas', 'name' => 'Nachos con Queso',    'description' => 'Nachos crujientes con queso derretido.',          'price' => 15000, 'is_featured' => false],
-            ['category' => 'Entradas', 'name' => 'Guacamole Fresco',    'description' => 'Guacamole artesanal con totopos.',                'price' => 13000, 'is_featured' => false],
-            ['category' => 'Bebidas', 'name' => 'Jarrito de Tamarindo',  'description' => 'Bebida tradicional mexicana.',                    'price' => 6000,  'is_featured' => false],
-            ['category' => 'Postres', 'name' => 'Churros con Arequipe',  'description' => 'Churros recién hechos con arequipe.',             'price' => 10000, 'is_featured' => true],
-        ];
-
-        $tacosRestaurantId = Restaurant::where('name', 'Tacos del Valle')->value('id');
-        foreach ($tacosProducts as $product) {
-            $categoryName = $product['category'];
-            $payload = array_merge($product, [
-                'restaurant_id' => $tacosRestaurantId,
-                'category_id'   => $categoryId('Tacos del Valle', $categoryName),
-                'is_available'  => true,
-            ]);
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Verde Fresco ──────────────────────────────────────
-        $verdeProducts = [
-            ['category' => 'Bowls', 'name' => 'Bowl Proteico',       'description' => 'Arroz integral, pollo, aguacate y vegetales.',   'price' => 24000, 'is_featured' => true],
-            ['category' => 'Bowls', 'name' => 'Bowl Veggie',         'description' => 'Quinoa, garbanzos, hummus y ensalada fresca.',   'price' => 22000, 'is_featured' => true],
-            ['category' => 'Wraps', 'name' => 'Wrap de Pollo',        'description' => 'Pollo, lechuga, tomate y salsa yogur.',          'price' => 20000, 'is_featured' => false],
-            ['category' => 'Wraps', 'name' => 'Wrap Vegetal',         'description' => 'Verduras salteadas y hummus en tortilla integral.','price' => 18000, 'is_featured' => false],
-            ['category' => 'Jugos', 'name' => 'Jugo Verde',           'description' => 'Espinaca, manzana, piña y jengibre.',             'price' => 9000,  'is_featured' => false],
-            ['category' => 'Postres', 'name' => 'Parfait de Yogur',   'description' => 'Yogur griego con frutas y granola.',              'price' => 10000, 'is_featured' => true],
-        ];
-
-        $verdeRestaurantId = Restaurant::where('name', 'Verde Fresco')->value('id');
-        foreach ($verdeProducts as $product) {
-            $categoryName = $product['category'];
-            $payload = array_merge($product, [
-                'restaurant_id' => $verdeRestaurantId,
-                'category_id'   => $categoryId('Verde Fresco', $categoryName),
-                'is_available'  => true,
-            ]);
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        $polloRestaurantId = Restaurant::where('name', 'Pollo Dorado')->value('id');
-        $mariscosRestaurantId = Restaurant::where('name', 'Mariscos del Puerto')->value('id');
-        $trattoriaRestaurantId = Restaurant::where('name', 'Trattoria Bella')->value('id');
-        $dulceRestaurantId = Restaurant::where('name', 'Dulce Tentación')->value('id');
-        $cafeRestaurantId = Restaurant::where('name', 'Café Madrugón')->value('id');
-        $barraRestaurantId = Restaurant::where('name', 'Barra Fresca')->value('id');
-
-        // ── Pollo Dorado ──────────────────────────────────────
-        $polloProducts = [
-            ['category' => 'Pollo Asado', 'name' => 'Pollo Asado Entero', 'description' => 'Pollo asado al carbón con papas y arepa.', 'price' => 38000, 'is_featured' => true],
-            ['category' => 'Pollo Asado', 'name' => 'Medio Pollo Asado', 'description' => 'Media porción de pollo asado con ensalada.', 'price' => 22000, 'is_featured' => true],
-            ['category' => 'Broaster', 'name' => 'Broaster Personal', 'description' => 'Pollo broaster crocante con papa a la francesa.', 'price' => 24000, 'is_featured' => false],
-            ['category' => 'Acompañamientos', 'name' => 'Papas Criollas', 'description' => 'Papas criollas doradas con sal y limón.', 'price' => 9000, 'is_featured' => false],
-            ['category' => 'Bebidas', 'name' => 'Limonada Natural', 'description' => 'Limonada fresca preparada al momento.', 'price' => 6000, 'is_featured' => false],
-        ];
-
-        foreach ($polloProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => $polloRestaurantId,
-                'category_id'   => $categoryId('Pollo Dorado', $product['category']),
-                'is_available'  => true,
-            ]);
-
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Mariscos del Puerto ───────────────────────────────
-        $mariscosProducts = [
-            ['category' => 'Ceviches', 'name' => 'Ceviche Mixto', 'description' => 'Ceviche con camarón, pulpo y pescado.', 'price' => 36000, 'is_featured' => true],
-            ['category' => 'Ceviches', 'name' => 'Ceviche de Camarón', 'description' => 'Camarón fresco con limón y cebolla morada.', 'price' => 32000, 'is_featured' => true],
-            ['category' => 'Mariscos', 'name' => 'Cazuela de Mariscos', 'description' => 'Cazuela cremosa con variedad de mariscos.', 'price' => 42000, 'is_featured' => true],
-            ['category' => 'Pescados', 'name' => 'Pescado Frito', 'description' => 'Pescado entero con patacones y arroz.', 'price' => 38000, 'is_featured' => false],
-            ['category' => 'Bebidas', 'name' => 'Jugo de Mango', 'description' => 'Jugo natural frío de mango.', 'price' => 7000, 'is_featured' => false],
-        ];
-
-        foreach ($mariscosProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => $mariscosRestaurantId,
-                'category_id'   => $categoryId('Mariscos del Puerto', $product['category']),
-                'is_available'  => true,
-            ]);
-
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Trattoria Bella ───────────────────────────────────
-        $trattoriaProducts = [
-            ['category' => 'Pizzas', 'name' => 'Pizza Margherita', 'description' => 'Salsa de tomate, mozzarella y albahaca.', 'price' => 29000, 'is_featured' => true],
-            ['category' => 'Pizzas', 'name' => 'Pizza Pepperoni', 'description' => 'Mozzarella con pepperoni y orégano.', 'price' => 32000, 'is_featured' => true],
-            ['category' => 'Pastas', 'name' => 'Pasta Carbonara', 'description' => 'Pasta cremosa con panceta y parmesano.', 'price' => 27000, 'is_featured' => false],
-            ['category' => 'Entradas', 'name' => 'Bruschetta Caprese', 'description' => 'Pan tostado con tomate, queso y albahaca.', 'price' => 14000, 'is_featured' => false],
-            ['category' => 'Bebidas', 'name' => 'Limonada Rosada', 'description' => 'Limonada con un toque de frutos rojos.', 'price' => 6500, 'is_featured' => false],
-        ];
-
-        foreach ($trattoriaProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => $trattoriaRestaurantId,
-                'category_id'   => $categoryId('Trattoria Bella', $product['category']),
-                'is_available'  => true,
-            ]);
-
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Dulce Tentación ───────────────────────────────────
-        $dulceProducts = [
-            ['category' => 'Tortas', 'name' => 'Torta Red Velvet', 'description' => 'Torta húmeda con crema suave.', 'price' => 18000, 'is_featured' => true],
-            ['category' => 'Postres', 'name' => 'Brownie con Helado', 'description' => 'Brownie tibio con helado de vainilla.', 'price' => 16000, 'is_featured' => true],
-            ['category' => 'Helados', 'name' => 'Helado Artesanal', 'description' => 'Dos bolas de helado artesanal.', 'price' => 12000, 'is_featured' => false],
-            ['category' => 'Postres', 'name' => 'Cheesecake de Frutos Rojos', 'description' => 'Porción cremosa con salsa de frutos rojos.', 'price' => 17000, 'is_featured' => true],
-            ['category' => 'Bebidas', 'name' => 'Café Latte', 'description' => 'Café suave con leche vaporizada.', 'price' => 8000, 'is_featured' => false],
-        ];
-
-        foreach ($dulceProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => $dulceRestaurantId,
-                'category_id'   => $categoryId('Dulce Tentación', $product['category']),
-                'is_available'  => true,
-            ]);
-
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Café Madrugón ─────────────────────────────────────
-        $cafeProducts = [
-            ['category' => 'Desayunos', 'name' => 'Desayuno Paisa', 'description' => 'Calentado, huevo, arepa y chocolate.', 'price' => 19000, 'is_featured' => true],
-            ['category' => 'Desayunos', 'name' => 'Huevos al Gusto', 'description' => 'Huevos revueltos o pericos con arepa.', 'price' => 14000, 'is_featured' => false],
-            ['category' => 'Panadería', 'name' => 'Croissant Mantequilla', 'description' => 'Croissant recién horneado.', 'price' => 7000, 'is_featured' => false],
-            ['category' => 'Café', 'name' => 'Café Americano', 'description' => 'Café negro recién preparado.', 'price' => 6000, 'is_featured' => true],
-            ['category' => 'Jugos', 'name' => 'Jugo de Naranja', 'description' => 'Jugo natural frío de naranja.', 'price' => 6500, 'is_featured' => false],
-        ];
-
-        foreach ($cafeProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => $cafeRestaurantId,
-                'category_id'   => $categoryId('Café Madrugón', $product['category']),
-                'is_available'  => true,
-            ]);
-
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
-        }
-
-        // ── Barra Fresca ──────────────────────────────────────
-        $barraProducts = [
-            ['category' => 'Batidos', 'name' => 'Batido de Fresa', 'description' => 'Batido frío de fresa natural.', 'price' => 9000, 'is_featured' => true],
-            ['category' => 'Jugos', 'name' => 'Jugo Verde', 'description' => 'Espinaca, manzana y piña.', 'price' => 8500, 'is_featured' => false],
-            ['category' => 'Bebidas Frías', 'name' => 'Limonada con Hierbabuena', 'description' => 'Limonada refrescante con hierbabuena.', 'price' => 7000, 'is_featured' => false],
-            ['category' => 'Snacks', 'name' => 'Tostadas de Aguacate', 'description' => 'Tostadas crujientes con aguacate.', 'price' => 11000, 'is_featured' => false],
-            ['category' => 'Bebidas Frías', 'name' => 'Té Helado', 'description' => 'Té helado artesanal con limón.', 'price' => 6500, 'is_featured' => true],
-        ];
-
-        foreach ($barraProducts as $product) {
-            $payload = array_merge($product, [
-                'restaurant_id' => $barraRestaurantId,
-                'category_id'   => $categoryId('Barra Fresca', $product['category']),
-                'is_available'  => true,
-            ]);
-
-            unset($payload['category']);
-
-            if (!$payload['restaurant_id'] || !$payload['category_id']) {
-                continue;
-            }
-
-            Product::updateOrCreate(
-                [
-                    'restaurant_id' => $payload['restaurant_id'],
-                    'category_id'   => $payload['category_id'],
-                    'name'          => $payload['name'],
-                ],
-                $payload
-            );
         }
     }
 }

@@ -11,13 +11,14 @@ export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle,
   const { t } = useTranslation() // <- CORREGIDO
   const { image, loading } = useRestaurantImage(restaurant?.name, restaurant?.img)
   const { ref, src, isLoaded } = useLazyLoad(image, blurhash.restaurant())
-  const { isFavorite } = useFavoritesStore()
+  const favorites = useFavoritesStore(s => s.favorites)
   const [isAnimating, setIsAnimating] = useState(false)
   const [isScheduleOpen, setIsScheduleOpen] = useState(false)
 
   if (!restaurant || !restaurant.id) return null
   
-  const isFav = isFavorite(restaurant.id)
+  const isFav = favorites.includes(Number(restaurant.id))
+
 
   const productPreview = Array.isArray(restaurant.categories) && restaurant.categories.length > 0
     ? restaurant.categories.slice(0, 2)

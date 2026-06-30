@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCart } from '../context/useCart'
+import { getPlaceholderImage, detectFoodCategory, getOptimizedImageUrl } from '../api/images'
+
 
 export default function ProductModal({ product, onClose }) {
   const { t } = useTranslation()
@@ -10,6 +12,11 @@ export default function ProductModal({ product, onClose }) {
   const isMockProduct = Boolean(product?.isMock)
 
   if (!product) return null
+
+  const imageSrc =
+    product.img ||
+    product.image ||
+    getPlaceholderImage(detectFoodCategory(product.name))
 
   const confirm = () => {
     if (isMockProduct) return
@@ -22,11 +29,16 @@ export default function ProductModal({ product, onClose }) {
       onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95">
         <div className="relative">
-          <img src={product.img} alt={product.name}
+          <img 
+            src={getOptimizedImageUrl(imageSrc, 400)} 
+            alt={product.name}
             className="w-full h-56 object-cover"
-            onError={e => { e.target.src = 'https://via.placeholder.com/400x200/f3f3f3/ccc?text=<i className="fas fa-hamburger mr-1"></i>' }} />
+            onError={e => { 
+              e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop&q=80'; 
+            }} 
+          />
           <button onClick={onClose}
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-600 hover:text-[#FF4B3E] hover:bg-red-50 transition font-bold text-lg">
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/95 backdrop-blur-sm shadow-lg flex items-center justify-center text-gray-600 hover:text-[#FF4B3E] hover:bg-red-50 transition-all font-bold text-lg z-10">
             <i className="fas fa-times"></i>
           </button>
         </div>

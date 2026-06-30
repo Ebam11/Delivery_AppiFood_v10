@@ -44,7 +44,7 @@ export default function ProductCard({ product, onFav, isFav, onSelect }) {
           src={src}
           alt={product.name}
           className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${!isLoaded ? 'opacity-0' : 'opacity-100'}`}
-          onError={e => { e.target.src = 'https://via.placeholder.com/220x160?text=<i className="fas fa-hamburger mr-1"></i>' }}
+          onError={e => { e.target.style.opacity = '0' }}
         />
       </div>
 

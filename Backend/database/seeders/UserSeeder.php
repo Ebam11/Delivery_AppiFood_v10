@@ -11,11 +11,11 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── Admin ──────────────────────────────────────────────
+        // ── 2 Administradores ─────────────────────────────────────
         User::updateOrCreate(
             ['email' => 'admin@foodapp.com'],
             [
-                'name'     => 'Administrador',
+                'name'     => 'Administrador Principal',
                 'password' => Hash::make('password'),
                 'role'     => UserRole::ADMIN,
                 'phone'    => '3001234567',
@@ -23,189 +23,32 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // ── Restaurantes ───────────────────────────────────────
         User::updateOrCreate(
-            ['email' => 'restaurante1@foodapp.com'],
+            ['email' => 'admin2@foodapp.com'],
             [
-                'name'     => 'Dueño Restaurante Uno',
+                'name'     => 'Administrador de Soporte',
                 'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3109876543',
+                'role'     => UserRole::ADMIN,
+                'phone'    => '3001234568',
                 'status'   => true,
             ]
         );
 
-        User::updateOrCreate(
-            ['email' => 'restaurante2@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Dos',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3204561234',
-                'status'   => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'restaurante3@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Tres',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3151234567',
-                'status'   => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'restaurante4@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Cuatro',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3161234567',
-                'status'   => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'restaurante5@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Cinco',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3171234567',
-                'status'   => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'restaurante6@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Seis',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3181234567',
-                'status'   => true,
-            ]
-        );
+        // ── 20 Restaurantes ───────────────────────────────────────
+        for ($i = 1; $i <= 20; $i++) {
             User::updateOrCreate(
-                ['email' => 'restaurante7@foodapp.com'],
+                ['email' => "restaurante{$i}@foodapp.com"],
                 [
-                    'name'     => 'Dueño Restaurante Siete',
+                    'name'     => "Dueño Restaurante {$i}",
                     'password' => Hash::make('password'),
                     'role'     => UserRole::RESTAURANT,
-                    'phone'    => '3191234567',
+                    'phone'    => '310' . str_pad($i, 7, '0', STR_PAD_LEFT),
                     'status'   => true,
                 ]
             );
-            User::updateOrCreate(
-                ['email' => 'restaurante8@foodapp.com'],
-                [
-                    'name'     => 'Dueño Restaurante Ocho',
-                    'password' => Hash::make('password'),
-                    'role'     => UserRole::RESTAURANT,
-                    'phone'    => '3201234567',
-                    'status'   => true,
-                ]
-            );
-            User::updateOrCreate(
-                ['email' => 'restaurante9@foodapp.com'],
-                [
-                    'name'     => 'Dueño Restaurante Nueve',
-                    'password' => Hash::make('password'),
-                    'role'     => UserRole::RESTAURANT,
-                    'phone'    => '3211234567',
-                    'status'   => true,
-                ]
-            );
-            User::updateOrCreate(
-                ['email' => 'restaurante10@foodapp.com'],
-                [
-                    'name'     => 'Dueño Restaurante Diez',
-                    'password' => Hash::make('password'),
-                    'role'     => UserRole::RESTAURANT,
-                    'phone'    => '3221234567',
-                    'status'   => true,
-                ]
-            );
-            User::updateOrCreate(
-                ['email' => 'restaurante11@foodapp.com'],
-                [
-                    'name'     => 'Dueño Restaurante Once',
-                    'password' => Hash::make('password'),
-                    'role'     => UserRole::RESTAURANT,
-                    'phone'    => '3231234567',
-                    'status'   => true,
-                ]
-            );
-            User::updateOrCreate(
-                ['email' => 'restaurante12@foodapp.com'],
-                [
-                    'name'     => 'Dueño Restaurante Doce',
-                    'password' => Hash::make('password'),
-                    'role'     => UserRole::RESTAURANT,
-                    'phone'    => '3241234567',
-                    'status'   => true,
-                ]
-            );
+        }
 
-        User::updateOrCreate(
-            ['email' => 'restaurante13@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Trece',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3251234567',
-                'status'   => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'restaurante14@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Catorce',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3261234567',
-                'status'   => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'restaurante15@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Quince',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3271234567',
-                'status'   => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'restaurante16@foodapp.com'],
-            [
-                'name'     => 'Dueña Restaurante Dieciséis',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3281234567',
-                'status'   => true,
-            ]
-        );
-
-        User::updateOrCreate(
-            ['email' => 'restaurante17@foodapp.com'],
-            [
-                'name'     => 'Dueño Restaurante Diecisiete',
-                'password' => Hash::make('password'),
-                'role'     => UserRole::RESTAURANT,
-                'phone'    => '3291234567',
-                'status'   => true,
-            ]
-        );
-
-        // ── Usuarios normales ──────────────────────────────────
+        // ── 5 Usuarios normales (Clientes) ───────────────────────
         $usuarios = [
             ['name' => 'Carlos Pérez',    'email' => 'carlos@test.com',   'phone' => '3001111111'],
             ['name' => 'María González',  'email' => 'maria@test.com',    'phone' => '3002222222'],

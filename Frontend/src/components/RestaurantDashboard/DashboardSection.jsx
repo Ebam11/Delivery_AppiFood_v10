@@ -44,13 +44,19 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
   const totalRevenue = stats?.revenue?.total || orders.reduce((s,o) => s + o.amount, 0)
   const completedOrders = stats?.orders?.total ? Math.round(stats.orders.total * 0.75) : orders.filter(o => o.status === 'completed').length
   
-  const avgOrderAmount = totalOrders ? totalRevenue / totalOrders : 18
-  const BARS_INCOME  = generateMockSeries({ points: 8, base: Math.round(avgOrderAmount * 2.2), wave: 16, trend: 2, floor: 35 })
-  const BARS_EXPENSE = BARS_INCOME.map((v, i) => Math.max(16, Math.round(v * (0.38 + (i % 3) * 0.04))))
+  const avgOrderAmount = totalOrders ? totalRevenue / totalOrders : 0
+  const BARS_INCOME  = totalOrders > 0
+    ? generateMockSeries({ points: 8, base: Math.round(avgOrderAmount * 2.2), wave: 16, trend: 2, floor: 35 })
+    : Array(8).fill(0)
+  const BARS_EXPENSE = totalOrders > 0
+    ? BARS_INCOME.map((v, i) => Math.max(16, Math.round(v * (0.38 + (i % 3) * 0.04))))
+    : Array(8).fill(0)
   
   const MONTHS = [t('rd.months.mar', { defaultValue: 'Mar' }), t('rd.months.apr', { defaultValue: 'Abr' }), t('rd.months.may', { defaultValue: 'May' }), t('rd.months.jun', { defaultValue: 'Jun' }), t('rd.months.jul', { defaultValue: 'Jul' }), t('rd.months.aug', { defaultValue: 'Ago' }), t('rd.months.sep', { defaultValue: 'Sep' }), t('rd.months.oct', { defaultValue: 'Oct' })]
   const WEEK   = [t('rd.days.mon', { defaultValue: 'Lun' }), t('rd.days.tue', { defaultValue: 'Mar' }), t('rd.days.wed', { defaultValue: 'Mié' }), t('rd.days.thu', { defaultValue: 'Jue' }), t('rd.days.fri', { defaultValue: 'Vie' }), t('rd.days.sat', { defaultValue: 'Sáb' }), t('rd.days.sun', { defaultValue: 'Dom' })]
-  const WEEK_ORDERS = generateMockSeries({ points: 7, base: Math.max(totalOrders * 14, 85), wave: 24, trend: 3, floor: 40 })
+  const WEEK_ORDERS = totalOrders > 0
+    ? generateMockSeries({ points: 7, base: Math.max(totalOrders * 14, 85), wave: 24, trend: 3, floor: 40 })
+    : Array(7).fill(0)
   const maxV = Math.max(...WEEK_ORDERS, 1)
 
   const recentOrders = orders.slice(0, 3)
@@ -94,7 +100,7 @@ export default function DashboardSection({ orders, menu, stats, loading }) {
     labels: [t('rd.main_dishes'), t('rd.drinks'), t('rd.starters'), t('rd.desserts')],
     datasets: [
       {
-        data: [45, 25, 20, 10],
+        data: totalOrders > 0 ? [45, 25, 20, 10] : [0, 0, 0, 0],
         backgroundColor: [COLORS.primary, '#1e293b', '#fbbf24', '#cbd5e1'],
         borderWidth: 0,
       }

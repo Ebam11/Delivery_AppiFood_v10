@@ -3,10 +3,6 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Database\Seeders\FavoriteSeeder;
-use Database\Seeders\PaymentMethodSeeder;
-use Database\Seeders\RestaurantCategorySeeder;
-use Database\Seeders\SubscriptionSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -28,7 +24,7 @@ class DatabaseSeeder extends Seeder
             FavoriteSeeder::class,
             NotificationSeeder::class,
             BannerSeeder::class,
-            RestaurantProductsBackfillSeeder::class,
+            // Eliminamos o comentamos backfills redundantes para evitar duplicados y lentitud
         ]);
     }
 }

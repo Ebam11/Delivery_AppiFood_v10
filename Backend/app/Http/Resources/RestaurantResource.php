@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Support\MediaUrl;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,8 +21,8 @@ class RestaurantResource extends JsonResource
             'id'                => $this->id,
             'name'              => $this->name,
             'description'       => $this->description,
-            'logo'              => $this->logo ? asset('storage/' . $this->logo) : null,
-            'banner'            => $this->banner ? asset('storage/' . $this->banner) : null,
+            'logo'              => MediaUrl::resolve($this->logo),
+            'banner'            => MediaUrl::resolve($this->banner),
             'address'           => $this->address,
             'lat'               => $this->lat,
             'lng'               => $this->lng,
@@ -58,7 +59,7 @@ class RestaurantResource extends JsonResource
                             'name'        => $p->name,
                             'description' => $p->description,
                             'price'       => $p->price,
-                            'image'       => $p->image ? asset('storage/' . $p->image) : null,
+                            'image'       => MediaUrl::resolve($p->image),
                             'available'   => $p->is_available,
                             'category_id' => $cat->id,
                             'category_name' => $cat->name,
@@ -83,7 +84,7 @@ class RestaurantResource extends JsonResource
                             'name'        => $p->name,
                             'description' => $p->description,
                             'price'       => $p->price,
-                            'image'       => $p->image ? asset('storage/' . $p->image) : null,
+                            'image'       => MediaUrl::resolve($p->image),
                             'is_available'=> $p->is_available,
                         ])
                         : [],

@@ -3,6 +3,23 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useCart } from '../context/useCart'
+import { useProductImage } from '../hooks/useImages'
+
+/**
+ * Muestra la imagen de un ítem del carrito usando el mismo hook que ProductCard.
+ * Resuelve la imagen síncrono desde el banco estático, sin llamadas externas.
+ */
+function CartItemImage({ name, img }) {
+  const { image } = useProductImage(name, img || null)
+  return (
+    <img
+      src={image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=60&h=60&fit=crop&auto=format&q=80'}
+      alt={name}
+      className="w-14 h-14 rounded-lg object-cover flex-shrink-0 bg-gray-100"
+      onError={e => { e.target.style.opacity = '0' }}
+    />
+  )
+}
 
 export default function CartSidebar({ isAuth }) {
   const navigate = useNavigate()
@@ -61,9 +78,7 @@ export default function CartSidebar({ isAuth }) {
             <div className="space-y-4">
               {cart.map(item => (
                 <div key={item.id} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50">
-                  <img src={item.img} alt={item.name}
-                    className="w-14 h-14 rounded-lg object-cover flex-shrink-0"
-                    onError={e => { e.target.src = 'https://via.placeholder.com/60/f3f3f3/ccc?text=<i className="fas fa-hamburger mr-1"></i>' }} />
+                  <CartItemImage name={item.name} img={item.img} />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-sm text-gray-800 truncate">{item.name}</p>
                     <p className="text-[#FF4B3E] font-bold text-sm">${fmt(item.price)}</p>

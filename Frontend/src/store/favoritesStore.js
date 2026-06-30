@@ -40,8 +40,10 @@ export const useFavoritesStore = create((set, get) => ({
       set({ favorites: favoriteIds, loading: false })
       try { localStorage.setItem(LOCAL_KEY, JSON.stringify(favoriteIds)) } catch (e) {}
     } catch (error) {
-      console.error('Error cargando favoritos:', error)
-      set({ loading: false, error: 'Error al cargar favoritos' })
+      console.warn('No se pudo cargar favoritos del servidor, usando caché local:', error?.message)
+      // Usar caché local sin mostrar error al usuario
+      const cached = loadLocalFavorites()
+      set({ favorites: cached, loading: false, error: null })
     }
   },
 
@@ -58,22 +60,27 @@ export const useFavoritesStore = create((set, get) => ({
     return !isFavorited
   },
 
-  // Toggle favorito en servidor
+  // Toggle favorito - actualización optimista (UI primero, API en segundo plano)
   toggleFavorite: async (restaurantId, token) => {
-    if (!token) {
-      console.warn('No token available')
-      return false
-    }
+    const normalizedId = Number(restaurantId)
+    if (!normalizedId) return false
 
+    // 1. Actualizar UI inmediatamente (optimistic update)
+    const wasAdded = get().toggleFavoriteLocal(normalizedId)
+
+    // 2. Si no hay token, solo guardamos local
+    if (!token) return wasAdded
+
+    // 3. Sincronizar con servidor en segundo plano
     try {
-      await api.post('/favorites/toggle', { restaurant_id: restaurantId }, {
+      await api.post('/favorites/toggle', { restaurant_id: normalizedId }, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      get().toggleFavoriteLocal(restaurantId)
-      return true
+      return wasAdded
     } catch (error) {
-      console.error('Error toggling favorite:', error)
-      set({ error: 'Error al guardar favorito' })
+      // Si la API falla, revertir el cambio local
+      console.warn('Error sincronizando favorito con servidor:', error?.message)
+      get().toggleFavoriteLocal(normalizedId) // revertir
       return false
     }
   },
