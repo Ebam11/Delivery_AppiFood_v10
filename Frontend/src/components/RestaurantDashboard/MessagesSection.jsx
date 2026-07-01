@@ -11,9 +11,10 @@ export default function MessagesSection() {
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
+    let isFirstLoad = true
     const loadNotifications = async () => {
       try {
-        setLoading(true)
+        if (isFirstLoad) setLoading(true)
         const ordersData = await fetchJson('/api/restaurant/orders')
         const orders = Array.isArray(ordersData) ? ordersData : ordersData?.data || []
 
@@ -32,14 +33,26 @@ export default function MessagesSection() {
         }))
 
         setNotifications(chats)
-        if (chats.length > 0) setSelected(chats[0])
+        setSelected(prev => {
+          if (prev) {
+            const updated = chats.find(c => c.id === prev.id)
+            return updated || prev
+          }
+          return chats.length > 0 ? chats[0] : null
+        })
       } catch (err) {
         console.error('Error cargando mensajes', err)
       } finally {
-        setLoading(false)
+        if (isFirstLoad) {
+          setLoading(false)
+          isFirstLoad = false
+        }
       }
     }
+    
     loadNotifications()
+    const interval = setInterval(loadNotifications, 10000) // Sincroniza cada 10 segundos
+    return () => clearInterval(interval)
   }, [t])
 
   useEffect(() => {

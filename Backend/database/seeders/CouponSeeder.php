@@ -9,6 +9,10 @@ class CouponSeeder extends Seeder
 {
     public function run(): void
     {
+        // Obtener IDs reales de restaurantes de la base de datos
+        $burgerHouse = \App\Models\Restaurant::where('name', 'Burger House')->first();
+        $pizzaNostra = \App\Models\Restaurant::where('name', 'Pizza Nostra')->first();
+
         $coupons = [
             [
                 'restaurant_id' => null,       // Global para todos
@@ -19,31 +23,31 @@ class CouponSeeder extends Seeder
                 'max_uses'      => 100,
                 'used_count'    => 0,
                 'starts_at'     => now(),
-                'expires_at'    => now()->addMonths(3),
+                'expires_at'    => now()->addMonths(6),
                 'is_active'     => true,
             ],
             [
-                'restaurant_id' => 1,          // Solo Burger House
-                'code'          => 'BURGER10',
+                'restaurant_id' => null,       // Global para todos
+                'code'          => 'APPIFOOD20',
                 'type'          => 'percentage',
-                'value'         => 10,
-                'minimum_order' => 15000,
-                'max_uses'      => 50,
+                'value'         => 20,
+                'minimum_order' => 30000,
+                'max_uses'      => 200,
                 'used_count'    => 0,
                 'starts_at'     => now(),
-                'expires_at'    => now()->addMonth(),
+                'expires_at'    => now()->addMonths(6),
                 'is_active'     => true,
             ],
             [
-                'restaurant_id' => 2,          // Solo Pizza Nostra
-                'code'          => 'PIZZA5000',
+                'restaurant_id' => null,       // Global para todos
+                'code'          => 'DESCUENTO5K',
                 'type'          => 'fixed',
                 'value'         => 5000,
                 'minimum_order' => 25000,
-                'max_uses'      => 30,
+                'max_uses'      => 150,
                 'used_count'    => 0,
                 'starts_at'     => now(),
-                'expires_at'    => now()->addMonth(),
+                'expires_at'    => now()->addMonths(6),
                 'is_active'     => true,
             ],
         ];
@@ -52,6 +56,34 @@ class CouponSeeder extends Seeder
             Coupon::updateOrCreate(
                 ['code' => $coupon['code']],
                 $coupon
+            );
+        }
+
+        // Crear una oferta de cupón propia para todos los demás restaurantes
+        $allRestaurants = \App\Models\Restaurant::all();
+        foreach ($allRestaurants as $r) {
+            // Generar un código único usando parte del nombre del restaurante
+            $cleanName = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $r->name));
+            $prefix = substr($cleanName, 0, 8);
+            if (empty($prefix)) {
+                $prefix = 'REST' . $r->id;
+            }
+            $code = $prefix . '15';
+
+            Coupon::updateOrCreate(
+                ['code' => $code],
+                [
+                    'restaurant_id' => $r->id,
+                    'code'          => $code,
+                    'type'          => 'percentage',
+                    'value'         => 15,
+                    'minimum_order' => $r->minimum_order ?? 15000,
+                    'max_uses'      => 100,
+                    'used_count'    => 0,
+                    'starts_at'     => now(),
+                    'expires_at'    => now()->addMonths(6),
+                    'is_active'     => true,
+                ]
             );
         }
     }

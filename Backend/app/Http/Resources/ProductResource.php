@@ -29,6 +29,17 @@ class ProductResource extends JsonResource
                 'id'   => $this->category->id,
                 'name' => $this->category->name,
             ]),
+            'restaurant'        => $this->whenLoaded('restaurant', fn() => [
+                'id'        => $this->restaurant->id,
+                'name'      => $this->restaurant->name,
+                'is_active' => $this->restaurant->is_active,
+                'schedules' => $this->restaurant->schedules->map(fn($s) => [
+                    'day'          => $s->day,
+                    'opening_time' => $s->opening_time,
+                    'closing_time' => $s->closing_time,
+                    'is_closed'    => $s->is_closed,
+                ]),
+            ]),
             'created_at'        => $this->created_at?->toDateString(),
         ];
     }

@@ -14,7 +14,7 @@ export default function PromotionsSection() {
     description: '',
     type: 'percentage',
     value: '',
-    min_order_amount: '',
+    minimum_order: '',
     max_uses: '',
     expires_at: '',
   })
@@ -49,18 +49,18 @@ export default function PromotionsSection() {
         body: {
           ...form,
           value: Number(form.value),
-          min_order_amount: form.min_order_amount ? Number(form.min_order_amount) : null,
+          minimum_order: form.minimum_order ? Number(form.minimum_order) : null,
           max_uses: form.max_uses ? Number(form.max_uses) : null,
           is_active: true,
         }
       })
       const newCoupon = res.data || res
       setCoupons(prev => [newCoupon, ...prev])
-      setForm({ code: '', description: '', type: 'percentage', value: '', min_order_amount: '', max_uses: '', expires_at: '' })
+      setForm({ code: '', description: '', type: 'percentage', value: '', minimum_order: '', max_uses: '', expires_at: '' })
       setShowForm(false)
       showToast(t('rd.coupon_created') || 'Cupón creado exitosamente ✓')
     } catch (err) {
-      showToast(t('rd.coupon_create_error') || 'Error al crear el cupón', 'error')
+      showToast(err.message || t('rd.coupon_create_error') || 'Error al crear el cupón', 'error')
     } finally {
       setSaving(false)
     }
@@ -145,8 +145,8 @@ export default function PromotionsSection() {
               <label className="block text-xs font-bold text-gray-500 uppercase mb-1.5">{t('rd.min_order') || 'Pedido Mínimo ($)'}</label>
               <input
                 type="number"
-                value={form.min_order_amount}
-                onChange={e => setForm(f => ({ ...f, min_order_amount: e.target.value }))}
+                value={form.minimum_order}
+                onChange={e => setForm(f => ({ ...f, minimum_order: e.target.value }))}
                 placeholder="20000"
                 className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-400 bg-gray-50"
               />
@@ -225,10 +225,10 @@ export default function PromotionsSection() {
                     {c.type === 'percentage' ? `${c.value}%` : `$${Number(c.value).toLocaleString()}`}
                   </span>
                 </div>
-                {c.min_order_amount && (
+                {c.minimum_order && Number(c.minimum_order) > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">{t('rd.min_order')}</span>
-                    <span className="font-bold text-gray-800">${Number(c.min_order_amount).toLocaleString()}</span>
+                    <span className="font-bold text-gray-800">${Number(c.minimum_order).toLocaleString()}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">

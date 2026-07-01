@@ -1,7 +1,4 @@
-/**
- * Archivo: src/pages/RestaurantDashboard.jsx
- * Punto de entrada principal para el panel de administración del restaurante.
- */
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRestaurantDashboard } from '../hooks/useRestaurantDashboard'
 import Sidebar from '../components/RestaurantDashboard/Sidebar'
@@ -17,10 +14,12 @@ import CalendarSection from '../components/RestaurantDashboard/CalendarSection'
 import MessagesSection from '../components/RestaurantDashboard/MessagesSection'
 import ReviewsSection from '../components/RestaurantDashboard/ReviewsSection'
 import RestaurantInfoSection from '../components/RestaurantDashboard/RestaurantInfoSection'
+import RestaurantPreviewModal from '../components/RestaurantDashboard/RestaurantPreviewModal'
 import '../styles/RestaurantDashboard.css'
 
 export default function RestaurantDashboard({ user, onLogout }) {
   const { t } = useTranslation()
+  const [showPreviewModal, setShowPreviewModal] = useState(false)
 
   const {
     activeTab,
@@ -48,6 +47,9 @@ export default function RestaurantDashboard({ user, onLogout }) {
     restaurantProfile,
     searchQuery,
     setSearchQuery,
+    handleProfileSaved,
+    handleLogoSaved,
+    handleBannerSaved,
   } = useRestaurantDashboard(user)
 
   const renderContent = () => {
@@ -100,6 +102,10 @@ export default function RestaurantDashboard({ user, onLogout }) {
           <RestaurantInfoSection
             restaurant={restaurantProfile || user?.restaurant}
             restaurantId={restaurantProfile?.id || user?.restaurant?.id}
+            onPreview={() => setShowPreviewModal(true)}
+            onSaved={handleProfileSaved}
+            onLogoSaved={handleLogoSaved}
+            onBannerSaved={handleBannerSaved}
           />
         )
       default:
@@ -152,7 +158,21 @@ export default function RestaurantDashboard({ user, onLogout }) {
           onClose={() => setSelectedOrder(null)}
           onStatusChange={handleStatusChange}
           restaurantName={restaurantProfile?.name}
-/>
+        />
+      )}
+
+      {showPreviewModal && (
+        <RestaurantPreviewModal
+          restaurant={{
+            ...(restaurantProfile || user?.restaurant),
+            products: menu.map(p => ({
+              ...p,
+              // Mantener nombres consistentes para las categorías agrupadas
+              category_name: p.category,
+            }))
+          }}
+          onClose={() => setShowPreviewModal(false)}
+        />
       )}
     </div>
   )

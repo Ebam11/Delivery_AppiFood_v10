@@ -44,51 +44,56 @@ class PaymentController extends Controller
 
         $reference = 'PAY-' . $order->id . '-' . Str::upper(Str::random(10));
 
+        // SIMULACIÓN DE PAGO AUTOMÁTICO: Marcar como completado directamente
         $payment = Payment::updateOrCreate(
             ['order_id' => $order->id],
             [
                 'payment_method_id'  => $paymentMethodId,
                 'amount'             => $order->total,
-                'status'             => PaymentStatus::PENDING,
+                'status'             => PaymentStatus::COMPLETED,
                 'external_reference' => $reference,
-                'paid_at'            => null,
+                'paid_at'            => now(),
             ]
         );
 
-        // Construir URLs de redirección
-        $frontendUrl        = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
-        $completeRedirectUrl = $frontendUrl . '/payment/confirmation/' . $order->id
+        if ($order->status === OrderStatus::PENDING) {
+            $order->transitionTo(OrderStatus::CONFIRMED);
+        }
+
+        // Crear la notificación de pago confirmado
+        Notification::create([
+            'user_id' => $order->user_id,
+            'title'   => 'Pago confirmado',
+            'message' => "Tu pago del pedido #{$order->id} fue confirmado exitosamente.",
+            'type'    => 'payment',
+            'data'    => [
+                'order_id'   => $order->id,
+                'payment_id' => $payment->id,
+                'status'     => PaymentStatus::COMPLETED->value,
+            ],
+        ]);
+
+        // Construir URLs de redirección dinámicas basadas en el origen del cliente para evitar problemas de puerto
+        $origin = $request->headers->get('origin') ?: $request->headers->get('referer');
+        if ($origin) {
+            $frontendUrl = rtrim($origin, '/');
+            if (filter_var($frontendUrl, FILTER_VALIDATE_URL)) {
+                $parsedUrl = parse_url($frontendUrl);
+                $frontendUrl = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . (isset($parsedUrl['port']) ? ':' . $parsedUrl['port'] : '');
+            }
+        } else {
+            $frontendUrl = rtrim(config('app.frontend_url', 'http://localhost:5173'), '/');
+        }
+
+        $paymentUrl = $frontendUrl . '/payment/confirmation/' . $order->id
             . '?transaction_id=' . $payment->id
             . '&reference_code=' . urlencode($reference)
             . '&status=APPROVED';
-        $cancelRedirectUrl = $frontendUrl . '/checkout?status=cancelled';
 
-        // Intentar crear checkout con Rapyd
-        $paymentUrl = $frontendUrl . '/payment/confirmation/' . $order->id
-            . '?transaction_id=' . $payment->id
-            . '&reference_code=' . urlencode($reference);
-
-        try {
-            $rapyd    = new RapydService();
-            $rapydRes = $rapyd->createCheckout(
-                (float) $order->total,
-                'COP',
-                $reference,
-                $completeRedirectUrl,
-                $cancelRedirectUrl
-            );
-
-            if (!empty($rapydRes['data']['redirect_url'])) {
-                $paymentUrl = $rapydRes['data']['redirect_url'];
-                // Guardar el id de Rapyd en metadata si el modelo lo permite
-            }
-        } catch (\Throwable $e) {
-            // Si Rapyd falla, caemos al flujo interno (sandbox / dev)
-            \Illuminate\Support\Facades\Log::warning('Rapyd checkout error: ' . $e->getMessage());
-        }
+        // (simulación de progreso eliminada)
 
         return response()->json([
-            'message'     => 'Pago preparado correctamente.',
+            'message'     => 'Pago procesado correctamente (Simulación exitosa).',
             'data'        => $payment->load('method'),
             'payment_url' => $paymentUrl,
         ]);
@@ -110,26 +115,31 @@ class PaymentController extends Controller
             return response()->json(['message' => 'No se encontró el pago para confirmar.'], 404);
         }
 
-        $payment->update([
-            'status'  => PaymentStatus::COMPLETED,
-            'paid_at' => now(),
-        ]);
+        // Si el pago ya estaba completado (lo marcó store()), no duplicar notificación
+        $wasAlreadyCompleted = $payment->status === PaymentStatus::COMPLETED;
 
-        if ($payment->order->status === OrderStatus::PENDING) {
-            $payment->order->transitionTo(OrderStatus::CONFIRMED);
+        if (!$wasAlreadyCompleted) {
+            $payment->update([
+                'status'  => PaymentStatus::COMPLETED,
+                'paid_at' => now(),
+            ]);
+
+            if ($payment->order->status === OrderStatus::PENDING) {
+                $payment->order->transitionTo(OrderStatus::CONFIRMED);
+            }
+
+            Notification::create([
+                'user_id' => $payment->order->user_id,
+                'title'   => 'Pago confirmado',
+                'message' => "Tu pago del pedido #{$payment->order->id} fue confirmado.",
+                'type'    => 'payment',
+                'data'    => [
+                    'order_id'   => $payment->order->id,
+                    'payment_id' => $payment->id,
+                    'status'     => PaymentStatus::COMPLETED->value,
+                ],
+            ]);
         }
-
-        Notification::create([
-            'user_id' => $payment->order->user_id,
-            'title'   => 'Pago confirmado',
-            'message' => "Tu pago del pedido #{$payment->order->id} fue confirmado.",
-            'type'    => 'payment',
-            'data'    => [
-                'order_id'   => $payment->order->id,
-                'payment_id' => $payment->id,
-                'status'     => PaymentStatus::COMPLETED->value,
-            ],
-        ]);
 
         return response()->json([
             'message' => 'Pago confirmado correctamente.',

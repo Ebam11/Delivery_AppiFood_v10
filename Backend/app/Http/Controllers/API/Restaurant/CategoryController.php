@@ -12,7 +12,11 @@ class CategoryController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        if (!$request->filled('paginate')) {
+        // Castear paginate string a booleano si es necesario
+        if ($request->has('paginate')) {
+            $val = filter_var($request->input('paginate'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            $request->merge(['paginate' => $val ?? false]);
+        } else {
             $request->merge(['paginate' => false]);
         }
 
@@ -20,7 +24,29 @@ class CategoryController extends Controller
             $request->merge(['sort' => 'order']);
         }
 
-        $categories = Category::where('restaurant_id', $request->user()->restaurant->id)
+        $restaurant = \App\Models\Restaurant::where('user_id', $request->user()->id)->first();
+        
+        if (!$restaurant) {
+            return response()->json([
+                'message' => 'No tienes un restaurante asociado a tu cuenta.',
+            ], 403);
+        }
+        
+        // Auto-crear categorías básicas por defecto si el restaurante no tiene ninguna
+        $exists = Category::where('restaurant_id', $restaurant->id)->exists();
+        if (!$exists) {
+            $defaultCategories = ['Platos Fuertes', 'Entradas', 'Bebidas', 'Postres'];
+            foreach ($defaultCategories as $index => $name) {
+                Category::create([
+                    'restaurant_id' => $restaurant->id,
+                    'name'          => $name,
+                    'order'         => $index + 1,
+                    'is_active'     => true,
+                ]);
+            }
+        }
+
+        $categories = Category::where('restaurant_id', $restaurant->id)
             ->withCount('products')
             ->included()
             ->filter()

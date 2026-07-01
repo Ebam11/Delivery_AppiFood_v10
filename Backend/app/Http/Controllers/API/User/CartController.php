@@ -137,12 +137,16 @@ class CartController extends Controller
 
     private function isRestaurantOpen(Restaurant $restaurant): bool
     {
-        $today = strtolower(now()->englishDayOfWeek);
+        // Si no tiene horarios configurados, asumimos que está abierto
+        if (!$restaurant->schedules || $restaurant->schedules->isEmpty()) {
+            return true;
+        }
 
+        $today = strtolower(now()->englishDayOfWeek);
         $schedule = $restaurant->schedules->firstWhere('day', $today);
 
         if (!$schedule) {
-            return false;
+            return true; // Sin horario para hoy = abierto
         }
 
         return $schedule->isOpenNow();

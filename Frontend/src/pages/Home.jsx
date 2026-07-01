@@ -1,4 +1,5 @@
 
+import React, { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useHomeData } from '../hooks/useHomeData'
 import HeroCarousel from '../components/Home/HeroCarousel'
@@ -7,11 +8,28 @@ import CouponCarousel from '../components/Home/CouponCarousel'
 import FeaturedProducts from '../components/Home/FeaturedProducts'
 import ProductModal from '../components/ProductModal'
 import Footer from '../components/Footer'
-import { COUPONS } from '../data/coupons'
+import { fetchJson } from '../api/fetchJson'
+import { COUPONS as STATIC_COUPONS } from '../data/coupons'
 import './Home.css'
 
 export default function Home({ isAuth }) {
   const { t } = useTranslation()
+  const [coupons, setCoupons] = useState([])
+
+  useEffect(() => {
+    const loadCoupons = async () => {
+      try {
+        const response = await fetchJson('/api/coupons')
+        const list = Array.isArray(response) ? response : response?.data || []
+        setCoupons(list.length > 0 ? list : STATIC_COUPONS)
+      } catch (err) {
+        console.error('Error fetching coupons for home:', err)
+        setCoupons(STATIC_COUPONS)
+      }
+    }
+    loadCoupons()
+  }, [])
+
   const {
     popularRestaurants,
     loadingRestaurants,
@@ -67,7 +85,7 @@ export default function Home({ isAuth }) {
       />
 
       {/* 2. Cupones de Descuento */}
-      <CouponCarousel coupons={COUPONS} />
+      <CouponCarousel coupons={coupons} />
 
       {/* 3. Restaurantes Populares */}
       <PopularRestaurants 

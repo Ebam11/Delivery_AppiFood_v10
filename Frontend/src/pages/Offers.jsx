@@ -51,22 +51,78 @@ export default function OffersPage() {
 
   useEffect(() => {
     const loadOffers = async () => {
+      const cacheKey = 'cached_offers'
+      const cacheTimeKey = 'cached_offers_time'
+      const cachedData = sessionStorage.getItem(cacheKey)
+      const cachedTime = sessionStorage.getItem(cacheTimeKey)
+      const now = Date.now()
+
+      const checkIfOpen = (schedules) => {
+        if (!Array.isArray(schedules) || schedules.length === 0) return true;
+        const today = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()];
+        const todaySchedule = schedules.find(s => s.day?.toLowerCase() === today);
+        if (!todaySchedule || todaySchedule.is_closed) return false;
+        const nowStr = new Date().toTimeString().slice(0, 8);
+        return nowStr >= todaySchedule.opening_time && nowStr <= todaySchedule.closing_time;
+      };
+
+      if (cachedData && cachedTime && (now - Number(cachedTime) < 120000)) {
+        try {
+          const items = JSON.parse(cachedData)
+          const offersList = items
+            .filter(p => p.discount_price && Number(p.discount_price) < Number(p.price))
+            .map(p => {
+              const isOpen = p.restaurant ? checkIfOpen(p.restaurant.schedules) : true;
+              return {
+                ...p,
+                restaurantId: p.restaurant_id || p.restaurantId,
+                restaurantName: p.restaurant?.name || '',
+                isOpen: isOpen,
+                oldPrice: p.price,
+                price: p.discount_price,
+                pct: Math.round((1 - p.discount_price / p.price) * 100),
+                image: getProductImage(p.name, p.image),
+              };
+            });
+          setProducts(offersList);
+          setLoading(false);
+          return;
+        } catch { /* fallback */ }
+      }
+
       setLoading(true);
       try {
         const data = await fetchJson('/products?has_discount=true&paginate=false');
         const items = Array.isArray(data) ? data : data.data || [];
 
+        sessionStorage.setItem(cacheKey, JSON.stringify(items))
+        sessionStorage.setItem(cacheTimeKey, String(now))
+
+        const checkIfOpen = (schedules) => {
+          if (!Array.isArray(schedules) || schedules.length === 0) return true;
+          const today = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()];
+          const todaySchedule = schedules.find(s => s.day?.toLowerCase() === today);
+          if (!todaySchedule || todaySchedule.is_closed) return false;
+          const nowStr = new Date().toTimeString().slice(0, 8);
+          return nowStr >= todaySchedule.opening_time && nowStr <= todaySchedule.closing_time;
+        };
+
         if (items.length > 0) {
           const offersList = items
             .filter(p => p.discount_price && Number(p.discount_price) < Number(p.price))
-            .map(p => ({
-              ...p,
-              restaurantId: p.restaurant_id || p.restaurantId, // normalizar campo
-              oldPrice: p.price,
-              price: p.discount_price,
-              pct: Math.round((1 - p.discount_price / p.price) * 100),
-              image: getProductImage(p.name, p.image),
-            }));
+            .map(p => {
+              const isOpen = p.restaurant ? checkIfOpen(p.restaurant.schedules) : true;
+              return {
+                ...p,
+                restaurantId: p.restaurant_id || p.restaurantId,
+                restaurantName: p.restaurant?.name || '',
+                isOpen: isOpen,
+                oldPrice: p.price,
+                price: p.discount_price,
+                pct: Math.round((1 - p.discount_price / p.price) * 100),
+                image: getProductImage(p.name, p.image),
+              };
+            });
           setProducts(offersList);
         } else {
           setProducts([]);
@@ -93,16 +149,45 @@ export default function OffersPage() {
   };
 
   const filters = [
-    { key: 'all',    icon: '🍽️', label: t('offers.all') || 'Todas' },
-    { key: 'burger', icon: '🍔', label: t('offers.burgers') || 'Hamburguesas' },
-    { key: 'pizza',  icon: '🍕', label: t('offers.pizzas') || 'Pizzas' },
-    { key: 'sushi',  icon: '🍣', label: t('offers.sushi') || 'Sushi' },
-    { key: 'pollo', icon: '🍗', label: 'Pollo' },
+    { key: 'all', icon: '🍽️', label: t('offers.all') || 'Todas' },
+    { key: 'Restaurantes Locales', icon: '🍽️', label: 'Locales' },
+    { key: 'Comida Casera', icon: '🥘', label: 'Casera' },
+    { key: 'Sopas y Caldos', icon: '🍲', label: 'Sopas' },
+    { key: 'Antojitos Payaneses', icon: '🫓', label: 'Antojitos' },
+    { key: 'Empanadas y Fritos', icon: '🥟', label: 'Fritos' },
+    { key: 'Tamales', icon: '🫔', label: 'Tamales' },
+    { key: 'Hamburguesas', icon: '🍔', label: 'Hamburguesas' },
+    { key: 'Pizza', icon: '🍕', label: 'Pizzas' },
+    { key: 'Sushi', icon: '🍣', label: 'Sushi' },
+    { key: 'Japonesa', icon: '🍣', label: 'Japonesa' },
+    { key: 'Italiana', icon: '🍝', label: 'Italiana' },
+    { key: 'Mexicana', icon: '🌮', label: 'Mexicana' },
+    { key: 'Saludable', icon: '🥗', label: 'Saludable' },
+    { key: 'Panadería y Postres', icon: '🥧', label: 'Postres' },
+    { key: 'Bebidas Tradicionales', icon: '🧋', label: 'Bebidas' }
   ];
 
-  const filteredProducts = activeFilter === 'all'
+  const baseFiltered = activeFilter === 'all'
     ? products
-    : products.filter(p => (p.name || '').toLowerCase().includes(activeFilter));
+    : products.filter(p => {
+        const productCat = (p.category?.name || '').toLowerCase();
+        const filterKey = activeFilter.toLowerCase();
+        const productName = (p.name || '').toLowerCase();
+        // Mapear categorías del restaurante si existen
+        const restaurantCats = Array.isArray(p.restaurant?.schedules) // Opcional
+          ? [] 
+          : [];
+        
+        return productCat.includes(filterKey) || 
+               productName.includes(filterKey) ||
+               (p.restaurantName && p.restaurantName.toLowerCase().includes(filterKey));
+      });
+
+  const filteredProducts = [...baseFiltered].sort((a, b) => {
+    if (a.isOpen && !b.isOpen) return -1;
+    if (!a.isOpen && b.isOpen) return 1;
+    return 0;
+  });
 
   return (
     <div className="bg-slate-50 dark:bg-slate-950 min-h-screen text-gray-900 dark:text-slate-100 transition-colors duration-300">
@@ -191,9 +276,14 @@ export default function OffersPage() {
 
                 <div className="p-5 flex flex-col flex-grow">
                   {p.restaurantName && (
-                    <p className="text-red-500 font-bold text-[10px] uppercase tracking-widest mb-1">
-                      🏪 {p.restaurantName}
-                    </p>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <p className="text-red-500 font-bold text-[10px] uppercase tracking-widest truncate flex-1">
+                        🏪 {p.restaurantName}
+                      </p>
+                      <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${p.isOpen ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
+                        {p.isOpen ? 'Abierto' : 'Cerrado'}
+                      </span>
+                    </div>
                   )}
                   <h3 className="font-black text-gray-900 dark:text-white text-lg mb-1 leading-tight line-clamp-2" title={p.name}>
                     {p.name}

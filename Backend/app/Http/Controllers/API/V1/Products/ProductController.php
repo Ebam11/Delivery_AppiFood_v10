@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\API\V1\Products;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\ApiResponse;
+use App\Traits\ApiResponse;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +26,7 @@ class ProductController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $query = Product::with('restaurant', 'category')
+            $query = Product::with(['restaurant.schedules', 'category'])
                 ->where('is_available', true);
 
             // Filtro por descuento

@@ -82,12 +82,11 @@ export const useRestaurantImage = (restaurantName, fallbackUrl = null) => {
 
     const nameL = restaurantName.toLowerCase()
 
-    // Buscar imagen específica del restaurante
-    let url
+    // Buscar imagen específica del restaurante o fallback por categoría
+    let url = null
     if (RESTAURANT_IMAGE_MAP[nameL]) {
       url = getOptimizedImageUrl(RESTAURANT_IMAGE_MAP[nameL], 800)
     } else {
-      // Detectar por nombre/tipo de restaurante
       const category = detectFoodCategory(restaurantName)
       url = getPlaceholderImage(category, 800)
     }

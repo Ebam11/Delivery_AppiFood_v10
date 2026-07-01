@@ -6,6 +6,7 @@ import { logError, logInfo } from '../services/logService';
 // Crear instancia de axios
 const client = axios.create({
   baseURL: API_URL,
+  timeout: 15000, // 15 segundos máximo de espera
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

@@ -59,14 +59,10 @@ class RestaurantController extends Controller
         return response()->json($data);
     }
 
-    /**
-     * Invalida la caché de un restaurante específico.
-     * Se debe llamar cuando el restaurante actualiza su perfil, productos o horarios.
-     */
     public static function clearRestaurantCache(int $restaurantId): void
     {
         Cache::forget("restaurants:show:{$restaurantId}");
-        // Limpiar la caché del listado general (cualquier variante de filtros)
-        Cache::tags(['restaurants'])->flush();
+        // Limpiamos toda la caché para forzar la actualización del listado sin fallar por driver de archivo
+        Cache::flush();
     }
 }

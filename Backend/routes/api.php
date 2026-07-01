@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\API\Admin\CouponController;
+use App\Http\Controllers\API\Admin\AdminNotificationController;
 use App\Http\Controllers\API\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\API\Admin\OrderMonitorController;
 use App\Http\Controllers\API\Admin\ReportController;
@@ -57,8 +58,10 @@ Route::get('/health', static fn (): JsonResponse => response()->json([
 Route::get('/restaurants', [RestaurantController::class, 'index'])->middleware('api.cache:120');
 Route::get('/restaurants/{id}', [RestaurantController::class, 'show'])->middleware('api.cache:120');
 Route::get('/restaurants/{id}/reviews', [ReviewController::class, 'indexPublic'])->middleware('api.cache:60');
+Route::get('/products', [\App\Http\Controllers\API\V1\Products\ProductController::class, 'index']);
 Route::get('/auth/verify-email-link/{id}', [ProfileController::class, 'verifyEmailLink'])->name('verification.verify');
 Route::get('/subscription-plans', [SubscriptionPlanController::class, 'index'])->middleware('api.cache:600');
+Route::get('/coupons', [\App\Http\Controllers\API\Admin\CouponController::class, 'indexPublic']);
 Route::post('/support/chat', SupportAssistantController::class)->middleware('throttle:20,1');
 
 // ─── Endpoints protegidos ─────────────────────────────────────────────────────
@@ -185,6 +188,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('reviews')->group(function () {
             Route::get('/', [ReviewManagementController::class, 'index']);
             Route::patch('/{id}/reply', [ReviewManagementController::class, 'reply']);
+            Route::patch('/{id}/toggle-visibility', [ReviewManagementController::class, 'toggleVisibility']);
+            Route::delete('/{id}', [ReviewManagementController::class, 'destroy']);
         });
     });
 
@@ -222,13 +227,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::delete('/{id}', [AdminReviewManagementController::class, 'destroy']);
         });
 
-        Route::prefix('coupons')->group(function () {
-            Route::get('/', [CouponController::class, 'index']);
-            Route::post('/', [CouponController::class, 'store']);
-            Route::get('/{id}', [CouponController::class, 'show']);
-            Route::put('/{id}', [CouponController::class, 'update']);
-            Route::delete('/{id}', [CouponController::class, 'destroy']);
-        });
+
 
         Route::prefix('categories')->group(function () {
             Route::get('/', [AdminCategoryController::class, 'index']);
@@ -243,6 +242,20 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/restaurants', [ReportController::class, 'restaurants']);
             Route::get('/users', [ReportController::class, 'users']);
         });
+
+        // ─── Notificaciones broadcast desde admin ─────────────────────────────
+        Route::prefix('notifications')->group(function () {
+            Route::post('/broadcast', [AdminNotificationController::class, 'broadcast']);
+            Route::get('/history',   [AdminNotificationController::class, 'history']);
+        });
+    });
+
+    Route::middleware('role:admin,restaurant')->prefix('admin/coupons')->group(function () {
+        Route::get('/', [CouponController::class, 'index']);
+        Route::post('/', [CouponController::class, 'store']);
+        Route::get('/{id}', [CouponController::class, 'show']);
+        Route::put('/{id}', [CouponController::class, 'update']);
+        Route::delete('/{id}', [CouponController::class, 'destroy']);
     });
 
     // ─── Rol: driver ──────────────────────────────────────────────────────────

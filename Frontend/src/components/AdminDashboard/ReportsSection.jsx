@@ -76,8 +76,33 @@ export default function ReportsSection() {
     ? Math.max(...restaurantsData.map(r => Number(r.total_orders) || 0))
     : 1
 
+  const handleDownloadPDF = () => {
+    const style = document.createElement('style')
+    style.innerHTML = `
+      @media print {
+        body * { visibility: hidden; }
+        .print-section, .print-section * { visibility: visible; }
+        .print-section { position: absolute; left: 0; top: 0; width: 100%; }
+        .no-print { display: none !important; }
+      }
+    `
+    document.head.appendChild(style)
+    window.print()
+    document.head.removeChild(style)
+  }
+
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in print-section">
+      <div className="flex justify-between items-center no-print">
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Reportes y Estadísticas</h2>
+        <button
+          onClick={handleDownloadPDF}
+          className="px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-md shadow-red-500/10 transition"
+        >
+          <i className="fas fa-file-pdf"></i>
+          Descargar Reporte PDF
+        </button>
+      </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[

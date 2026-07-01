@@ -29,12 +29,36 @@ class CategorySeeder extends Seeder
             'Barra Fresca' => ['Batidos', 'Jugos', 'Bebidas Frías', 'Snacks'],
         ];
 
-        // Fallback genérico para restaurantes nuevos o no listados arriba
+        // Fallback genérico o dinámico según palabras clave en el nombre del restaurante
         $defaultCategories = ['Platos Fuertes', 'Entradas', 'Bebidas', 'Postres'];
 
         foreach ($allRestaurants as $restaurant) {
-            // Obtener el set de categorías para este restaurante
-            $categoryNames = $menuCategoriesPreset[$restaurant->name] ?? $defaultCategories;
+            $nameLower = strtolower($restaurant->name);
+            
+            // Asignar categorías de menú temáticas personalizadas basadas en el nombre
+            if (str_contains($nameLower, 'burger') || str_contains($nameLower, 'hamburguesa')) {
+                $categoryNames = ['Hamburguesas', 'Papas y Acompañamientos', 'Bebidas', 'Postres'];
+            } elseif (str_contains($nameLower, 'pizza') || str_contains($nameLower, 'italiana') || str_contains($nameLower, 'pasta')) {
+                $categoryNames = ['Pizzas', 'Pastas', 'Entradas', 'Bebidas'];
+            } elseif (str_contains($nameLower, 'sushi') || str_contains($nameLower, 'japonesa') || str_contains($nameLower, 'roll')) {
+                $categoryNames = ['Rolls', 'Nigiri', 'Entradas', 'Bebidas'];
+            } elseif (str_contains($nameLower, 'asado') || str_contains($nameLower, 'parrilla')) {
+                $categoryNames = ['Cortes', 'Acompañamientos', 'Bebidas', 'Postres'];
+            } elseif (str_contains($nameLower, 'pollo')) {
+                $categoryNames = ['Pollo Asado', 'Broaster', 'Acompañamientos', 'Bebidas'];
+            } elseif (str_contains($nameLower, 'mar') || str_contains($nameLower, 'marisco') || str_contains($nameLower, 'cevic')) {
+                $categoryNames = ['Ceviches', 'Mariscos', 'Pescados', 'Bebidas'];
+            } elseif (str_contains($nameLower, 'desayuno') || str_contains($nameLower, 'café') || str_contains($nameLower, 'cafe')) {
+                $categoryNames = ['Desayunos', 'Panadería', 'Café', 'Jugos'];
+            } elseif (str_contains($nameLower, 'postre') || str_contains($nameLower, 'torta') || str_contains($nameLower, 'helado') || str_contains($nameLower, 'dona') || str_contains($nameLower, 'sweet')) {
+                $categoryNames = ['Tortas', 'Postres', 'Helados', 'Bebidas'];
+            } elseif (str_contains($nameLower, 'sopa') || str_contains($nameLower, 'caldo')) {
+                $categoryNames = ['Sopas', 'Caldos', 'Acompañamientos', 'Bebidas'];
+            } elseif (str_contains($nameLower, 'bebida') || str_contains($nameLower, 'jugo') || str_contains($nameLower, 'batido')) {
+                $categoryNames = ['Batidos', 'Jugos', 'Bebidas Frías', 'Snacks'];
+            } else {
+                $categoryNames = $menuCategoriesPreset[$restaurant->name] ?? $defaultCategories;
+            }
 
             foreach ($categoryNames as $index => $name) {
                 Category::updateOrCreate(

@@ -147,6 +147,11 @@ export const OrderDetail = () => {
     setLiveStatus(newStatus)
     // Refrescar el pedido completo del store cuando cambia el estado
     fetchOrderById(id)
+    // Si el pedido acaba de ser entregado, hacer un segundo fetch con delay
+    // para asegurar que el store tiene los datos frescos antes de mostrar la reseña
+    if (newStatus === 'delivered' || newStatus === 'entregado') {
+      setTimeout(() => fetchOrderById(id), 1200)
+    }
   }, [id, fetchOrderById])
 
   useOrderRealtime(order?.id, handleStatusChange)
@@ -352,8 +357,8 @@ export const OrderDetail = () => {
               </div>
             )}
 
-            {/* Review Section */}
-            {order.status === 'delivered' && !order.review && (
+            {/* Review Section — usa currentStatus (tiempo real) en vez de order.status */}
+            {(currentStatus === 'delivered' || currentStatus === 'entregado' || order.status === 'delivered') && !order.review && (
               <div className="mt-8 bg-orange-50 border border-orange-200 rounded-2xl p-6 shadow-sm">
                 <h3 className="text-xl font-black text-gray-900 mb-2">¿Qué tal estuvo tu pedido?</h3>
                 <p className="text-sm text-gray-600 mb-4">Califica tu experiencia con <span className="font-bold">{order.restaurant_name}</span>. ¡Tus reseñas ayudan a otros usuarios y a los restaurantes!</p>

@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
  * Tarjeta de producto con imagen dinámica de Unsplash + lazy loading
  */
 export default function ProductCard({ product, onFav, isFav, onSelect }) {
-  const { image, loading } = useProductImage(product.name, product.img)
+  const { image, loading } = useProductImage(product.name, product.image || product.img)
   const { ref, src, isLoaded } = useLazyLoad(image, blurhash.product())
   const { t } = useTranslation()
 

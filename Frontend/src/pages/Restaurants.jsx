@@ -195,9 +195,9 @@ export default function RestaurantsPage() {
               <>
                 {restaurants.length > 0 ? (
                   <div className="flex flex-col gap-12">
-                    {/* SECCIÓN 1: Restaurantes Cerca de Mí (Menos de 5.0 km) */}
+                    {/* SECCIÓN 1: Restaurantes Cerca de Mí (Menos de 2.0 km) */}
                     {(() => {
-                      const nearbyList = restaurants.filter(r => r.distance !== null && r.distance <= 5.0)
+                      const nearbyList = restaurants.filter(r => r.distance !== null && r.distance <= 2.0)
                       if (nearbyList.length === 0) return null
                       return (
                         <div className="border-b border-gray-100 dark:border-slate-800/40 pb-10">
@@ -207,7 +207,7 @@ export default function RestaurantsPage() {
                                 <i className="fas fa-map-marker-alt text-[#FF4B3E]"></i> {t("restaurants.nearby_section") || "Restaurantes cerca de mí"}
                               </h2>
                               <p className="text-xs text-gray-400 dark:text-slate-500 font-semibold mt-1">
-                                Establecimientos a menos de 5 km de tu ubicación actual
+                                Establecimientos a menos de 2 km de tu ubicación actual
                               </p>
                             </div>
                             <span className="text-xs font-black text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/30 px-3 py-1.5 rounded-full">

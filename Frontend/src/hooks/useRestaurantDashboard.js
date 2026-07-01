@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchJson } from '../api/fetchJson'
+import { useAuthStore } from '../store/authStore'
 import { useRestaurantOrderNotifications } from './useOrderRealtime'
 import {
   getNotifications,
@@ -9,7 +10,8 @@ import {
 } from '../api/notifications'
 
 export function useRestaurantDashboard(user) {
-  const [activeTab, setActiveTab]         = useState('dashboard')
+  const token = useAuthStore((s) => s.token)
+  const [activeTab, setActiveTab]         = useState(() => localStorage.getItem('rd_active_tab') || 'dashboard')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [orders, setOrders]               = useState([])
   const [menu, setMenu]                   = useState([])
@@ -22,6 +24,11 @@ export function useRestaurantDashboard(user) {
   const [notifications, setNotifications] = useState([])
   const [unreadCount, setUnreadCount]     = useState(0)
   const [restaurantProfile, setRestaurantProfile] = useState(null)
+
+  // Persistir pestaña activa actual al cambiar
+  useEffect(() => {
+    localStorage.setItem('rd_active_tab', activeTab)
+  }, [activeTab])
 
   // Genera un sonido de notificación usando Web Audio API
   function playNotificationSound() {
@@ -110,59 +117,136 @@ export function useRestaurantDashboard(user) {
     loadNotifications()
   })
 
-  // ===== EFECTO PRINCIPAL =====
+  // ===== HELPERS DE CACHÉ LOCAL =====
+  const CACHE_KEYS = {
+    menu: 'rd_cache_menu',
+    categories: 'rd_cache_categories',
+    profile: 'rd_cache_profile',
+    orders: 'rd_cache_orders',
+  }
+
+  const readCache = (key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      if (!raw) return null
+      const { data, ts } = JSON.parse(raw)
+      // Caché válida por 10 minutos máximo
+      if (Date.now() - ts > 10 * 60 * 1000) return null
+      return data
+    } catch { return null }
+  }
+
+  const writeCache = (key, data) => {
+    try {
+      localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }))
+    } catch { /* localStorage lleno, ignorar */ }
+  }
+
+  // ===== MAPPER DE PRODUCTOS =====
+  const mapProduct = (p) => ({
+    id:                p.id,
+    name:              p.name,
+    description:       p.description,
+    price:             Number(p.price),
+    img:               p.image || '',
+    category:          p.category?.name || 'Otro',
+    category_id:       p.category_id,
+    stock:             p.stock,
+    prep_time_minutes: p.prep_time_minutes,
+    active:            p.is_available ?? true,
+    rating:            p.rating ?? 0,
+    orders:            p.sales_count ?? 0,
+  })
+
+  const parseCategories = (categoriesRes) => {
+    if (!categoriesRes) return []
+    if (Array.isArray(categoriesRes)) return categoriesRes
+    if (categoriesRes && typeof categoriesRes === 'object') {
+      const d = categoriesRes.data
+      if (Array.isArray(d)) return d
+      if (d && Array.isArray(d.data)) return d.data
+    }
+    return []
+  }
+
+  // ===== EFECTO PRINCIPAL (con caché instantánea) =====
   useEffect(() => {
-    if (!user) return
+    if (!user || !token) return
 
-    const loadData = async () => {
-      setLoading(true)
-      try {
-        const [ordersRes, productsRes, categoriesRes, profileRes] = await Promise.all([
-          fetchJson('/api/restaurant/orders'),
-          fetchJson('/api/restaurant/products?paginate=false'),
-          fetchJson('/api/restaurant/categories'),
-          fetchJson('/api/restaurant/profile'),
-        ])
+    // 1) Cargar datos de caché inmediatamente (aparecen al instante)
+    const cachedMenu = readCache(CACHE_KEYS.menu)
+    const cachedCats = readCache(CACHE_KEYS.categories)
+    const cachedProfile = readCache(CACHE_KEYS.profile)
+    const cachedOrders = readCache(CACHE_KEYS.orders)
 
-        if (ordersRes?.data) {
-          setOrders(ordersRes.data.map(mapOrder))
-        }
-
-        if (productsRes) {
-          const items = Array.isArray(productsRes) ? productsRes : productsRes.data || []
-          setMenu(items.map(p => ({
-            id:                p.id,
-            name:              p.name,
-            description:       p.description,
-            price:             Number(p.price),
-            img:               p.image || '',
-            category:          p.category?.name || 'Otro',
-            category_id:       p.category_id,
-            stock:             p.stock,
-            prep_time_minutes: p.prep_time_minutes,
-            active:            p.is_available ?? true,
-            rating:            p.rating ?? 0,
-            orders:            p.sales_count ?? 0,
-          })))
-        }
-
-        if (categoriesRes) {
-          const cats = Array.isArray(categoriesRes) ? categoriesRes : categoriesRes.data || []
-          setCategories(cats)
-        }
-
-        if (profileRes?.data) {
-          setRestaurantProfile(profileRes.data)
-        }
-      } catch (error) {
-        console.error('Error al cargar datos del restaurante:', error)
-      } finally {
-        setLoading(false)
-      }
+    let hasCache = false
+    if (cachedMenu && cachedMenu.length > 0) {
+      setMenu(cachedMenu)
+      hasCache = true
+    }
+    if (cachedCats && cachedCats.length > 0) {
+      setCategories(cachedCats)
+      hasCache = true
+    }
+    if (cachedProfile) {
+      setRestaurantProfile(cachedProfile)
+    }
+    if (cachedOrders && cachedOrders.length > 0) {
+      setOrders(cachedOrders)
     }
 
-    loadData()
-    loadNotifications() // ✅ Ahora loadNotifications está definida
+    // Si hay caché, quitamos el loading inmediatamente para que se vea al instante
+    if (hasCache) setLoading(false)
+
+    // 2) Revalidar en segundo plano con datos frescos del servidor
+    const revalidate = async () => {
+      if (!hasCache) setLoading(true)
+
+      const safeFetch = async (url) => {
+        try {
+          return await fetchJson(url)
+        } catch (err) {
+          console.error(`Error cargando [${url}]:`, err)
+          return null
+        }
+      }
+
+      const [ordersRes, productsRes, categoriesRes, profileRes] = await Promise.all([
+        safeFetch('/api/restaurant/orders'),
+        safeFetch('/api/restaurant/products?paginate=false'),
+        safeFetch('/api/restaurant/categories?paginate=false'),
+        safeFetch('/api/restaurant/profile'),
+      ])
+
+      if (ordersRes?.data) {
+        const mapped = ordersRes.data.map(mapOrder)
+        setOrders(mapped)
+        writeCache(CACHE_KEYS.orders, mapped)
+      }
+
+      if (productsRes) {
+        const items = Array.isArray(productsRes) ? productsRes : productsRes.data || []
+        const mapped = items.map(mapProduct)
+        setMenu(mapped)
+        writeCache(CACHE_KEYS.menu, mapped)
+      }
+
+      if (categoriesRes) {
+        const cats = parseCategories(categoriesRes)
+        setCategories(cats)
+        writeCache(CACHE_KEYS.categories, cats)
+      }
+
+      if (profileRes?.data) {
+        setRestaurantProfile(profileRes.data)
+        writeCache(CACHE_KEYS.profile, profileRes.data)
+      }
+
+      setLoading(false)
+    }
+
+    revalidate()
+    loadNotifications()
 
     // Polling de notificaciones cada 30 segundos
     const pollingInterval = setInterval(() => {
@@ -170,7 +254,7 @@ export function useRestaurantDashboard(user) {
     }, 30000)
 
     return () => clearInterval(pollingInterval)
-  }, [user]) // ✅ loadNotifications NO está en dependencias porque es estable
+  }, [user, token])
 
   // ===== HANDLERS =====
   const handleStatusChange = async (orderId, newStatus) => {
@@ -189,11 +273,52 @@ export function useRestaurantDashboard(user) {
     }
   }
 
+  const getAuthOptions = (method, isMultipart = false, bodyData = null) => {
+    const token = useAuthStore.getState().token
+    const headers = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    const options = { method, headers }
+    if (bodyData) {
+      options.body = bodyData
+    }
+    return options
+  }
+
   const handleAddProduct = async (formData) => {
+    // Generar preview de imagen si hay archivo
+    const tempImg = formData.file ? URL.createObjectURL(formData.file) : ''
+    const catName = categories.find(c => String(c.id) === String(formData.category_id))?.name || 'Otro'
+    const tempId = `temp_${Date.now()}`
+
+    // 1) OPTIMISTA: Insertar el plato al instante con ID temporal
+    const optimisticItem = {
+      id:                tempId,
+      name:              formData.name,
+      description:       formData.description || '',
+      price:             Number(formData.price),
+      img:               tempImg,
+      category:          catName,
+      category_id:       formData.category_id,
+      stock:             formData.stock !== '' ? Number(formData.stock) : null,
+      prep_time_minutes: formData.prep_time_minutes !== '' ? Number(formData.prep_time_minutes) : null,
+      active:            true,
+      rating:            0,
+      orders:            0,
+      _saving:           true, // Flag para mostrar indicador de guardado
+    }
+
+    setMenu(prev => [optimisticItem, ...prev])
+    setToast('Guardando plato...')
+
     try {
-      let options = { method: 'POST' }
+      let isMultipart = false
+      let body = null
+
       if (formData.file) {
-        const body = new FormData()
+        isMultipart = true
+        body = new FormData()
         body.append('name', formData.name)
         body.append('price', formData.price)
         if (formData.description) body.append('description', formData.description)
@@ -203,9 +328,8 @@ export function useRestaurantDashboard(user) {
           body.append('prep_time_minutes', formData.prep_time_minutes)
         }
         body.append('image', formData.file)
-        options.body = body
       } else {
-        options.body = {
+        body = {
           name:              formData.name,
           price:             formData.price,
           description:       formData.description || null,
@@ -214,28 +338,31 @@ export function useRestaurantDashboard(user) {
           prep_time_minutes: formData.prep_time_minutes !== '' ? formData.prep_time_minutes : null,
         }
       }
+
+      // 2) Enviar al servidor
+      const options = getAuthOptions('POST', isMultipart, body)
       const res = await fetchJson('/api/restaurant/products', options)
+
       if (res?.data) {
-        const p = res.data
-        setMenu(prev => [...prev, {
-          id:                p.id,
-          name:              p.name,
-          description:       p.description,
-          price:             Number(p.price),
-          img:               p.image || '',
-          category:          p.category?.name || 'Otro',
-          category_id:       p.category_id,
-          stock:             p.stock,
-          prep_time_minutes: p.prep_time_minutes,
-          active:            p.is_available ?? true,
-          rating:            0,
-          orders:            0,
-        }])
-        setToast('Producto añadido con éxito')
+        const realItem = mapProduct(res.data)
+        // 3) Reemplazar el item temporal por el real del servidor
+        setMenu(prev => {
+          const updated = prev.map(p => p.id === tempId ? realItem : p)
+          writeCache(CACHE_KEYS.menu, updated)
+          return updated
+        })
+        setToast('✅ Producto añadido con éxito')
+        setTimeout(() => setToast(null), 3000)
+      } else {
+        // Si no hay data, quitar el optimista
+        setMenu(prev => prev.filter(p => p.id !== tempId))
+        setToast('Error: no se recibió respuesta del servidor')
         setTimeout(() => setToast(null), 3000)
       }
     } catch (error) {
       console.error('Error al agregar producto:', error)
+      // REVERTIR: quitar el item optimista
+      setMenu(prev => prev.filter(p => p.id !== tempId))
       setToast('Error al agregar el producto')
       setTimeout(() => setToast(null), 3000)
     }
@@ -243,8 +370,13 @@ export function useRestaurantDashboard(user) {
 
   const handleDeleteProduct = async (id) => {
     try {
-      await fetchJson(`/api/restaurant/products/${id}`, { method: 'DELETE' })
-      setMenu(prev => prev.filter(p => p.id !== id))
+      const options = getAuthOptions('DELETE')
+      await fetchJson(`/api/restaurant/products/${id}`, options)
+      setMenu(prev => {
+        const updated = prev.filter(p => p.id !== id)
+        writeCache(CACHE_KEYS.menu, updated)
+        return updated
+      })
       setToast('Producto eliminado')
       setTimeout(() => setToast(null), 3000)
     } catch (error) {
@@ -256,9 +388,12 @@ export function useRestaurantDashboard(user) {
 
   const handleEditProduct = async (id, formData) => {
     try {
-      let options = { method: 'PUT' }
+      let isMultipart = false
+      let body = null
+
       if (formData.file) {
-        const body = new FormData()
+        isMultipart = true
+        body = new FormData()
         body.append('name', formData.name)
         body.append('price', formData.price)
         if (formData.description) body.append('description', formData.description)
@@ -268,9 +403,8 @@ export function useRestaurantDashboard(user) {
           body.append('prep_time_minutes', formData.prep_time_minutes)
         }
         body.append('image', formData.file)
-        options.body = body
       } else {
-        options.body = {
+        body = {
           name:              formData.name,
           price:             formData.price,
           description:       formData.description || null,
@@ -279,20 +413,26 @@ export function useRestaurantDashboard(user) {
           prep_time_minutes: formData.prep_time_minutes !== '' ? formData.prep_time_minutes : null,
         }
       }
+
+      const options = getAuthOptions('PUT', isMultipart, body)
       const res = await fetchJson(`/api/restaurant/products/${id}`, options)
       if (res?.data) {
         const p = res.data
-        setMenu(prev => prev.map(item => item.id === id ? {
-          ...item,
-          name:              p.name,
-          description:       p.description,
-          price:             Number(p.price),
-          img:               p.image || item.img,
-          category:          p.category?.name || item.category,
-          category_id:       p.category_id,
-          stock:             p.stock,
-          prep_time_minutes: p.prep_time_minutes,
-        } : item))
+        setMenu(prev => {
+          const updated = prev.map(item => item.id === id ? {
+            ...item,
+            name:              p.name,
+            description:       p.description,
+            price:             Number(p.price),
+            img:               p.image || item.img,
+            category:          p.category?.name || item.category,
+            category_id:       p.category_id,
+            stock:             p.stock,
+            prep_time_minutes: p.prep_time_minutes,
+          } : item)
+          writeCache(CACHE_KEYS.menu, updated)
+          return updated
+        })
         setToast('Producto actualizado')
         setTimeout(() => setToast(null), 3000)
       }
@@ -304,13 +444,40 @@ export function useRestaurantDashboard(user) {
   }
 
   const handleToggleAvailability = async (id) => {
-    setMenu(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
+    setMenu(prev => {
+      const updated = prev.map(p => p.id === id ? { ...p, active: !p.active } : p)
+      writeCache(CACHE_KEYS.menu, updated)
+      return updated
+    })
     try {
-      await fetchJson(`/api/restaurant/products/${id}/toggle-availability`, { method: 'PATCH' })
+      const options = getAuthOptions('PATCH')
+      await fetchJson(`/api/restaurant/products/${id}/toggle-availability`, options)
     } catch (error) {
       console.error('Error al cambiar disponibilidad:', error)
-      setMenu(prev => prev.map(p => p.id === id ? { ...p, active: !p.active } : p))
+      setMenu(prev => {
+        const reverted = prev.map(p => p.id === id ? { ...p, active: !p.active } : p)
+        writeCache(CACHE_KEYS.menu, reverted)
+        return reverted
+      })
     }
+  }
+
+  // ===== HANDLERS DE PERFIL =====
+  // Se llaman desde RestaurantInfoSection tras guardar exitosamente
+
+  const handleProfileSaved = (updatedData) => {
+    setRestaurantProfile(prev => ({ ...prev, ...updatedData }))
+    writeCache(CACHE_KEYS.profile, { ...(restaurantProfile || {}), ...updatedData })
+  }
+
+  const handleLogoSaved = (logoUrl) => {
+    setRestaurantProfile(prev => prev ? { ...prev, logo: logoUrl } : prev)
+    writeCache(CACHE_KEYS.profile, { ...(restaurantProfile || {}), logo: logoUrl })
+  }
+
+  const handleBannerSaved = (bannerUrl) => {
+    setRestaurantProfile(prev => prev ? { ...prev, banner: bannerUrl } : prev)
+    writeCache(CACHE_KEYS.profile, { ...(restaurantProfile || {}), banner: bannerUrl })
   }
 
   const handleNotifRead = async (id) => {
@@ -366,5 +533,8 @@ export function useRestaurantDashboard(user) {
     restaurantProfile,
     searchQuery,
     setSearchQuery,
+    handleProfileSaved,
+    handleLogoSaved,
+    handleBannerSaved,
   }
 }

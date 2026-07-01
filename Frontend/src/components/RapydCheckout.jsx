@@ -38,24 +38,67 @@ export default function RapydCheckout({ orderId }) {
   const [loading, setLoading]             = useState(false);
   const [error, setError]                 = useState(null);
   const [selectedMethod, setSelectedMethod] = useState('co_pse_bank');
+  const [savedMethods, setSavedMethods]   = useState([]);
+  const [selectedSavedMethod, setSelectedSavedMethod] = useState(null);
 
   const total = (cart?.total || 0) + (cart?.delivery_cost || 0);
+
+  // Cargar métodos de pago guardados del usuario
+  React.useEffect(() => {
+    const loadSaved = async () => {
+      try {
+        const response = await fetchJson('/api/payment-methods');
+        const list = Array.isArray(response) ? response : response?.data || [];
+        setSavedMethods(list);
+        if (list.length > 0) {
+          const def = list.find(m => m.is_default) || list[0];
+          setSelectedSavedMethod(def);
+          setSelectedMethod('saved_' + def.id);
+        }
+      } catch (err) {
+        console.warn('Error al cargar métodos de pago guardados:', err);
+      }
+    };
+    loadSaved();
+  }, []);
+
+  const getMethodToSend = () => {
+    if (selectedMethod.startsWith('saved_') && selectedSavedMethod) {
+      if (selectedSavedMethod.type === 'card') return 'card';
+      if (selectedSavedMethod.provider) return selectedSavedMethod.provider;
+      return 'co_pse_bank';
+    }
+    return selectedMethod;
+  };
 
   const handlePay = async () => {
     setLoading(true);
     setError(null);
 
+    const methodToSend = getMethodToSend();
+
     try {
-      const res = await fetchJson('/payments', {
+      const res = await fetchJson('/api/payments', {
         method: 'POST',
-        body: { order_id: orderId, payment_method: selectedMethod },
+        body: { order_id: orderId, payment_method: methodToSend },
       });
 
+      const payment = res?.data ?? res;
       const paymentUrl = res?.payment_url;
 
       if (paymentUrl) {
-        // Si Rapyd devolvió una URL real de checkout, redirigir
-        window.location.href = paymentUrl;
+        // Si la URL es una redirección interna para confirmación dev/sandbox
+        if (paymentUrl.includes('/payment/confirmation/')) {
+          const reference = payment?.external_reference;
+          await fetchJson('/api/payments/confirm', {
+            method: 'POST',
+            body: { transaction_id: payment?.id, reference_code: reference },
+          });
+          window.location.href = `/payment/confirmation/${orderId}?transaction_id=${payment?.id}&reference_code=${encodeURIComponent(reference)}&status=APPROVED`;
+        } else {
+          // Si Rapyd devolvió una URL real de checkout, redirigir
+          window.location.href = paymentUrl;
+        }
       } else {
         setError('No se pudo obtener la URL de pago. Intenta de nuevo.');
       }
@@ -70,15 +113,16 @@ export default function RapydCheckout({ orderId }) {
   const handleSimulate = async () => {
     setLoading(true);
     setError(null);
+    const methodToSend = getMethodToSend();
     try {
-      const res = await fetchJson('/payments', {
+      const res = await fetchJson('/api/payments', {
         method: 'POST',
-        body: { order_id: orderId, payment_method: selectedMethod },
+        body: { order_id: orderId, payment_method: methodToSend },
       });
       const payment   = res?.data ?? res;
       const reference = payment?.external_reference;
 
-      await fetchJson('/payments/confirm', {
+      await fetchJson('/api/payments/confirm', {
         method: 'POST',
         body: { transaction_id: payment?.id, reference_code: reference },
       });
@@ -89,6 +133,13 @@ export default function RapydCheckout({ orderId }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getActiveMethodLabel = () => {
+    if (selectedMethod.startsWith('saved_') && selectedSavedMethod) {
+      return selectedSavedMethod.type === 'card' ? 'Tarjeta guardada' : 'Cuenta guardada';
+    }
+    return PAYMENT_METHODS.find(m => m.id === selectedMethod)?.label || 'Método seleccionado';
   };
 
   return (
@@ -115,7 +166,55 @@ export default function RapydCheckout({ orderId }) {
         </div>
       )}
 
-      {/* Métodos de pago */}
+      {/* Métodos guardados */}
+      {savedMethods.length > 0 && (
+        <div className="mb-6 border-b border-gray-100 dark:border-slate-700 pb-5">
+          <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">
+            <i className="fas fa-wallet mr-1.5 text-violet-500" /> Tus métodos de pago guardados
+          </h4>
+          <div className="space-y-2">
+            {savedMethods.map((method) => {
+              const isSelected = selectedMethod === 'saved_' + method.id;
+              const displayLabel = method.type === 'card' 
+                ? `💳 **** **** **** ${method.last_four} (${(method.provider || 'card').toUpperCase()})`
+                : `🟣 ${method.label || method.provider || 'Billetera'} (${method.wallet_phone})`;
+
+              return (
+                <button
+                  key={method.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedSavedMethod(method);
+                    setSelectedMethod('saved_' + method.id);
+                  }}
+                  className={`w-full flex items-center justify-between p-3.5 rounded-xl border-2 transition-all duration-200 text-left text-sm ${
+                    isSelected
+                      ? 'border-violet-500 bg-violet-50 dark:bg-violet-900/20 shadow-md shadow-violet-500/10'
+                      : 'border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-700/50 hover:border-gray-300 dark:hover:border-slate-500'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-gray-800 dark:text-gray-200">{displayLabel}</span>
+                    {method.is_default && (
+                      <span className="bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300 text-[9px] font-black px-1.5 py-0.5 rounded-full">
+                        Predeterminado
+                      </span>
+                    )}
+                  </div>
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-violet-500' : 'border-gray-300'}`}>
+                    {isSelected && <div className="w-2 h-2 bg-violet-500 rounded-full" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Métodos de pago estándar */}
+      <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">
+        <i className="fas fa-credit-card mr-1.5 text-violet-500" /> Otros métodos de pago
+      </h4>
       <div className="grid grid-cols-2 gap-3 mb-5">
         {PAYMENT_METHODS.map((method) => (
           <button
@@ -171,23 +270,11 @@ export default function RapydCheckout({ orderId }) {
         ) : (
           <>
             <i className="fas fa-lock text-lg" />
-            <span>Pagar con {PAYMENT_METHODS.find(m => m.id === selectedMethod)?.label}</span>
+            <span>Pagar con {getActiveMethodLabel()}</span>
           </>
         )}
       </button>
 
-      {/* Botón simulador para desarrollo/sandbox */}
-      <button
-        onClick={handleSimulate}
-        disabled={loading}
-        className="w-full py-3 px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-black rounded-xl shadow-lg shadow-emerald-500/20 transition-all duration-200 active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-2 text-sm"
-      >
-        <i className="fas fa-flask" />
-        <span>Simular pago (Sandbox)</span>
-      </button>
-      <p className="text-[10px] text-gray-400 dark:text-gray-500 font-semibold uppercase tracking-wider text-center mt-2">
-        Entorno Sandbox · No se realizará un cobro real
-      </p>
 
       {/* Sellos de seguridad */}
       <div className="mt-5 pt-4 border-t border-gray-100 dark:border-slate-700 flex items-center justify-center gap-4 text-xs text-gray-400 dark:text-gray-500 font-semibold">

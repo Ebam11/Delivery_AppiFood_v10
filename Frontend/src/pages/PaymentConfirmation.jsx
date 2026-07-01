@@ -20,12 +20,22 @@ export const PaymentConfirmation = () => {
 
   const transactionId = searchParams.get('transaction_id');
   const referenceCode = searchParams.get('reference_code');
+  const statusParam = searchParams.get('status');
 
   useEffect(() => {
     let mounted = true;
 
     const checkPayment = async () => {
       try {
+        if (statusParam === 'APPROVED' || statusParam === 'approved') {
+          const orderData = await fetchOrder(orderId);
+          if (!mounted) return;
+          setVerifiedOrder(orderData);
+          setStatus('success');
+          setMessage(t('payment_confirmation.success_message'));
+          return;
+        }
+
         if (transactionId && referenceCode) {
           await confirmPaymentStatus(transactionId, referenceCode);
         }
@@ -56,7 +66,7 @@ export const PaymentConfirmation = () => {
       checkPayment();
     }
     return () => { mounted = false };
-  }, [transactionId, referenceCode, orderId, confirmPaymentStatus, fetchOrder, t]);
+  }, [transactionId, referenceCode, statusParam, orderId, confirmPaymentStatus, fetchOrder, t]);
 
   if (loading) {
     return (

@@ -30,12 +30,16 @@ class RestaurantResource extends JsonResource
             'email'             => $this->email,
             'delivery_cost'     => $this->delivery_cost,
             'minimum_order'     => $this->minimum_order,
+            'min_product_price' => (float) ($this->relationLoaded('categories') && $this->categories->isNotEmpty()
+                ? ($this->categories->flatMap->products->min('price') ?: 10000)
+                : ($this->products()->min('price') ?: 10000)),
             'delivery_time_min' => $this->delivery_time_min,
             'delivery_time_max' => $this->delivery_time_max ?? $this->delivery_time_min + 15,
             'average_rating'    => $this->average_rating,
             'total_reviews'     => $this->total_reviews,
             'is_active'         => $this->is_active,
             'is_verified'       => $this->is_verified,
+            'delivery_available'=> $this->delivery_available ?? true,
             'isOpen'            => $isOpen,
             'schedules'         => $this->relationLoaded('schedules') ? $this->schedules->map(fn($schedule) => [
                 'day' => $schedule->day,
@@ -55,14 +59,17 @@ class RestaurantResource extends JsonResource
                 $this->categories->flatMap(fn($cat) =>
                     $cat->relationLoaded('products')
                         ? $cat->products->map(fn($p) => [
-                            'id'          => $p->id,
-                            'name'        => $p->name,
-                            'description' => $p->description,
-                            'price'       => $p->price,
-                            'image'       => MediaUrl::resolve($p->image),
-                            'available'   => $p->is_available,
-                            'category_id' => $cat->id,
-                            'category_name' => $cat->name,
+                            'id'             => $p->id,
+                            'name'           => $p->name,
+                            'description'    => $p->description,
+                            'price'          => $p->price,
+                            'discount_price' => $p->discount_price,
+                            'final_price'    => $p->final_price,
+                            'has_discount'   => $p->hasDiscount(),
+                            'image'          => MediaUrl::resolve($p->image),
+                            'available'      => $p->is_available,
+                            'category_id'    => $cat->id,
+                            'category_name'  => $cat->name,
                         ])
                         : []
                 )->values()

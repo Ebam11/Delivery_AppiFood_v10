@@ -5,6 +5,11 @@ import LanguageSwitcher from './LanguageSwitcher'
 import ThemeToggle from './ThemeToggle'
 import { useCart } from '../context/useCart'
 import { api } from '../api/client'
+import {
+  getNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+} from '../api/notifications'
 
 const DEFAULT_LOCATION = { lat: 2.4448, lng: -76.6147 }
 
@@ -28,6 +33,21 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
   const navigate = useNavigate()
   const location = useLocation()
   const userRef = useRef(null)
+  
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [notificationMenuOpen, setNotificationMenuOpen] = useState(false)
+  const notificationRef = useRef(null)
+
+  const [toastMessage, setToastMessage] = useState(null)
+  const lastNotificationIdRef = useRef(null)
+
+  useEffect(() => {
+    if (window.Notification && window.Notification.permission === 'default') {
+      window.Notification.requestPermission();
+    }
+  }, []);
+
   
   const storedUser = (() => {
     try {
@@ -79,11 +99,82 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
     return () => document.removeEventListener('mousedown', fn)
   }, [])
 
+  const loadNotificationsData = async () => {
+    if (!isAuth) return
+    try {
+      const res = await getNotifications()
+      const list = Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []))
+      setNotifications(list)
+      setUnreadCount(list.filter(n => !n.is_read).length)
+
+      const latest = list[0];
+      if (latest) {
+        if (lastNotificationIdRef.current !== null && latest.id > lastNotificationIdRef.current) {
+          if (!latest.is_read) {
+            setToastMessage({
+              title: latest.title || 'Actualización de Pedido',
+              message: latest.message || 'Tu pedido ha cambiado de estado.',
+              id: latest.id
+            });
+            
+            if (window.Notification && window.Notification.permission === 'granted') {
+              new window.Notification(latest.title || 'Actualización de Pedido', {
+                body: latest.message,
+                icon: '/favicon.ico'
+              });
+            }
+          }
+        }
+        lastNotificationIdRef.current = latest.id;
+      } else {
+        lastNotificationIdRef.current = 0;
+      }
+    } catch (err) {
+      console.error('Error al cargar notificaciones en header:', err)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuth) {
+      loadNotificationsData()
+      const interval = setInterval(loadNotificationsData, 5000)
+      return () => clearInterval(interval)
+    }
+  }, [isAuth])
+
+  useEffect(() => {
+    const fn = e => {
+      if (notificationRef.current && !notificationRef.current.contains(e.target)) {
+        setNotificationMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', fn)
+    return () => document.removeEventListener('mousedown', fn)
+  }, [])
+
   useEffect(() => { setDrawerOpen(false) }, [location.pathname])
 
   const doSearch = () => {
     if (!search.trim()) return
     navigate(`/restaurants?q=${encodeURIComponent(search.trim())}`)
+  }
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsAsRead()
+      loadNotificationsData()
+    } catch (err) {
+      console.error('Error al marcar leídas todas:', err)
+    }
+  }
+
+  const handleMarkRead = async (id) => {
+    try {
+      await markNotificationAsRead(id)
+      loadNotificationsData()
+    } catch (err) {
+      console.error('Error al marcar leída:', err)
+    }
   }
 
   const goHomeTop = (event) => {
@@ -142,9 +233,19 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
 
     const geocodeAddress = async (address) => {
       try {
+        let searchQuery = address;
+        const lowerQuery = searchQuery.toLowerCase();
+        if (!lowerQuery.includes('popayán') && !lowerQuery.includes('popayan')) {
+          searchQuery = `${searchQuery}, Popayán, Cauca, Colombia`;
+        }
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(address)}`,
-          { headers: { Accept: 'application/json' } }
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(searchQuery)}`,
+          {
+            headers: {
+              'Accept': 'application/json',
+              'User-Agent': 'AppiFoodDelivery/1.0 (contact: support@appifood.com)'
+            }
+          }
         )
         const results = await response.json()
         const first = Array.isArray(results) ? results[0] : null
@@ -389,6 +490,80 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
               </div>
             )}
 
+            {/* CAMPANA DE NOTIFICACIONES (Solo si está logueado) */}
+            {isAuth && (
+              <div className="relative" ref={notificationRef}>
+                <button
+                  onClick={() => setNotificationMenuOpen(o => !o)}
+                  className="relative w-10 h-10 rounded-lg bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-[#FF4B3E] flex items-center justify-center transition shadow-none hover:bg-gray-50 dark:hover:bg-slate-700"
+                  aria-label="Notificaciones"
+                >
+                  <i className="fas fa-bell text-lg" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center border-2 border-white dark:border-slate-900 animate-bounce">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Popover / Dropdown de Notificaciones rápidas */}
+                {notificationMenuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 z-[100] overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-100 dark:border-slate-700 flex justify-between items-center bg-gray-50/50 dark:bg-slate-800/30">
+                      <span className="font-bold text-sm text-gray-800 dark:text-gray-200">
+                        {t('header.notifications.title', { defaultValue: 'Notificaciones' })}
+                      </span>
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={handleMarkAllRead}
+                          className="text-[11px] text-[#FF4B3E] font-bold hover:underline"
+                        >
+                          {t('header.notifications.markAllRead', { defaultValue: 'Marcar todo leída' })}
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-64 overflow-y-auto divide-y divide-gray-50 dark:divide-slate-700/50">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-xs text-gray-400 dark:text-slate-500">
+                          <i className="fas fa-bell-slash text-2xl mb-2 block opacity-30"></i>
+                          {t('header.notifications.empty', { defaultValue: 'No tienes notificaciones' })}
+                        </div>
+                      ) : (
+                        notifications.slice(0, 5).map(n => (
+                          <div
+                            key={n.id}
+                            onClick={() => handleMarkRead(n.id)}
+                            className={`p-3 text-xs transition cursor-pointer text-left hover:bg-gray-50 dark:hover:bg-slate-700 ${!n.is_read ? 'bg-red-50/30 dark:bg-red-950/10 font-medium' : 'text-gray-500 dark:text-gray-400'}`}
+                          >
+                            <div className="flex justify-between items-start gap-2">
+                              <span className="font-bold text-gray-800 dark:text-gray-200 block text-[11px] truncate">
+                                {n.title || n.data?.title || 'Aviso'}
+                              </span>
+                              {!n.is_read && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0 mt-1" />
+                              )}
+                            </div>
+                            <p className="mt-0.5 leading-relaxed text-gray-600 dark:text-gray-400 line-clamp-2">
+                              {n.message || n.data?.message || ''}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <Link
+                      to="/user/profile?tab=notifications"
+                      onClick={() => setNotificationMenuOpen(false)}
+                      className="block text-center py-2.5 text-xs text-[#FF4B3E] font-black hover:bg-gray-50 dark:hover:bg-slate-700 border-t border-gray-100 dark:border-slate-700"
+                    >
+                      {t('header.notifications.viewAll', { defaultValue: 'Ver todas las notificaciones' })}
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
             <button onClick={() => setIsOpen(true)}
               className="relative w-10 h-10 rounded-lg bg-white dark:bg-slate-800 text-gray-600 dark:text-gray-300 hover:text-[#FF4B3E] flex items-center justify-center transition">
               <i className="fas fa-shopping-cart text-lg" />
@@ -595,6 +770,25 @@ export default function Header({ isAuth, user, onLogout, isLoading }) {
               ×
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Toast Notification Flotante */}
+      {toastMessage && (
+        <div className="fixed top-20 right-6 z-[9999] bg-white dark:bg-slate-900 border-2 border-violet-500 rounded-2xl shadow-2xl p-4 max-w-sm flex items-start gap-3 transition-all duration-300">
+          <div className="w-10 h-10 rounded-full bg-violet-100 dark:bg-violet-950/40 flex items-center justify-center text-violet-600 dark:text-violet-400 flex-shrink-0 animate-pulse">
+            <i className="fas fa-bell text-lg animate-bounce" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-black text-sm text-gray-900 dark:text-white truncate">{toastMessage.title}</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mt-0.5">{toastMessage.message}</p>
+          </div>
+          <button 
+            onClick={() => setToastMessage(null)} 
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors self-start"
+          >
+            <i className="fas fa-times text-xs" />
+          </button>
         </div>
       )}
 

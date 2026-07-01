@@ -47,10 +47,30 @@ export function useRestaurants() {
   // Cargar datos
   useEffect(() => {
     const load = async () => {
+      // Verificar si hay caché válida (120 segundos)
+      const cacheKey = 'cached_restaurants'
+      const cacheTimeKey = 'cached_restaurants_time'
+      const cachedData = sessionStorage.getItem(cacheKey)
+      const cachedTime = sessionStorage.getItem(cacheTimeKey)
+      const now = Date.now()
+
+      if (cachedData && cachedTime && (now - Number(cachedTime) < 120000)) {
+        try {
+          const items = JSON.parse(cachedData)
+          setRestaurants(items.map(normalizeRestaurant).sort((a, b) => Number(b.isOpen) - Number(a.isOpen) || b.rating - a.rating))
+          setLoading(false)
+          return
+        } catch { /* fallback a red si falla parseo */ }
+      }
+
       setLoading(true)
       try {
-        const data = await fetchJson('/restaurants?paginate=false')
+        const data = await fetchJson('/api/restaurants?paginate=false')
         const items = Array.isArray(data) ? data : data.data || []
+        
+        sessionStorage.setItem(cacheKey, JSON.stringify(items))
+        sessionStorage.setItem(cacheTimeKey, String(now))
+        
         setRestaurants(items.map(normalizeRestaurant).sort((a, b) => Number(b.isOpen) - Number(a.isOpen) || b.rating - a.rating))
       } catch (err) {
         console.error('Error fetching restaurants:', err)
@@ -170,12 +190,15 @@ export function useRestaurants() {
       if (ratingFilter === '4plus' && r.rating < 4.0) return false
       if (ratingFilter === '45plus' && r.rating < 4.5) return false
       
-      // Filtro de presupuesto manual
+      // Filtro de presupuesto inteligente (busca que el plato más barato se ajuste al presupuesto)
       if (budgetInput && !isNaN(Number(budgetInput))) {
         const budget = Number(budgetInput)
-        const minOrder = Number(r.minimum_order ?? 0)
-        if (minOrder > budget) return false
+        const priceToCompare = Number(r.min_product_price ?? r.minimum_order ?? 0)
+        if (priceToCompare > budget) return false
       }
+
+      // Filtro de cobertura de distancia máxima (30 km para restaurantes urbanos)
+      if (r.distance !== null && r.distance > 30) return false
 
       return true
     })

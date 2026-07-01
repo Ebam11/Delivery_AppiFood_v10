@@ -40,7 +40,7 @@ export function useHomeData() {
     const loadData = async () => {
       setLoadingRestaurants(true)
       try {
-        const data = await fetchJson('/restaurants')
+        const data = await fetchJson('/api/restaurants')
         const items = Array.isArray(data) ? data : data.data || []
         
         if (items.length > 0) {

@@ -27,19 +27,20 @@ class ProfileRestaurantController extends Controller
     public function update(Request $request): JsonResponse
     {
         $request->validate([
-            'name'              => ['sometimes', 'string', 'max:150'],
-            'description'       => ['nullable', 'string', 'max:500'],
-            'address'           => ['sometimes', 'string', 'max:255'],
-            'phone'             => ['nullable', 'string', 'max:20'],
-            'email'             => ['nullable', 'email'],
-            'delivery_cost'     => ['sometimes', 'numeric', 'min:0'],
-            'minimum_order'     => ['sometimes', 'numeric', 'min:0'],
-            'delivery_time_min' => ['sometimes', 'integer', 'min:1'],
-            'category_ids'      => ['nullable', 'array'],
-            'category_ids.*'    => ['exists:restaurant_categories,id'],
-            'is_active'         => ['sometimes', 'boolean'],
-            'opening_time'      => ['sometimes', 'date_format:H:i'],
-            'closing_time'      => ['sometimes', 'date_format:H:i'],
+            'name'               => ['sometimes', 'string', 'max:150'],
+            'description'        => ['nullable', 'string', 'max:500'],
+            'address'            => ['sometimes', 'string', 'max:255'],
+            'phone'              => ['nullable', 'string', 'max:20'],
+            'email'              => ['nullable', 'email'],
+            'delivery_cost'      => ['sometimes', 'numeric', 'min:0'],
+            'minimum_order'      => ['sometimes', 'numeric', 'min:0'],
+            'delivery_time_min'  => ['sometimes', 'integer', 'min:1'],
+            'category_ids'       => ['nullable', 'array'],
+            'category_ids.*'     => ['exists:restaurant_categories,id'],
+            'is_active'          => ['sometimes', 'boolean'],
+            'delivery_available' => ['sometimes', 'boolean'],
+            'opening_time'       => ['sometimes', 'date_format:H:i'],
+            'closing_time'       => ['sometimes', 'date_format:H:i'],
         ]);
 
         $restaurant = $request->user()->restaurant;
@@ -53,7 +54,8 @@ class ProfileRestaurantController extends Controller
         } else {
             $restaurant->update($request->only(
                 'name', 'description', 'address', 'phone', 'email',
-                'delivery_cost', 'minimum_order', 'delivery_time_min', 'is_active'
+                'delivery_cost', 'minimum_order', 'delivery_time_min',
+                'is_active', 'delivery_available'
             ));
         }
 
@@ -87,20 +89,26 @@ class ProfileRestaurantController extends Controller
 
         $restaurant = $request->user()->restaurant;
 
-        if ($restaurant->logo) {
+        if ($restaurant->logo && !\App\Support\MediaUrl::isRemote($restaurant->logo)) {
             Storage::disk('public')->delete($restaurant->logo);
         }
 
-        $path = $request->file('logo')->store('restaurants/logos', 'public');
+        if (filled(config('cloudinary.cloud_url'))) {
+            $subida = $request->file('logo')->storeOnCloudinary('appifood/logos');
+            $path = $subida->getSecurePath();
+        } else {
+            $path = $request->file('logo')->store('restaurants/logos', 'public');
+        }
+
         $restaurant->update(['logo' => $path]);
 
         return response()->json([
             'message' => 'Logo actualizado.',
-            'logo'    => asset('storage/' . $path),
+            'logo'    => \App\Support\MediaUrl::resolve($path),
         ]);
     }
 
-        public function banner(Request $request): JsonResponse
+    public function banner(Request $request): JsonResponse
     {
         $request->validate([
             'banner' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
@@ -108,16 +116,22 @@ class ProfileRestaurantController extends Controller
     
         $restaurant = $request->user()->restaurant;
     
-        if ($restaurant->banner) {
+        if ($restaurant->banner && !\App\Support\MediaUrl::isRemote($restaurant->banner)) {
             Storage::disk('public')->delete($restaurant->banner);
         }
     
-        $path = $request->file('banner')->store('restaurants/banners', 'public');
+        if (filled(config('cloudinary.cloud_url'))) {
+            $subida = $request->file('banner')->storeOnCloudinary('appifood/banners');
+            $path = $subida->getSecurePath();
+        } else {
+            $path = $request->file('banner')->store('restaurants/banners', 'public');
+        }
+    
         $restaurant->update(['banner' => $path]);
     
         return response()->json([
             'message' => 'Portada actualizada.',
-            'banner'  => asset('storage/' . $path),
+            'banner'  => \App\Support\MediaUrl::resolve($path),
         ]);
     }
 }

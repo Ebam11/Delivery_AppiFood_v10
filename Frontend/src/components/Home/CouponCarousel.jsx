@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
+import { COUPONS as STATIC_COUPONS } from '../../data/coupons'
 
 /**
  * Sección de cupones destacados con scroll horizontal suave y flechas a los costados de las tarjetas.
@@ -39,6 +40,39 @@ export default function CouponCarousel({ coupons }) {
     scrollRef.current.scrollBy({ left: direction * amount, behavior: 'smooth' })
   }
 
+  const getCouponDisplayData = (coupon) => {
+    if (coupon.accent && coupon.benefit) {
+      return coupon
+    }
+
+    const staticMatch = STATIC_COUPONS.find(c => c.code.toUpperCase() === coupon.code.toUpperCase())
+    if (staticMatch) {
+      return {
+        ...coupon,
+        title: t(`coupons.items.${staticMatch.code}.title`, { defaultValue: staticMatch.title }),
+        description: t(`coupons.items.${staticMatch.code}.description`, { defaultValue: staticMatch.description }),
+        badge: t(`coupons.items.${staticMatch.code}.badge`, { defaultValue: staticMatch.badge }),
+        benefit: t(`coupons.items.${staticMatch.code}.benefit`, { defaultValue: staticMatch.benefit }),
+        icon: staticMatch.icon,
+      }
+    }
+
+    const benefitText = coupon.type === 'percentage'
+      ? `${Math.round(coupon.value)}% OFF`
+      : `$${Number(coupon.value).toLocaleString('es-CO')} OFF`
+
+    return {
+      code: coupon.code,
+      title: coupon.description || `Descuento ${coupon.code}`,
+      description: coupon.minimum_order > 0
+        ? `Monto mínimo $${Number(coupon.minimum_order).toLocaleString('es-CO')}.`
+        : 'Sin monto mínimo de compra.',
+      benefit: benefitText,
+      badge: coupon.restaurant_id ? 'Restaurante' : 'Cupón Especial',
+      icon: 'fas fa-tag',
+    }
+  }
+
   return (
     <section className="py-16 bg-gradient-to-b from-orange-50/50 dark:from-slate-900/50 to-white dark:to-slate-950 transition-colors duration-300">
       <div className="container mx-auto px-6">
@@ -69,52 +103,55 @@ export default function CouponCarousel({ coupons }) {
             className="flex gap-6 overflow-x-auto pb-6 px-2 scrollbar-hide snap-x"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            {coupons.map((coupon) => (
-              <div 
-                key={coupon.code} 
-                className="min-w-[300px] md:min-w-[380px] bg-white dark:bg-slate-900 rounded-3xl p-6 border border-red-50 dark:border-slate-800/80 relative overflow-hidden shadow-sm hover:shadow-md transition-all snap-start"
-              >
-                {/* Decoración de fondo */}
-                <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16" />
-                
-                <div className="relative z-10 flex flex-col h-full">
-                  <div className="flex justify-between items-start mb-6">
-                    <div>
-                      <span className="bg-red-50 dark:bg-red-950/30 text-red-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-100 dark:border-red-950/40">
-                        <i className={coupon.icon} /> {t(`coupons.items.${coupon.code}.badge`, { defaultValue: coupon.badge })}
-                      </span>
-                      <h3 className="text-xl font-black text-gray-900 dark:text-white mt-3">
-                        {t(`coupons.items.${coupon.code}.title`, { defaultValue: coupon.title })}
-                      </h3>
-                      <p className="text-gray-500 dark:text-slate-400 text-xs mt-1 leading-relaxed">
-                        {t(`coupons.items.${coupon.code}.description`, { defaultValue: coupon.description })}
-                      </p>
+            {coupons.map((c) => {
+              const coupon = getCouponDisplayData(c)
+              return (
+                <div 
+                  key={coupon.code} 
+                  className="min-w-[300px] md:min-w-[380px] bg-white dark:bg-slate-900 rounded-3xl p-6 border border-red-50 dark:border-slate-800/80 relative overflow-hidden shadow-sm hover:shadow-md transition-all snap-start"
+                >
+                  {/* Decoración de fondo */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-red-500/5 rounded-full -mr-16 -mt-16" />
+                  
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="flex justify-between items-start mb-6">
+                      <div>
+                        <span className="bg-red-50 dark:bg-red-950/30 text-red-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-100 dark:border-red-950/40">
+                          <i className={coupon.icon} /> {coupon.badge}
+                        </span>
+                        <h3 className="text-xl font-black text-gray-900 dark:text-white mt-3">
+                          {coupon.title}
+                        </h3>
+                        <p className="text-gray-500 dark:text-slate-400 text-xs mt-1 leading-relaxed">
+                          {coupon.description}
+                        </p>
+                      </div>
+                      <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-3 rounded-2xl text-center shadow-lg shadow-red-500/20 shrink-0">
+                        <span className="block text-[10px] font-black opacity-80 uppercase leading-none">
+                          {t('home.save')}
+                        </span>
+                        <span className="block text-lg font-black mt-1 leading-none">
+                          {coupon.benefit}
+                        </span>
+                      </div>
                     </div>
-                    <div className="bg-gradient-to-br from-red-500 to-red-600 text-white p-3 rounded-2xl text-center shadow-lg shadow-red-500/20">
-                      <span className="block text-[10px] font-black opacity-80 uppercase leading-none">
-                        {t('home.save')}
-                      </span>
-                      <span className="block text-lg font-black mt-1 leading-none">
-                        {t(`coupons.items.${coupon.code}.benefit`, { defaultValue: coupon.benefit })}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="mt-auto flex items-center justify-between gap-4 pt-4 border-t border-dashed border-gray-100 dark:border-slate-800">
-                    <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-xl">
-                      <code className="font-mono font-black text-gray-800 dark:text-slate-200 tracking-widest text-sm">{coupon.code}</code>
+                    <div className="mt-auto flex items-center justify-between gap-4 pt-4 border-t border-dashed border-gray-100 dark:border-slate-800">
+                      <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-4 py-2 rounded-xl">
+                        <code className="font-mono font-black text-gray-800 dark:text-slate-200 tracking-widest text-sm">{coupon.code}</code>
+                      </div>
+                      <Link 
+                        to="/coupons" 
+                        className="bg-gray-900 dark:bg-slate-800 hover:bg-black dark:hover:bg-slate-700 text-white px-5 py-2.5 rounded-full text-xs font-black transition-all flex items-center gap-2"
+                      >
+                        {t('home.viewDetail')}
+                        <i className="fas fa-arrow-right" />
+                      </Link>
                     </div>
-                    <Link 
-                      to="/coupons" 
-                      className="bg-gray-900 dark:bg-slate-800 hover:bg-black dark:hover:bg-slate-700 text-white px-5 py-2.5 rounded-full text-xs font-black transition-all flex items-center gap-2"
-                    >
-                      {t('home.viewDetail')}
-                      <i className="fas fa-arrow-right" />
-                    </Link>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {/* Flecha derecha */}

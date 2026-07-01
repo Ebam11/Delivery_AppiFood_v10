@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             RestaurantCategorySeeder::class,
             RestaurantSeeder::class,
+            RestaurantDemoAccountsSeeder::class, // Poblar los 5 restaurantes reales por categoría de comida
             CategorySeeder::class,
             ProductSeeder::class,
             AddressSeeder::class,
@@ -24,7 +25,6 @@ class DatabaseSeeder extends Seeder
             FavoriteSeeder::class,
             NotificationSeeder::class,
             BannerSeeder::class,
-            // Eliminamos o comentamos backfills redundantes para evitar duplicados y lentitud
         ]);
     }
 }

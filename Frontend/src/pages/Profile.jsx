@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useProfile } from '../hooks/useProfile'
 import { fetchJson } from '../api/fetchJson'
@@ -10,6 +11,7 @@ import '../styles/Profile.css'
 
 export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const {
     activeTab,
     setActiveTab,
@@ -111,7 +113,13 @@ export default function UserProfilePage({ user, onLogout, onUpdateProfile }) {
               {menuItems.map(item => (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
+                  onClick={() => {
+                    if (item.id === 'orders') {
+                      navigate('/user/orders')
+                    } else {
+                      setActiveTab(item.id)
+                    }
+                  }}
                   className={`profile-nav-item ${activeTab === item.id ? 'active' : ''}`}
                 >
                   <i className={item.icon} />

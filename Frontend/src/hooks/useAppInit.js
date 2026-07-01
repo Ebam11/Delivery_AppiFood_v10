@@ -25,7 +25,13 @@ export function useAppInit() {
     return null
   })
   
-  const [loading, setLoading] = useState(true)
+  // Si hay usuario en caché, no bloqueamos la UI con loading
+  const [loading, setLoading] = useState(() => {
+    const token = localStorage.getItem('token')
+    const savedUser = localStorage.getItem('user')
+    // Solo mostramos loading si hay token pero NO hay usuario en caché
+    return !!(token && !savedUser)
+  })
   const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   // Sincroniza el usuario desde el almacenamiento local
@@ -66,7 +72,7 @@ export function useAppInit() {
     }
   }
 
-  // Verificar sesión al montar el componente
+  // Verificar sesión al montar el componente (no-bloqueante si hay caché)
   useEffect(() => {
     const token = localStorage.getItem('token')
     
@@ -77,6 +83,7 @@ export function useAppInit() {
     
     let mounted = true
     
+    // Revalidar en segundo plano — la UI ya está visible con datos del caché
     fetchJson('/api/me', {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -89,15 +96,6 @@ export function useAppInit() {
 
             setUser(normalizedUser)
             localStorage.setItem('user', JSON.stringify(normalizedUser))
-          } else {
-            const cachedUser = localStorage.getItem('user')
-            if (cachedUser) {
-              try {
-                setUser(normalizeUserRole(JSON.parse(cachedUser)))
-              } catch (e) {
-                console.error('Error al restaurar del caché:', e)
-              }
-            }
           }
           setLoading(false)
         }
@@ -108,16 +106,8 @@ export function useAppInit() {
             localStorage.removeItem('token')
             localStorage.removeItem('user')
             setUser(null)
-          } else {
-            const cachedUser = localStorage.getItem('user')
-            if (cachedUser) {
-              try {
-                setUser(normalizeUserRole(JSON.parse(cachedUser)))
-              } catch (e) {
-                console.error('Error al restaurar del caché (fallback):', e)
-              }
-            }
           }
+          // Si falla por red/timeout, el usuario ya está visible desde caché
           setLoading(false)
         }
       })
@@ -144,26 +134,39 @@ export function useAppInit() {
     }
   }
   
-  // Manejador de cierre de sesión
-  const handleLogout = async () => { 
+  // Manejador de cierre de sesión — INSTANTÁNEO
+  const handleLogout = () => { 
     setIsLoggingOut(true)
+
+    // 1) Capturar el token ANTES de limpiar
     const token = localStorage.getItem('token')
 
-    if (token) {
-      try {
-        await fetchJson('/api/auth/logout', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      } catch (error) {
-        console.error('Error en el logout:', error)
-      }
-    }
-
+    // 2) Limpiar INMEDIATAMENTE (sin esperar al servidor) el almacenamiento local
     localStorage.removeItem('token')
     localStorage.removeItem('user')
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('theme') // Limpiar preferencia de modo noche al cerrar sesión para evitar heredar tema visual
+    // Limpiar cachés del dashboard de restaurante para consistencia de datos de sesión
+    localStorage.removeItem('rd_cache_menu')
+    localStorage.removeItem('rd_cache_categories')
+    localStorage.removeItem('rd_cache_profile')
+    localStorage.removeItem('rd_cache_orders')
+    localStorage.removeItem('rd_active_tab')
+
+    useAuthStore.getState().setToken(null)
     setUser(null)
+
+    // 3) Redirigir al instante a la pantalla de inicio principal
     window.location.href = '/'
+
+    // 4) Avisar al servidor en segundo plano (fire-and-forget) para invalidar el token de Sanctum
+    if (token) {
+      fetchJson('/api/auth/logout', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => { /* Ignorar errores, la sesión local ya está limpia */ })
+    }
   }
 
   return {

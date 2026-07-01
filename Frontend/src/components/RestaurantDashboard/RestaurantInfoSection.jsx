@@ -4,7 +4,7 @@ import { fetchJson } from '../../api/fetchJson'
 import CalendarSection from './CalendarSection'
 import ThemeToggle from '../ThemeToggle'
 
-export default function RestaurantInfoSection({ restaurant, restaurantId }) {
+export default function RestaurantInfoSection({ restaurant, restaurantId, onPreview, onSaved, onLogoSaved, onBannerSaved }) {
   const { t } = useTranslation()
 
   const [form, setForm] = useState({
@@ -32,7 +32,7 @@ export default function RestaurantInfoSection({ restaurant, restaurantId }) {
         phone: restaurant.phone || '',
         address: restaurant.address || '',
         status: restaurant.is_active ?? true,
-        delivery: restaurant.delivery_available ?? true
+        delivery: restaurant.delivery_available ?? true,
       })
       setLogoPreview(restaurant.logo || null)
       setBannerPreview(restaurant.banner || null)
@@ -48,7 +48,7 @@ export default function RestaurantInfoSection({ restaurant, restaurantId }) {
     setSaving(true)
     setMsg(null)
     try {
-      await fetchJson('/api/restaurant/profile', {
+      const res = await fetchJson('/api/restaurant/profile', {
         method: 'PUT',
         body: {
           name: form.name,
@@ -61,6 +61,8 @@ export default function RestaurantInfoSection({ restaurant, restaurantId }) {
         }
       })
       setMsg({ type: 'success', text: t('rd.info_saved') })
+      // Notificar al padre para que actualice restaurantProfile y caché
+      if (onSaved && res?.data) onSaved(res.data)
     } catch (error) {
       setMsg({ type: 'error', text: t('rd.info_save_error') || 'Error al guardar los cambios.' })
     } finally {
@@ -72,12 +74,18 @@ export default function RestaurantInfoSection({ restaurant, restaurantId }) {
   const handleLogoUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
+    // Preview local inmediato
     setLogoPreview(URL.createObjectURL(file))
     setUploadingLogo(true)
     try {
       const body = new FormData()
       body.append('logo', file)
-      await fetchJson('/api/restaurant/profile/logo', { method: 'POST', body })
+      const res = await fetchJson('/api/restaurant/profile/logo', { method: 'POST', body })
+      // Actualizar preview con la URL real del servidor
+      if (res?.logo) {
+        setLogoPreview(res.logo)
+        if (onLogoSaved) onLogoSaved(res.logo)
+      }
       setMsg({ type: 'success', text: t('rd.logo_updated') || 'Logo actualizado correctamente.' })
     } catch {
       setMsg({ type: 'error', text: t('rd.logo_error') || 'Error al subir el logo.' })
@@ -90,12 +98,18 @@ export default function RestaurantInfoSection({ restaurant, restaurantId }) {
   const handleBannerUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
+    // Preview local inmediato
     setBannerPreview(URL.createObjectURL(file))
     setUploadingBanner(true)
     try {
       const body = new FormData()
       body.append('banner', file)
-      await fetchJson('/api/restaurant/profile/banner', { method: 'POST', body })
+      const res = await fetchJson('/api/restaurant/profile/banner', { method: 'POST', body })
+      // Actualizar preview con la URL real del servidor
+      if (res?.banner) {
+        setBannerPreview(res.banner)
+        if (onBannerSaved) onBannerSaved(res.banner)
+      }
       setMsg({ type: 'success', text: t('rd.banner_updated') || 'Imagen de portada actualizada.' })
     } catch {
       setMsg({ type: 'error', text: t('rd.banner_error') || 'Error al subir la portada.' })
@@ -120,15 +134,14 @@ export default function RestaurantInfoSection({ restaurant, restaurantId }) {
             {t('rd.general_info')}
           </h3>
           {restaurant?.id && (
-            <a
-              href={`/restaurants/${restaurantId || restaurant?.id}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white hover:opacity-90 transition"
+            <button
+              onClick={onPreview}
+              type="button"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white hover:opacity-90 transition shadow-sm"
               style={{ background: '#FF4B3E' }}
             >
               👁️ {t('rd.view_as_customer') || 'Ver como cliente'}
-            </a>
+            </button>
           )}
         </div>
         <div className="p-6 space-y-5">

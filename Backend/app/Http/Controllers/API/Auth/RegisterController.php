@@ -29,15 +29,48 @@ class RegisterController extends Controller
         ]);
 
         if (($request->role ?? UserRole::USER->value) === UserRole::RESTAURANT->value) {
-            Restaurant::create([
+            $restaurant = Restaurant::create([
                 'user_id' => $user->id,
                 'name' => $request->restaurant_name ?: $request->name,
-                'address' => $request->address ?? 'Por confirmar',
+                'address' => $request->address ?? 'Popayán, Cauca',
                 'phone' => $request->phone ?? null,
                 'email' => $request->email ?? null,
+                'lat' => 2.4448,
+                'lng' => -76.6147,
+                'logo' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=900',
+                'banner' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=900',
                 'is_active' => true,
                 'is_verified' => true,
             ]);
+
+            // Asignar categoría por defecto (Restaurantes Locales)
+            $defaultCat = \App\Models\RestaurantCategory::where('name', 'Restaurantes Locales')->first();
+            if ($defaultCat) {
+                $restaurant->restaurantCategories()->syncWithoutDetaching([$defaultCat->id]);
+            }
+
+            // Crear un horario por defecto para que aparezca abierto (24/7)
+            $daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            foreach ($daysOfWeek as $day) {
+                \App\Models\RestaurantSchedule::create([
+                    'restaurant_id' => $restaurant->id,
+                    'day' => $day,
+                    'opening_time' => '00:00:00',
+                    'closing_time' => '23:59:00',
+                    'is_closed' => false,
+                ]);
+            }
+
+            // Crear una zona de entrega por defecto
+            \App\Models\DeliveryZone::create([
+                'restaurant_id' => $restaurant->id,
+                'name' => 'Zona Urbana',
+                'delivery_cost' => 3000,
+                'delivery_time_min' => 30,
+            ]);
+
+            // Limpiar la caché de restaurantes para que aparezca inmediatamente
+            \Illuminate\Support\Facades\Cache::flush();
         }
 
         $token = $user->createToken('api-token')->plainTextToken;

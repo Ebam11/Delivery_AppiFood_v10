@@ -79,4 +79,13 @@
         fetchJson(`${API_URL}/notifications/read-all`, { method: 'PATCH' }),
     deleteNotification: (id) =>
         fetchJson(`${API_URL}/notifications/${id}`, { method: 'DELETE' }),
-    };
+
+    // ===== NOTIFICACIONES BROADCAST (admin) =====
+    broadcastNotification: (data) =>
+        fetchJson(`${API_URL}/admin/notifications/broadcast`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+        }),
+    getNotificationHistory: () =>
+        fetchJson(`${API_URL}/admin/notifications/history`),
+    };

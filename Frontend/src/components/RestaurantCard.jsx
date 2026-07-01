@@ -9,7 +9,7 @@ import heroImage from '../assets/hero.png'
 
 export default function RestaurantCard({ restaurant, onSelect, onFavoriteToggle, showSchedule = true }) {
   const { t } = useTranslation() // <- CORREGIDO
-  const { image, loading } = useRestaurantImage(restaurant?.name, restaurant?.img)
+  const { image, loading } = useRestaurantImage(restaurant?.name, restaurant?.image || restaurant?.banner || restaurant?.logo || restaurant?.img)
   const { ref, src, isLoaded } = useLazyLoad(image, blurhash.restaurant())
   const favorites = useFavoritesStore(s => s.favorites)
   const [isAnimating, setIsAnimating] = useState(false)

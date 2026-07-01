@@ -59,6 +59,35 @@ class RestaurantDemoAccountsSeeder extends Seeder
                     ]
                 );
 
+                $banners = [
+                    'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=900', // burger
+                    'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=900', // pizza
+                    'https://images.unsplash.com/photo-1611143669185-af224c5e3252?w=900', // sushi
+                    'https://images.unsplash.com/photo-1544025162-d76694265947?w=900', // carne/parrilla
+                    'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=900', // tacos/mexicana
+                    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=900', // saludable
+                    'https://images.unsplash.com/photo-1606728035253-49e196321de5?w=900', // pollo asado
+                    'https://images.unsplash.com/photo-1534080391025-09795d197a5b?w=900', // mariscos
+                    'https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=900', // postres
+                    'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=900', // postres / donuts
+                    'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=900', // desayunos / café
+                    'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=900', // saludable / batidos
+                    'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=900', // china
+                    'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=900', // comida tipica / arepas
+                    'https://images.unsplash.com/photo-1509722747041-616f39b57569?w=900', // sandwich
+                    'https://images.unsplash.com/photo-1547592180-85f173990554?w=900', // sopas
+                    'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=900', // alitas
+                    'https://images.unsplash.com/photo-1561651823-34feb02250e4?w=900', // arabe/shawarma
+                    'https://images.unsplash.com/photo-1519676867240-f03562e64548?w=900', // crepes/waffles
+                    'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?w=900', // donas
+                ];
+
+                $imgUrl = $banners[$globalIndex % count($banners)];
+
+                // Generar geolocalización aleatoria dentro del casco urbano de Popayán (más dispersos para pruebas de distancia)
+                $randomLat = 2.4448 + (rand(-300, 300) / 10000);
+                $randomLng = -76.6147 + (rand(-300, 300) / 10000);
+
                 $restaurant = Restaurant::updateOrCreate(
                     ['user_id' => $user->id],
                     [
@@ -67,6 +96,10 @@ class RestaurantDemoAccountsSeeder extends Seeder
                         'address' => 'Popayán, Cauca',
                         'phone' => $phone,
                         'email' => $email,
+                        'logo' => $imgUrl,
+                        'banner' => $imgUrl,
+                        'lat' => $randomLat,
+                        'lng' => $randomLng,
                         'delivery_cost' => random_int(2000, 6000),
                         'minimum_order' => random_int(10000, 30000),
                         'delivery_time_min' => random_int(15, 40),
@@ -79,8 +112,7 @@ class RestaurantDemoAccountsSeeder extends Seeder
 
                 $restaurant->restaurantCategories()->syncWithoutDetaching([$category->id]);
 
-                // Crear horarios para todos los días
-                // Abierto de 11:00 a 23:00 todos los días
+                // Crear horarios para todos los días (Abierto 24/7 para facilitar pruebas)
                 $daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
                 foreach ($daysOfWeek as $day) {
                     RestaurantSchedule::updateOrCreate(
@@ -89,8 +121,8 @@ class RestaurantDemoAccountsSeeder extends Seeder
                             'day' => $day,
                         ],
                         [
-                            'opening_time' => '11:00',
-                            'closing_time' => '23:00',
+                            'opening_time' => '00:00:00',
+                            'closing_time' => '23:59:00',
                             'is_closed' => false,
                         ]
                     );

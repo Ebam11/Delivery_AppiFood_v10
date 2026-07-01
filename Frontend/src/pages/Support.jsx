@@ -1,6 +1,8 @@
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import SupportChatbot from '../components/SupportChatbot'
+import { fetchJson } from '../api/fetchJson'
 import { supportFaqs, supportShortcuts } from '../utils/supportAssistant'
 
 const faqBadgeStyles = {
@@ -12,6 +14,119 @@ const faqBadgeStyles = {
 
 export default function Support() {
   const { t } = useTranslation()
+  const [orders, setOrders] = useState([])
+  const [loadingOrders, setLoadingOrders] = useState(false)
+  const [activeChat, setActiveChat] = useState(null)
+  const [chatMessages, setChatMessages] = useState([])
+  const [inputValue, setInputValue] = useState('')
+  const [typing, setTyping] = useState(false)
+  const messagesEndRef = useRef(null)
+
+  // Cargar pedidos del usuario para dar soporte sobre pedidos activos
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        setLoadingOrders(true)
+        const response = await fetchJson('/api/orders')
+        // Laravel paginate wrap check
+        const list = Array.isArray(response) ? response : response?.data?.data || response?.data || []
+        setOrders(list)
+      } catch (err) {
+        console.warn('Error al obtener pedidos para soporte:', err)
+      } finally {
+        setLoadingOrders(false)
+      }
+    }
+    loadOrders()
+  }, [])
+
+  // Auto-scroll en el chat con el restaurante
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages, typing])
+
+  const openChatWithRestaurant = (order) => {
+    setActiveChat(order)
+    setChatMessages([
+      {
+        id: 1,
+        sender: 'restaurant',
+        name: order.restaurant_name || 'Restaurante',
+        text: `¡Hola! Gracias por contactarnos sobre tu pedido #${order.id}. ¿En qué te podemos ayudar?`,
+        time: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      }
+    ])
+  }
+
+  const handleSendMessage = (e) => {
+    e.preventDefault()
+    if (!inputValue.trim()) return
+
+    const userMsg = {
+      id: Date.now(),
+      sender: 'user',
+      name: 'Tú',
+      text: inputValue.trim(),
+      time: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+    }
+
+    setChatMessages(prev => [...prev, userMsg])
+    const currentInput = inputValue.trim().toLowerCase()
+    setInputValue('')
+    setTyping(true)
+
+    // Simular respuesta inteligente del restaurante tras 1.5 segundos
+    setTimeout(() => {
+      setTyping(false)
+      let replyText = 'Hola, recibimos tu mensaje. Estamos verificando los detalles de tu orden con el personal de cocina.'
+
+      if (currentInput.includes('cebolla') || currentInput.includes('salsa') || currentInput.includes('ingrediente') || currentInput.includes('queso')) {
+        replyText = '¡Entendido! Acabamos de reportar este requerimiento especial a nuestro chef para que preparen tu pedido tal como lo solicitas. ¡Muchas gracias por avisarnos!'
+      } else if (currentInput.includes('demora') || currentInput.includes('cuanto') || currentInput.includes('cuánto') || currentInput.includes('tiempo') || currentInput.includes('tarda')) {
+        const orderStatus = String(activeChat?.status || '').toLowerCase()
+        if (orderStatus === 'preparing' || orderStatus === 'preparando') {
+          replyText = 'Tu pedido ya está en preparación y se encuentra en su fase final en la cocina. Saldrá con un repartidor en aproximadamente 10 minutos.'
+        } else if (orderStatus === 'on_the_way' || orderStatus === 'en_camino') {
+          replyText = 'El pedido ya fue recogido por el repartidor y va en camino a tu dirección. Puedes seguir el mapa de entrega en los detalles de tu orden.'
+        } else {
+          replyText = 'Estamos procesando tu orden lo más rápido posible. El tiempo estimado de entrega total es de 30-40 minutos.'
+        }
+      } else if (currentInput.includes('dirección') || currentInput.includes('direccion') || currentInput.includes('casa') || currentInput.includes('apto') || currentInput.includes('apartamento')) {
+        replyText = `Confirmamos que la dirección de envío registrada es "${activeChat?.delivery_address || 'tu dirección actual'}". Si necesitas modificarla de urgencia, coméntanoslo por aquí.`
+      }
+
+      setChatMessages(prev => [...prev, {
+        id: Date.now() + 1,
+        sender: 'restaurant',
+        name: activeChat?.restaurant_name || 'Restaurante',
+        text: replyText,
+        time: new Date().toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' })
+      }])
+    }, 1500)
+  }
+
+  const getStatusBadgeClass = (status) => {
+    const s = String(status || '').toLowerCase()
+    if (s === 'pending' || s === 'pendiente') return 'bg-yellow-50 text-yellow-755 border-yellow-200'
+    if (s === 'confirmed' || s === 'confirmado') return 'bg-blue-50 text-blue-755 border-blue-200'
+    if (s === 'preparing' || s === 'preparando') return 'bg-purple-50 text-purple-755 border-purple-200'
+    if (s === 'on_the_way' || s === 'en_camino') return 'bg-cyan-50 text-cyan-755 border-cyan-200'
+    if (s === 'delivered' || s === 'entregado') return 'bg-green-50 text-green-755 border-green-200'
+    return 'bg-gray-50 text-gray-700 border-gray-200'
+  }
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      pending: 'Esperando Pago/Confirmación',
+      confirmed: 'Confirmado por Restaurante',
+      preparing: 'En preparación 🍳',
+      on_the_way: 'En camino 🛵',
+      delivered: 'Entregado ✓',
+      cancelled: 'Cancelado ✕',
+    }
+    return labels[status] || status
+  }
+
   return (
     <main className="page-support min-h-screen bg-[#fff8f6] dark:bg-slate-950 transition-colors duration-300 pt-8 pb-16">
       <section className="relative overflow-hidden">
@@ -44,6 +159,64 @@ export default function Support() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* SECCIÓN DEL CHAT CON EL RESTAURANTE (Rappi-style) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+        <div className="bg-white dark:bg-slate-900 rounded-3xl border border-gray-100 dark:border-slate-800 shadow-xl p-6 sm:p-8 transition-colors duration-300">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white text-lg">
+              <i className="fas fa-store" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-gray-900 dark:text-white">Pedidos Activos y Soporte de Restaurante</h2>
+              <p className="text-xs text-gray-400 dark:text-slate-500 font-semibold mt-0.5">Comunícate directamente con el comercio si tienes algún requerimiento de cocina o entrega</p>
+            </div>
+          </div>
+
+          {loadingOrders ? (
+            <div className="py-8 flex items-center justify-center gap-2 text-gray-400">
+              <i className="fas fa-spinner fa-spin text-xl" />
+              <span className="font-semibold text-sm">Cargando tus pedidos...</span>
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="p-8 text-center text-gray-400 dark:text-slate-500 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-2xl">
+              <i className="fas fa-receipt text-3xl mb-2 opacity-30" />
+              <p className="text-sm font-semibold">No tienes pedidos activos ni recientes registrados en tu cuenta.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {orders.slice(0, 6).map((order) => (
+                <div
+                  key={order.id}
+                  className="bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700/60 p-5 rounded-2xl flex flex-col justify-between hover:shadow-md transition duration-200"
+                >
+                  <div>
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className="font-black text-gray-900 dark:text-white text-base truncate">{order.restaurant_name || 'Restaurante'}</h4>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadgeClass(order.status)}`}>
+                        {getStatusLabel(order.status)}
+                      </span>
+                    </div>
+                    <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 font-semibold space-y-1">
+                      <p><i className="fas fa-hashtag mr-1" /> Pedido #{order.id}</p>
+                      <p><i className="far fa-calendar mr-1" /> {new Date(order.created_at).toLocaleDateString('es-ES')}</p>
+                      <p><i className="fas fa-wallet mr-1" /> COP ${Number(order.total).toLocaleString('es-CO')}</p>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => openChatWithRestaurant(order)}
+                    className="mt-5 w-full py-2.5 px-4 bg-orange-500 hover:bg-orange-600 text-white font-black rounded-xl text-xs flex items-center justify-center gap-1.5 transition active:scale-95 shadow-md shadow-orange-500/10"
+                  >
+                    <i className="fas fa-comments" />
+                    <span>Hablar con el restaurante</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -113,6 +286,87 @@ export default function Support() {
           </div>
         </div>
       </section>
+
+      {/* CHAT MODAL INTERACTIVO CON EL RESTAURANTE */}
+      {activeChat && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-gray-100 dark:border-slate-800 w-[min(94vw,480px)] max-h-[82vh] flex flex-col overflow-hidden animate-zoom-in">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-orange-500 to-[#FF4B3E] p-4 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/15 flex items-center justify-center font-black text-white text-lg">
+                  {String(activeChat.restaurant_name || 'R').charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <h3 className="font-black text-sm">{activeChat.restaurant_name || 'Restaurante'}</h3>
+                  <p className="text-[10px] text-white/80 font-semibold mt-0.5">Soporte Pedido #{activeChat.id} · {getStatusLabel(activeChat.status)}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveChat(null)}
+                className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/25 transition"
+              >
+                <i className="fas fa-times" />
+              </button>
+            </div>
+
+            {/* Mensajes */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950/40 min-h-[300px]">
+              {chatMessages.map(msg => {
+                const isMe = msg.sender === 'user'
+                return (
+                  <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                    <div className="text-[10px] text-gray-400 dark:text-slate-500 font-semibold px-2 mb-1">
+                      {msg.name} · {msg.time}
+                    </div>
+                    <div className={`max-w-[80%] p-3 rounded-2xl text-xs leading-relaxed ${
+                      isMe 
+                        ? 'bg-[#FF4B3E] text-white rounded-tr-none' 
+                        : 'bg-white dark:bg-slate-850 text-gray-800 dark:text-gray-200 border border-gray-100 dark:border-slate-800 rounded-tl-none shadow-sm'
+                    }`}>
+                      {msg.text}
+                    </div>
+                  </div>
+                )
+              })}
+
+              {/* Indicador de escritura */}
+              {typing && (
+                <div className="flex flex-col items-start">
+                  <div className="text-[10px] text-gray-400 dark:text-slate-500 font-semibold px-2 mb-1">
+                    {activeChat.restaurant_name || 'Restaurante'} está escribiendo...
+                  </div>
+                  <div className="p-3 bg-white dark:bg-slate-850 rounded-2xl rounded-tl-none border border-gray-100 dark:border-slate-800 shadow-sm flex gap-1">
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" />
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                    <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                  </div>
+                </div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Form */}
+            <form onSubmit={handleSendMessage} className="p-3 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800 flex gap-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={e => setInputValue(e.target.value)}
+                placeholder="Escribe tu mensaje para el restaurante..."
+                className="flex-1 px-4 py-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 rounded-xl text-xs text-gray-900 dark:text-white focus:outline-none focus:border-orange-500"
+              />
+              <button
+                type="submit"
+                disabled={!inputValue.trim() || typing}
+                className="w-10 h-10 rounded-xl bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center transition active:scale-95 disabled:opacity-50"
+              >
+                <i className="fas fa-paper-plane" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   )
 }

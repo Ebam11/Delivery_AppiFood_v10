@@ -31,7 +31,7 @@ export default function PaymentMethodsTab() {
   })
 
   const methodTypes = [
-    { value: 'card', label: 'Tarjeta', icon: '<i className="fas fa-credit-card mr-1"></i>', hint: 'Crédito o débito en una sola opción' },
+    { value: 'card', label: 'Tarjeta', icon: <i className="fas fa-credit-card"></i>, hint: 'Crédito o débito en una sola opción' },
     { value: 'wallet', label: 'Nequi', icon: '🟣', hint: 'Billetera digital' },
     { value: 'transfer', label: 'Bancolombia', icon: '🏦', hint: 'Transferencia / cuenta bancaria' },
     { value: 'pse', label: 'PSE', icon: '🌐', hint: 'Pago por banco en línea' },
@@ -42,7 +42,7 @@ export default function PaymentMethodsTab() {
       { value: 'visa', label: 'Visa', icon: '💙' },
       { value: 'mastercard', label: 'Mastercard', icon: '🟠' },
       { value: 'amex', label: 'American Express', icon: '🔷' },
-      { value: 'diners', label: 'Diners', icon: '<i className="fas fa-star mr-1"></i>' },
+      { value: 'diners', label: 'Diners', icon: <i className="fas fa-star text-yellow-400"></i> },
     ],
     wallet: [
       { value: 'nequi', label: 'Nequi', icon: '🟣' },
@@ -76,7 +76,7 @@ export default function PaymentMethodsTab() {
     }
 
     return {
-      icon: provider === 'mastercard' ? '🟠' : provider === 'amex' ? '🔷' : provider === 'diners' ? '<i className="fas fa-star mr-1"></i>' : '<i className="fas fa-credit-card mr-1"></i>',
+      icon: provider === 'mastercard' ? '🟠' : provider === 'amex' ? '🔷' : provider === 'diners' ? <i className="fas fa-star text-yellow-400"></i> : <i className="fas fa-credit-card"></i>,
       title: method.label || method.holder_name || 'Tarjeta',
       description: `${provider.toUpperCase() || 'CARD'} •••• ${method.last_four || '0000'}`,
     }

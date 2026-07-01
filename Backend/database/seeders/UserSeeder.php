@@ -34,15 +34,39 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // ── 20 Restaurantes ───────────────────────────────────────
-        for ($i = 1; $i <= 20; $i++) {
+        // ── 20 Restaurantes con correos legibles ───────────────────
+        $restaurantEmails = [
+            'info@burgerhouse.com',
+            'contacto@pizzanostra.com',
+            'info@sushizen.com',
+            'ventas@parrilladelvalle.com',
+            'tacos@elvalle.com',
+            'hola@verdefresco.com',
+            'contacto@pollodorado.com',
+            'mariscos@elpuerto.com',
+            'trattoria@bella.com',
+            'dulce@tentacion.com',
+            'cafe@madrugon.com',
+            'hola@barrafresca.com',
+            'chino@paraiso.com',
+            'arepas@donaelena.com',
+            'sandwich@gourmet.com',
+            'sopas@elrincon.com',
+            'alitas@house.com',
+            'shawarma@eldesierto.com',
+            'crepes@antojo.com',
+            'donas@sweet.com',
+        ];
+
+        foreach ($restaurantEmails as $index => $email) {
+            $num = $index + 1;
             User::updateOrCreate(
-                ['email' => "restaurante{$i}@foodapp.com"],
+                ['email' => $email],
                 [
-                    'name'     => "Dueño Restaurante {$i}",
+                    'name'     => "Dueño Restaurante {$num}",
                     'password' => Hash::make('password'),
                     'role'     => UserRole::RESTAURANT,
-                    'phone'    => '310' . str_pad($i, 7, '0', STR_PAD_LEFT),
+                    'phone'    => '310' . str_pad($num, 7, '0', STR_PAD_LEFT),
                     'status'   => true,
                 ]
             );
