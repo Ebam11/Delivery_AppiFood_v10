@@ -8,6 +8,7 @@ use Illuminate\Database\Seeder;
 
 class CategorySeeder extends Seeder
 {
+    // Control de categorías limpias de restaurante (Evita duplicados de Platos Fuertes en restaurante 18)
     public function run(): void
     {
         $allRestaurants = Restaurant::all();
